@@ -112,3 +112,4 @@ Die Anwendung wurde mit folgenden Prinzipien entwickelt:
 - Moderne UI-Komponenten
 - Umfassende Fehlerbehandlung
 - Logging für Debugging-Zwecke
+- 
