@@ -40,12 +40,20 @@ data/*.xlsx
 data/*.csv
 data/*.xls
 
-# Node.js (nur für web-Verzeichnis anwenden)
+# Node.js
+node_modules/
+frontend/node_modules/
 web/node_modules/
 web/.next/
 web/out/
 web/build/
 web/dist/
+
+# Next.js
+.next/
+out/
+build/
+dist/
 
 # Web-Verzeichnis explizit erlauben (nicht ignorieren)
 # !web/
