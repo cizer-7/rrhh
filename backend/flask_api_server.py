@@ -89,7 +89,11 @@ setup_database()
 @app.before_request
 def before_request():
     """Stelle sicher, dass die Datenbankverbindung aktiv ist"""
-    if not db_manager.connection or not db_manager.connection.is_connected():
+    try:
+        if not db_manager.connection:
+            db_manager.connect()
+    except Exception as e:
+        print(f"Datenbankverbindungsfehler: {e}")
         db_manager.connect()
 
 @app.teardown_appcontext

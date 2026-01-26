@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Employee, Salary, Ingresos, Deducciones } from '@/types/employee'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Save, Download, Euro, TrendingUp, TrendingDown } from 'lucide-react'
+import { ArrowLeft, Save, Download, Euro, TrendingUp, TrendingDown, Calendar } from 'lucide-react'
 
 interface EmployeeDetailProps {
   employee: Employee
@@ -169,14 +169,22 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
   }
 
   const calculateTotal = () => {
-    const baseSalary = salary?.salario_mensual_bruto || 0
-    const ingresosTotal = (ingresos?.ticket_restaurant || 0) + (ingresos?.primas || 0) + 
-                         (ingresos?.dietas_cotizables || 0) + (ingresos?.horas_extras || 0) + 
-                         (ingresos?.dias_exentos || 0) + (ingresos?.dietas_exentas || 0) + 
-                         (ingresos?.seguro_pensiones || 0) + (ingresos?.lavado_coche || 0)
-    const deduccionesTotal = (deducciones?.seguro_accidentes || 0) + (deducciones?.adelas || 0) + 
-                           (deducciones?.sanitas || 0) + (deducciones?.gasolina_arval || 0) + 
-                           (deducciones?.cotizacion_especie || 0)
+    const baseSalary = typeof salary?.salario_mensual_bruto === 'string' 
+      ? parseFloat(salary.salario_mensual_bruto) || 0 
+      : (salary?.salario_mensual_bruto || 0)
+    const ingresosTotal = (typeof ingresos?.ticket_restaurant === 'string' ? parseFloat(ingresos.ticket_restaurant) || 0 : (ingresos?.ticket_restaurant || 0)) + 
+                         (typeof ingresos?.primas === 'string' ? parseFloat(ingresos.primas) || 0 : (ingresos?.primas || 0)) + 
+                         (typeof ingresos?.dietas_cotizables === 'string' ? parseFloat(ingresos.dietas_cotizables) || 0 : (ingresos?.dietas_cotizables || 0)) + 
+                         (typeof ingresos?.horas_extras === 'string' ? parseFloat(ingresos.horas_extras) || 0 : (ingresos?.horas_extras || 0)) + 
+                         (typeof ingresos?.dias_exentos === 'string' ? parseFloat(ingresos.dias_exentos) || 0 : (ingresos?.dias_exentos || 0)) + 
+                         (typeof ingresos?.dietas_exentas === 'string' ? parseFloat(ingresos.dietas_exentas) || 0 : (ingresos?.dietas_exentas || 0)) + 
+                         (typeof ingresos?.seguro_pensiones === 'string' ? parseFloat(ingresos.seguro_pensiones) || 0 : (ingresos?.seguro_pensiones || 0)) + 
+                         (typeof ingresos?.lavado_coche === 'string' ? parseFloat(ingresos.lavado_coche) || 0 : (ingresos?.lavado_coche || 0))
+    const deduccionesTotal = (typeof deducciones?.seguro_accidentes === 'string' ? parseFloat(deducciones.seguro_accidentes) || 0 : (deducciones?.seguro_accidentes || 0)) + 
+                           (typeof deducciones?.adelas === 'string' ? parseFloat(deducciones.adelas) || 0 : (deducciones?.adelas || 0)) + 
+                           (typeof deducciones?.sanitas === 'string' ? parseFloat(deducciones.sanitas) || 0 : (deducciones?.sanitas || 0)) + 
+                           (typeof deducciones?.gasolina_arval === 'string' ? parseFloat(deducciones.gasolina_arval) || 0 : (deducciones?.gasolina_arval || 0)) + 
+                           (typeof deducciones?.cotizacion_especie === 'string' ? parseFloat(deducciones.cotizacion_especie) || 0 : (deducciones?.cotizacion_especie || 0))
 
     return {
       gross: baseSalary + ingresosTotal,
@@ -229,26 +237,26 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center gap-2 text-green-600 mb-2">
-              <TrendingUp className="w-6 h-6" />
+            <div className="flex items-center gap-2 text-blue-600 mb-2">
+              <Euro className="w-6 h-6" />
               <h3 className="font-semibold">Monatsgehalt</h3>
             </div>
             <div className="text-2xl font-bold text-gray-900">
-              €{((salary?.salario_mensual_bruto || 0) + (totals.ingresosTotal / 12) - (totals.deduccionesTotal / 12)).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              €{((typeof salary?.salario_mensual_bruto === 'string' ? parseFloat(salary.salario_mensual_bruto) : (salary?.salario_mensual_bruto || 0)) + ((totals.ingresosTotal || 0) / 12) - ((totals.deduccionesTotal || 0) / 12)).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center gap-2 text-red-600 mb-2">
-              <TrendingDown className="w-6 h-6" />
+            <div className="flex items-center gap-2 text-purple-600 mb-2">
+              <TrendingUp className="w-6 h-6" />
               <h3 className="font-semibold">Jahresgehalt</h3>
             </div>
             <div className="text-2xl font-bold text-gray-900">
-              €{(salary?.salario_anual_bruto || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              €{(typeof salary?.salario_anual_bruto === 'string' ? parseFloat(salary.salario_anual_bruto) : (salary?.salario_anual_bruto || 0)).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center gap-2 text-blue-600 mb-2">
-              <Euro className="w-6 h-6" />
+            <div className="flex items-center gap-2 text-orange-600 mb-2">
+              <Calendar className="w-6 h-6" />
               <h3 className="font-semibold">Jahr</h3>
             </div>
             <div className="text-2xl font-bold text-gray-900">
@@ -295,6 +303,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Antigüedad (Jahre)</label>
                     <input
+                      id="antiguedad"
                       type="number"
                       value={salary.antiguedad}
                       onChange={(e) => setSalary({...salary, antiguedad: parseInt(e.target.value)})}
@@ -304,6 +313,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Jahresgehalt (Brutto)</label>
                     <input
+                      id="salario-anual-bruto"
                       type="number"
                       step="0.01"
                       value={salary.salario_anual_bruto}
@@ -314,6 +324,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Atrasos (%)</label>
                     <input
+                      id="atrasos"
                       type="number"
                       step="0.01"
                       value={salary.atrasos || 0}
@@ -338,6 +349,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         {key.replace(/_/g, ' ')}
                       </label>
                       <input
+                        id={`ingresos-${key}`}
                         type="number"
                         step="0.01"
                         value={value || 0}
@@ -363,6 +375,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         {key.replace(/_/g, ' ')}
                       </label>
                       <input
+                        id={`deducciones-${key}`}
                         type="number"
                         step="0.01"
                         value={value || 0}

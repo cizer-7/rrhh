@@ -175,9 +175,9 @@ class DatabaseManager:
             
             # Wenn sich das Jahresgehalt ändert, auch das Monatsgehalt neu berechnen
             if 'salario_anual_bruto' in data:
-                modalidad = data.get('modalidad', 12)  # Standard oder aus den Daten
+                modalidad = int(data.get('modalidad', 12))  # Standard oder aus den Daten
                 update_fields.append("salario_mensual_bruto = %s")
-                update_values.append(data['salario_anual_bruto'] / modalidad)
+                update_values.append(float(data['salario_anual_bruto']) / modalidad)
             
             query = f"""
             UPDATE t002_salarios 
@@ -194,8 +194,8 @@ class DatabaseManager:
             # Monatsgehalt berechnen
             if 'salario_anual_bruto' in data:
                 insert_fields.append('salario_mensual_bruto')
-                modalidad = data.get('modalidad', 12)
-                insert_values.append(data['salario_anual_bruto'] / modalidad)
+                modalidad = int(data.get('modalidad', 12))
+                insert_values.append(float(data['salario_anual_bruto']) / modalidad)
             
             placeholders = ', '.join(['%s'] * len(insert_fields))
             query = f"""
