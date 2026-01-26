@@ -39,3 +39,13 @@ Thumbs.db
 data/*.xlsx
 data/*.csv
 data/*.xls
+
+# Node.js (nur für web-Verzeichnis anwenden)
+web/node_modules/
+web/.next/
+web/out/
+web/build/
+web/dist/
+
+# Web-Verzeichnis explizit erlauben (nicht ignorieren)
+# !web/
