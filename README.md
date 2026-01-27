@@ -227,7 +227,3 @@ Bei Problemen oder Fragen:
 1. Backend-Logs prüfen (Console-Ausgabe)
 2. Frontend-Developer Tools im Browser verwenden
 3. Datenbankverbindung testen
-
----
-
-**Entwickelt mit ❤️ für moderne Mitarbeiterverwaltung**
