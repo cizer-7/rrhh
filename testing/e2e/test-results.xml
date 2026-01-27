@@ -1,0 +1,249 @@
+<testsuites id="" name="" tests="7" failures="7" skipped="0" errors="0" time="41.453385000000004">
+<testsuite name="test_employee_workflow.spec.js" timestamp="2026-01-27T10:50:02.039Z" hostname="chromium" tests="7" failures="7" skipped="0" time="46.458" errors="0">
+<testcase name="Employee Management E2E › complete employee workflow" classname="test_employee_workflow.spec.js" time="9.195">
+<failure message="test_employee_workflow.spec.js:23:3 complete employee workflow" type="FAILURE">
+<![CDATA[  [chromium] › test_employee_workflow.spec.js:23:3 › Employee Management E2E › complete employee workflow 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+       8 |   test.beforeEach(async ({ page }) => {
+       9 |     // Login before each test
+    > 10 |     await page.goto('http://localhost:3000')
+         |                ^
+      11 |     
+      12 |     // Check if already logged in
+      13 |     if (await page.locator('text=Login').isVisible()) {
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-f0fa6--complete-employee-workflow-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-f0fa6--complete-employee-workflow-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-f0fa6--complete-employee-workflow-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-f0fa6--complete-employee-workflow-chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Employee Management E2E › create new employee" classname="test_employee_workflow.spec.js" time="8.619">
+<failure message="test_employee_workflow.spec.js:78:3 create new employee" type="FAILURE">
+<![CDATA[  [chromium] › test_employee_workflow.spec.js:78:3 › Employee Management E2E › create new employee ─
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+       8 |   test.beforeEach(async ({ page }) => {
+       9 |     // Login before each test
+    > 10 |     await page.goto('http://localhost:3000')
+         |                ^
+      11 |     
+      12 |     // Check if already logged in
+      13 |     if (await page.locator('text=Login').isVisible()) {
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-ef643-ent-E2E-create-new-employee-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-ef643-ent-E2E-create-new-employee-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-ef643-ent-E2E-create-new-employee-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-ef643-ent-E2E-create-new-employee-chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Employee Management E2E › export functionality" classname="test_employee_workflow.spec.js" time="3.406">
+<failure message="test_employee_workflow.spec.js:99:3 export functionality" type="FAILURE">
+<![CDATA[  [chromium] › test_employee_workflow.spec.js:99:3 › Employee Management E2E › export functionality 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+       8 |   test.beforeEach(async ({ page }) => {
+       9 |     // Login before each test
+    > 10 |     await page.goto('http://localhost:3000')
+         |                ^
+      11 |     
+      12 |     // Check if already logged in
+      13 |     if (await page.locator('text=Login').isVisible()) {
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-6dca7-nt-E2E-export-functionality-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-6dca7-nt-E2E-export-functionality-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-6dca7-nt-E2E-export-functionality-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-6dca7-nt-E2E-export-functionality-chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Employee Management E2E › search functionality" classname="test_employee_workflow.spec.js" time="9.144">
+<failure message="test_employee_workflow.spec.js:113:3 search functionality" type="FAILURE">
+<![CDATA[  [chromium] › test_employee_workflow.spec.js:113:3 › Employee Management E2E › search functionality 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+       8 |   test.beforeEach(async ({ page }) => {
+       9 |     // Login before each test
+    > 10 |     await page.goto('http://localhost:3000')
+         |                ^
+      11 |     
+      12 |     // Check if already logged in
+      13 |     if (await page.locator('text=Login').isVisible()) {
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-7823b-nt-E2E-search-functionality-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-7823b-nt-E2E-search-functionality-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-7823b-nt-E2E-search-functionality-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-7823b-nt-E2E-search-functionality-chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Employee Management E2E › responsive design" classname="test_employee_workflow.spec.js" time="9.087">
+<failure message="test_employee_workflow.spec.js:140:3 responsive design" type="FAILURE">
+<![CDATA[  [chromium] › test_employee_workflow.spec.js:140:3 › Employee Management E2E › responsive design ──
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+       8 |   test.beforeEach(async ({ page }) => {
+       9 |     // Login before each test
+    > 10 |     await page.goto('http://localhost:3000')
+         |                ^
+      11 |     
+      12 |     // Check if already logged in
+      13 |     if (await page.locator('text=Login').isVisible()) {
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-17fcb-ement-E2E-responsive-design-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-17fcb-ement-E2E-responsive-design-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-17fcb-ement-E2E-responsive-design-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-17fcb-ement-E2E-responsive-design-chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Employee Management E2E › error handling" classname="test_employee_workflow.spec.js" time="3.811">
+<failure message="test_employee_workflow.spec.js:159:3 error handling" type="FAILURE">
+<![CDATA[  [chromium] › test_employee_workflow.spec.js:159:3 › Employee Management E2E › error handling ─────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+       8 |   test.beforeEach(async ({ page }) => {
+       9 |     // Login before each test
+    > 10 |     await page.goto('http://localhost:3000')
+         |                ^
+      11 |     
+      12 |     // Check if already logged in
+      13 |     if (await page.locator('text=Login').isVisible()) {
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-9fad7-nagement-E2E-error-handling-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Emp-9fad7-nagement-E2E-error-handling-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-9fad7-nagement-E2E-error-handling-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\test_employee_workflow-Emp-9fad7-nagement-E2E-error-handling-chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Employee Management E2E › accessibility" classname="test_employee_workflow.spec.js" time="3.196">
+<failure message="test_employee_workflow.spec.js:171:3 accessibility" type="FAILURE">
+<![CDATA[  [chromium] › test_employee_workflow.spec.js:171:3 › Employee Management E2E › accessibility ──────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+       8 |   test.beforeEach(async ({ page }) => {
+       9 |     // Login before each test
+    > 10 |     await page.goto('http://localhost:3000')
+         |                ^
+      11 |     
+      12 |     // Check if already logged in
+      13 |     if (await page.locator('text=Login').isVisible()) {
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Employee-Management-E2E-accessibility-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\test_employee_workflow-Employee-Management-E2E-accessibility-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\test_employee_workflow-Employee-Management-E2E-accessibility-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\test_employee_workflow-Employee-Management-E2E-accessibility-chromium\video.webm]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

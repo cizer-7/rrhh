@@ -12,7 +12,9 @@ interface EmployeeDetailProps {
 
 export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps) {
   const [activeTab, setActiveTab] = useState<'salary' | 'ingresos' | 'deducciones'>('salary')
-  const [year, setYear] = useState(new Date().getFullYear())
+  const [year, setYear] = useState<number>(new Date().getFullYear())
+  const [customYear, setCustomYear] = useState<string>('')
+  const [showCustomInput, setShowCustomInput] = useState(false)
   const [loading, setLoading] = useState(false)
 
   // Salary state
@@ -223,14 +225,65 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
           </div>
           <div className="flex items-center gap-2">
             <select 
-              value={year} 
-              onChange={(e) => setYear(parseInt(e.target.value))}
+              value={showCustomInput ? 'custom' : year} 
+              onChange={(e) => {
+                const value = e.target.value
+                if (value === 'custom') {
+                  setShowCustomInput(true)
+                } else {
+                  setShowCustomInput(false)
+                  setYear(parseInt(value))
+                }
+              }}
               className="px-3 py-2 border border-gray-300 rounded-md"
             >
-              {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
+              <option value="">Jahr wählen...</option>
+              {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + 5 - i).map(y => {
+                const currentYear = new Date().getFullYear()
+                const isCurrentYear = y === currentYear
+                return (
+                  <option 
+                    key={y} 
+                    value={y}
+                    style={{ 
+                      fontWeight: isCurrentYear ? 'bold' : 'normal',
+                      color: isCurrentYear ? '#2563eb' : 'inherit'
+                    }}
+                  >
+                    {y}{isCurrentYear ? ' (aktuell)' : ''}
+                  </option>
+                )
+              })}
+              <option value="custom">Anderes Jahr...</option>
             </select>
+            {showCustomInput && (
+              <input
+                type="number"
+                placeholder="Jahr eingeben"
+                value={customYear}
+                onChange={(e) => {
+                  setCustomYear(e.target.value)
+                }}
+                onBlur={(e) => {
+                  const yearValue = parseInt(e.target.value)
+                  if (!isNaN(yearValue) && yearValue > 0) {
+                    setYear(yearValue)
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const yearValue = parseInt(e.currentTarget.value)
+                    if (!isNaN(yearValue) && yearValue > 0) {
+                      setYear(yearValue)
+                    }
+                    e.currentTarget.blur()
+                  }
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-md w-32"
+                min="1900"
+                max="2100"
+              />
+            )}
           </div>
         </div>
 

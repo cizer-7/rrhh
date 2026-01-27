@@ -185,7 +185,13 @@ class DatabaseManager:
             WHERE id_empleado = %s AND anio = %s
             """
             update_values.extend([employee_id, year])
-            return self.execute_update(query, tuple(update_values))
+            result = self.execute_update(query, tuple(update_values))
+            
+            # Wenn erfolgreich und sich das Jahresgehalt geändert hat, aktualisiere Folgejahre
+            if result and 'salario_anual_bruto' in data:
+                self._update_subsequent_years_atrasos(employee_id, year)
+            
+            return result
         else:
             # Insert
             insert_fields = ['id_empleado', 'anio'] + [field for field in data.keys() if field in allowed_fields]
@@ -202,7 +208,13 @@ class DatabaseManager:
             INSERT INTO t002_salarios ({', '.join(insert_fields)}) 
             VALUES ({placeholders})
             """
-            return self.execute_update(query, tuple(insert_values))
+            result = self.execute_update(query, tuple(insert_values))
+            
+            # Wenn erfolgreich, aktualisiere Folgejahre
+            if result:
+                self._update_subsequent_years_atrasos(employee_id, year)
+            
+            return result
     
     def search_employees(self, search_term: str) -> List[Dict]:
         query = """
@@ -309,11 +321,75 @@ class DatabaseManager:
                 salario_mensual
             )
             
-            return self.execute_update(insert_query, params)
+            result = self.execute_update(insert_query, params)
+            
+            # Wenn erfolgreich, prüfe ob Folgejahre existieren und aktualisiere ihre atrasos
+            if result:
+                self._update_subsequent_years_atrasos(employee_id, year)
+            
+            return result
             
         except Exception as e:
             self.logger.error(f"Fehler beim Hinzufügen des Gehalts: {e}")
             return False
+    
+    def _update_subsequent_years_atrasos(self, employee_id: int, base_year: int) -> None:
+        """Aktualisiert atrasos für alle Folgejahre eines Mitarbeiters"""
+        try:
+            # Finde alle Jahre größer als base_year für diesen Mitarbeiter
+            query = """
+            SELECT anio, modalidad, salario_anual_bruto 
+            FROM t002_salarios 
+            WHERE id_empleado = %s AND anio > %s 
+            ORDER BY anio ASC
+            """
+            subsequent_years = self.execute_query(query, (employee_id, base_year))
+            
+            for year_data in subsequent_years:
+                current_year = year_data['anio']
+                modalidad = year_data['modalidad']
+                current_salario = year_data['salario_anual_bruto']
+                
+                # Finde das Gehalt des Vorjahres
+                prev_query = """
+                SELECT salario_anual_bruto 
+                FROM t002_salarios 
+                WHERE id_empleado = %s AND anio = %s
+                """
+                prev_year_data = self.execute_query(prev_query, (employee_id, current_year - 1))
+                
+                if prev_year_data:
+                    prev_salario = prev_year_data[0]['salario_anual_bruto']
+                    
+                    # Berechne neues atrasos
+                    if modalidad == 12:
+                        new_atrasos = (current_salario - prev_salario) / 12 * 3
+                    elif modalidad == 14:
+                        new_atrasos = (current_salario - prev_salario) / 14 * 3
+                    else:
+                        new_atrasos = 0
+                    
+                    # Berechne neues salario_mensual_bruto
+                    new_salario_mensual = current_salario / modalidad if modalidad in [12, 14] else current_salario / 12
+                    
+                    # Aktualisiere den Datensatz
+                    update_query = """
+                    UPDATE t002_salarios 
+                    SET atrasos = %s, 
+                        salario_mensual_con_atrasos = %s,
+                        salario_mensual_bruto = %s
+                    WHERE id_empleado = %s AND anio = %s
+                    """
+                    self.execute_update(update_query, (
+                        new_atrasos,
+                        new_salario_mensual + new_atrasos,
+                        new_salario_mensual,
+                        employee_id,
+                        current_year
+                    ))
+                    
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Aktualisierung der Folgejahre: {e}")
     
     def update_ingresos(self, employee_id: int, year: int, data: Dict[str, Any]) -> bool:
         """Aktualisiert oder fügt Bruttoeinkünfte für einen Mitarbeiter und Jahr hinzu"""

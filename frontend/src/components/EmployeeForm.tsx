@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Employee } from '@/types/employee'
 import { Button } from '@/components/ui/button'
 import { X, Save } from 'lucide-react'
@@ -19,6 +19,15 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
     ceco: employee?.ceco || '',
     activo: employee?.activo ?? true
   })
+
+  useEffect(() => {
+    setFormData({
+      nombre: employee?.nombre || '',
+      apellido: employee?.apellido || '',
+      ceco: employee?.ceco || '',
+      activo: employee?.activo ?? true
+    })
+  }, [employee])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

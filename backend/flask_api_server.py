@@ -6,7 +6,7 @@ Einfache Alternative zu FastAPI ohne Pydantic-Probleme
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import jwt
 import json
 import os
@@ -37,9 +37,9 @@ db_manager = DatabaseManager(
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(hours=24)
+        expire = datetime.now(timezone.utc) + timedelta(hours=24)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -214,7 +214,7 @@ def delete_employee(current_user, employee_id):
 
 @app.route('/employees/search/<search_term>', methods=['GET'])
 @token_required
-def search_employees(search_term, current_user):
+def search_employees(current_user, search_term):
     """Mitarbeiter suchen"""
     try:
         employees = db_manager.search_employees(search_term)
@@ -307,7 +307,7 @@ def export_excel(current_user, year):
     """Excel-Export für Gehaltsdaten"""
     try:
         # Temporäre Datei erstellen
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         filename = f"gehaltsabrechnung_{year}_{timestamp}.xlsx"
         filepath = f"C:/temp/{filename}"
         
@@ -335,7 +335,7 @@ def health_check():
     """Health Check Endpunkt"""
     return jsonify({
         "status": "healthy", 
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     })
 
 if __name__ == "__main__":

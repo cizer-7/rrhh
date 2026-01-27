@@ -20,6 +20,12 @@ wheels/
 .installed.cfg
 *.egg
 
+# Pytest
+.pytest_cache/
+coverage/
+htmlcov/
+*.log
+
 # Virtual Environment
 venv/
 env/
@@ -43,11 +49,6 @@ data/*.xls
 # Node.js
 node_modules/
 frontend/node_modules/
-web/node_modules/
-web/.next/
-web/out/
-web/build/
-web/dist/
 
 # Next.js
 .next/
@@ -55,5 +56,12 @@ out/
 build/
 dist/
 
-# Web-Verzeichnis explizit erlauben (nicht ignorieren)
-# !web/
+# Environment files (sensitive)
+.env
+.env.local
+.env.test
+frontend/.env.local
+testing/.env.test
+
+# Commands file
+commands.md

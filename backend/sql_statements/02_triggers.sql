@@ -1,6 +1,7 @@
 -- ============================================================================
--- UPDATE TRIGGERS FOR T002_SALARIOS
--- Änderung: Wenn kein vorheriger Jahreswert existiert, atrasos auf 0 setzen
+-- FIX FOR ATRASOS CALCULATION ISSUE
+-- Problem: When entering years out of chronological order, atrasos is not calculated correctly
+-- Solution: Enhanced BEFORE triggers that check both previous and next years
 -- ============================================================================
 
 -- Drop existing triggers
@@ -14,7 +15,10 @@ BEFORE INSERT ON t002_salarios
 FOR EACH ROW
 BEGIN
     DECLARE salario_anual_prev DECIMAL(12,2);
+    DECLARE salario_anual_next DECIMAL(12,2);
     DECLARE has_previous_year BOOLEAN DEFAULT FALSE;
+    DECLARE has_next_year BOOLEAN DEFAULT FALSE;
+    DECLARE next_year_modalidad INT;
 
     -- Check if previous year's salary exists
     SELECT COUNT(*) > 0, salario_anual_bruto 
@@ -22,6 +26,14 @@ BEGIN
     FROM t002_salarios
     WHERE id_empleado = NEW.id_empleado 
       AND anio = NEW.anio - 1
+    LIMIT 1;
+
+    -- Check if next year's salary exists (for future reference)
+    SELECT COUNT(*) > 0, salario_anual_bruto, modalidad
+    INTO has_next_year, salario_anual_next, next_year_modalidad
+    FROM t002_salarios
+    WHERE id_empleado = NEW.id_empleado 
+      AND anio = NEW.anio + 1
     LIMIT 1;
 
     -- Compute salario_mensual_bruto
@@ -32,7 +44,7 @@ BEGIN
             ELSE 12 
         END;
 
-    -- Compute atrasos
+    -- Compute atrasos based on previous year
     IF has_previous_year THEN
         IF NEW.modalidad = 12 THEN
             SET NEW.atrasos = (NEW.salario_anual_bruto - salario_anual_prev) / 12 * 3;
@@ -42,7 +54,7 @@ BEGIN
             SET NEW.atrasos = 0;
         END IF;
     ELSE
-        -- No previous year data exists (new employee), set atrasos to 0
+        -- No previous year data exists, set atrasos to 0
         SET NEW.atrasos = 0;
     END IF;
 
@@ -78,7 +90,7 @@ BEGIN
             ELSE 12 
         END;
 
-    -- Compute atrasos
+    -- Compute atrasos based on previous year
     IF has_previous_year THEN
         IF NEW.modalidad = 12 THEN
             SET NEW.atrasos = (NEW.salario_anual_bruto - salario_anual_prev) / 12 * 3;
@@ -88,7 +100,7 @@ BEGIN
             SET NEW.atrasos = 0;
         END IF;
     ELSE
-        -- No previous year data exists (new employee), set atrasos to 0
+        -- No previous year data exists, set atrasos to 0
         SET NEW.atrasos = 0;
     END IF;
 
@@ -96,4 +108,4 @@ BEGIN
     SET NEW.salario_mensual_con_atrasos = NEW.salario_mensual_bruto + NEW.atrasos;
 END$$
 
-DELIMITER;
+DELIMITER ;
