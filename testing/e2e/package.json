@@ -3,8 +3,20 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed"
+    "test": "playwright test tests-final.spec.js",
+    "test:all": "playwright test",
+    "test:headed": "playwright test tests-final.spec.js --headed",
+    "test:chrome": "playwright test tests-final.spec.js --project=chromium",
+    "test:edge": "playwright test tests-final.spec.js --project=edge",
+    "test:firefox": "playwright test tests-final.spec.js --project=firefox",
+    "test:safari": "playwright test tests-final.spec.js --project=webkit",
+    "test:all-browsers": "playwright test tests-final.spec.js",
+    "test:debug": "playwright test tests-final.spec.js --debug",
+    "test:ui": "playwright test --ui",
+    "test:verbose": "playwright test tests-final.spec.js --reporter=list",
+    "test:verbose-all": "playwright test --reporter=list",
+    "install:browsers": "playwright install",
+    "report": "playwright show-report"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0"

@@ -63,5 +63,26 @@ dist/
 frontend/.env.local
 testing/.env.test
 
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+testing/test-results/
+testing/playwright-report/
+testing/e2e/test-results/
+testing/e2e/playwright-report/
+
+# Coverage reports
+.coverage
+coverage.xml
+testing/.coverage
+htmlcov/
+testing/htmlcov/
+
+# Test results and logs
+test_results.xml
+testing/test_results.xml
+*.log
+
 # Commands file
 commands.md

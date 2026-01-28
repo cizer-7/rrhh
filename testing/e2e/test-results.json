@@ -11,7 +11,7 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 2
+      "actualWorkers": 4
     },
     "preserveOutput": "always",
     "projects": [
@@ -20,10 +20,42 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 2
+          "actualWorkers": 4
         },
         "id": "chromium",
         "name": "chromium",
+        "testDir": "C:/Projekte/Digitalisierung Gehaltsabrechnung/testing/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Projekte/Digitalisierung Gehaltsabrechnung/testing/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "edge",
+        "name": "edge",
+        "testDir": "C:/Projekte/Digitalisierung Gehaltsabrechnung/testing/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Projekte/Digitalisierung Gehaltsabrechnung/testing/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "firefox",
+        "name": "firefox",
         "testDir": "C:/Projekte/Digitalisierung Gehaltsabrechnung/testing/e2e",
         "testIgnore": [],
         "testMatch": [
@@ -61,26 +93,26 @@
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.58.0",
-    "workers": 2,
+    "workers": 4,
     "webServer": null
   },
   "suites": [
     {
-      "title": "test_employee_workflow.spec.js",
-      "file": "test_employee_workflow.spec.js",
+      "title": "tests-final.spec.js",
+      "file": "tests-final.spec.js",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Employee Management E2E",
-          "file": "test_employee_workflow.spec.js",
-          "line": 7,
+          "title": "Mitarbeiter Gehaltsabrechnung E2E Tests",
+          "file": "tests-final.spec.js",
+          "line": 8,
           "column": 6,
           "specs": [
             {
-              "title": "complete employee workflow",
-              "ok": false,
+              "title": "home page loads correctly",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -93,62 +125,73 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 9195,
-                      "error": {
-                        "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
-                        "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16",
-                        "location": {
-                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                          "column": 16,
-                          "line": 10
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                            "column": 16,
-                            "line": 10
-                          },
-                          "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 17689,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-01-27T10:50:06.433Z",
+                      "startTime": "2026-01-28T11:26:30.821Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-f0fa6--complete-employee-workflow-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-f0fa6--complete-employee-workflow-chromium\\video.webm"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                        "column": 16,
-                        "line": 10
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "edge",
+                  "projectName": "edge",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 6618,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:27:54.326Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 24249,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:28:51.869Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
-              "id": "3bddbfdd273f2be1cc69-44665f56d24ab7d17f13",
-              "file": "test_employee_workflow.spec.js",
-              "line": 23,
+              "id": "0d73925fc4c9b7dbafce-c10d56a9eb59c892c1bd",
+              "file": "tests-final.spec.js",
+              "line": 13,
               "column": 3
             },
             {
-              "title": "create new employee",
+              "title": "navigation to login page",
               "ok": false,
               "tags": [],
               "tests": [
@@ -163,62 +206,153 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "failed",
-                      "duration": 8619,
+                      "duration": 18019,
                       "error": {
-                        "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
-                        "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16",
+                        "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:29:16",
                         "location": {
-                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
+                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
                           "column": 16,
-                          "line": 10
+                          "line": 29
                         },
-                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 27 |\u001b[39m\n \u001b[90m 28 |\u001b[39m   test(\u001b[32m'navigation to login page'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 29 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 30 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'button:has-text(\"Zur Anwendung\")'\u001b[39m)\n \u001b[90m 31 |\u001b[39m     \n \u001b[90m 32 |\u001b[39m     \u001b[90m// Warte auf Login-Formular mit explizitem Timeout\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
+                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
                             "column": 16,
-                            "line": 10
+                            "line": 29
                           },
-                          "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16\u001b[22m"
+                          "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 27 |\u001b[39m\n \u001b[90m 28 |\u001b[39m   test(\u001b[32m'navigation to login page'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 29 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 30 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'button:has-text(\"Zur Anwendung\")'\u001b[39m)\n \u001b[90m 31 |\u001b[39m     \n \u001b[90m 32 |\u001b[39m     \u001b[90m// Warte auf Login-Formular mit explizitem Timeout\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:29:16\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-01-27T10:50:06.337Z",
+                      "startTime": "2026-01-28T11:26:30.633Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-ef643-ent-E2E-create-new-employee-chromium\\test-failed-1.png"
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-ef643-ent-E2E-create-new-employee-chromium\\video.webm"
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-chromium\\error-context.md"
                         }
                       ],
                       "errorLocation": {
-                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
+                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
                         "column": 16,
-                        "line": 10
+                        "line": 29
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "edge",
+                  "projectName": "edge",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 7796,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:27:34.412Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 37729,
+                      "error": {
+                        "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:29:16",
+                        "location": {
+                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                          "column": 16,
+                          "line": 29
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 27 |\u001b[39m\n \u001b[90m 28 |\u001b[39m   test(\u001b[32m'navigation to login page'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 29 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 30 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'button:has-text(\"Zur Anwendung\")'\u001b[39m)\n \u001b[90m 31 |\u001b[39m     \n \u001b[90m 32 |\u001b[39m     \u001b[90m// Warte auf Login-Formular mit explizitem Timeout\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                            "column": 16,
+                            "line": 29
+                          },
+                          "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 27 |\u001b[39m\n \u001b[90m 28 |\u001b[39m   test(\u001b[32m'navigation to login page'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 29 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 30 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'button:has-text(\"Zur Anwendung\")'\u001b[39m)\n \u001b[90m 31 |\u001b[39m     \n \u001b[90m 32 |\u001b[39m     \u001b[90m// Warte auf Login-Formular mit explizitem Timeout\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:29:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:29:28.929Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-firefox\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-firefox\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-firefox\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                        "column": 16,
+                        "line": 29
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "3bddbfdd273f2be1cc69-c7e0a1a0421b6a9a0306",
-              "file": "test_employee_workflow.spec.js",
-              "line": 78,
+              "id": "0d73925fc4c9b7dbafce-a932d75eceddf2aaaa36",
+              "file": "tests-final.spec.js",
+              "line": 28,
               "column": 3
             },
             {
-              "title": "export functionality",
-              "ok": false,
+              "title": "successful login workflow",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -230,63 +364,106 @@
                   "results": [
                     {
                       "workerIndex": 2,
-                      "parallelIndex": 1,
-                      "status": "failed",
-                      "duration": 3406,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 26169,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:26:30.941Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "edge",
+                  "projectName": "edge",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12942,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:28:06.680Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 2,
+                      "status": "timedOut",
+                      "duration": 39275,
                       "error": {
-                        "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
-                        "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16",
-                        "location": {
-                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                          "column": 16,
-                          "line": 10
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
                       },
                       "errors": [
                         {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
                           "location": {
-                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
+                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
                             "column": 16,
-                            "line": 10
+                            "line": 42
                           },
-                          "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16\u001b[22m"
+                          "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/dashboard\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 40 |\u001b[39m\n \u001b[90m 41 |\u001b[39m   test(\u001b[32m'successful login workflow'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 42 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000/dashboard'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 43 |\u001b[39m     \n \u001b[90m 44 |\u001b[39m     \u001b[90m// Warte auf Login-Formular\u001b[39m\n \u001b[90m 45 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'input[id=\"username\"]'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:42:16\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-01-27T10:50:19.784Z",
+                      "startTime": "2026-01-28T11:29:28.286Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-6dca7-nt-E2E-export-functionality-chromium\\test-failed-1.png"
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-1154a-s-successful-login-workflow-firefox\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-6dca7-nt-E2E-export-functionality-chromium\\video.webm"
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-1154a-s-successful-login-workflow-firefox\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-1154a-s-successful-login-workflow-firefox\\error-context.md"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                        "column": 16,
-                        "line": 10
-                      }
+                      ]
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "3bddbfdd273f2be1cc69-7d858bc1030822f41473",
-              "file": "test_employee_workflow.spec.js",
-              "line": 99,
+              "id": "0d73925fc4c9b7dbafce-ff4a14d33324a3ba0d2d",
+              "file": "tests-final.spec.js",
+              "line": 41,
               "column": 3
             },
             {
-              "title": "search functionality",
+              "title": "invalid login should fail",
               "ok": false,
               "tags": [],
               "tests": [
@@ -299,64 +476,596 @@
                   "results": [
                     {
                       "workerIndex": 3,
-                      "parallelIndex": 0,
+                      "parallelIndex": 3,
                       "status": "failed",
-                      "duration": 9144,
+                      "duration": 23090,
                       "error": {
-                        "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
-                        "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16",
+                        "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/dashboard\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/dashboard\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:63:16",
                         "location": {
-                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
+                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
                           "column": 16,
-                          "line": 10
+                          "line": 63
                         },
-                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 61 |\u001b[39m\n \u001b[90m 62 |\u001b[39m   test(\u001b[32m'invalid login should fail'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 63 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000/dashboard'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 64 |\u001b[39m     \n \u001b[90m 65 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'input[id=\"username\"]'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\n \u001b[90m 66 |\u001b[39m     \u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
+                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
                             "column": 16,
-                            "line": 10
+                            "line": 63
                           },
-                          "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16\u001b[22m"
+                          "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/dashboard\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 61 |\u001b[39m\n \u001b[90m 62 |\u001b[39m   test(\u001b[32m'invalid login should fail'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 63 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000/dashboard'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 64 |\u001b[39m     \n \u001b[90m 65 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'input[id=\"username\"]'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\n \u001b[90m 66 |\u001b[39m     \u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:63:16\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-01-27T10:50:20.739Z",
+                      "startTime": "2026-01-28T11:26:31.906Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                        "column": 16,
+                        "line": 63
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "edge",
+                  "projectName": "edge",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 6881,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:27:43.684Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 1,
+                      "status": "timedOut",
+                      "duration": 46292,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                            "column": 16,
+                            "line": 63
+                          },
+                          "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/dashboard\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 61 |\u001b[39m\n \u001b[90m 62 |\u001b[39m   test(\u001b[32m'invalid login should fail'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 63 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000/dashboard'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 64 |\u001b[39m     \n \u001b[90m 65 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'input[id=\"username\"]'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\n \u001b[90m 66 |\u001b[39m     \u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:63:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:29:28.003Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-7823b-nt-E2E-search-functionality-chromium\\test-failed-1.png"
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-firefox\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-7823b-nt-E2E-search-functionality-chromium\\video.webm"
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-firefox\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-firefox\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0d73925fc4c9b7dbafce-91a01118ece12d8cf38c",
+              "file": "tests-final.spec.js",
+              "line": 62,
+              "column": 3
+            },
+            {
+              "title": "employee table functionality",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 16195,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:26:51.907Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "edge",
+                  "projectName": "edge",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 17598,
+                      "error": {
+                        "message": "TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Abmelden\")') to be visible\u001b[22m\n",
+                        "stack": "TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Abmelden\")') to be visible\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:91:16",
+                        "location": {
+                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                          "column": 16,
+                          "line": 91
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 89 |\u001b[39m     \n \u001b[90m 90 |\u001b[39m     \u001b[90m// Warte auf successful Login\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 91 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'button:has-text(\"Abmelden\")'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 92 |\u001b[39m     \n \u001b[90m 93 |\u001b[39m     \u001b[90m// Warte auf Tabelle\u001b[39m\n \u001b[90m 94 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'table'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                            "column": 16,
+                            "line": 91
+                          },
+                          "message": "TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Abmelden\")') to be visible\u001b[22m\n\n\n\u001b[0m \u001b[90m 89 |\u001b[39m     \n \u001b[90m 90 |\u001b[39m     \u001b[90m// Warte auf successful Login\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 91 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'button:has-text(\"Abmelden\")'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 92 |\u001b[39m     \n \u001b[90m 93 |\u001b[39m     \u001b[90m// Warte auf Tabelle\u001b[39m\n \u001b[90m 94 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'table'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:91:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:28:25.305Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-abec1-mployee-table-functionality-edge\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-abec1-mployee-table-functionality-edge\\error-context.md"
                         }
                       ],
                       "errorLocation": {
-                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
+                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
                         "column": 16,
-                        "line": 10
+                        "line": 91
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 20130,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:29:18.987Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0d73925fc4c9b7dbafce-1a32fe924f4b556e9909",
+              "file": "tests-final.spec.js",
+              "line": 83,
+              "column": 3
+            },
+            {
+              "title": "employee form modal",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 14000,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:27:00.131Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "edge",
+                  "projectName": "edge",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 26482,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:27:50.682Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 24548,
+                      "error": {
+                        "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/dashboard\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/dashboard\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:110:16",
+                        "location": {
+                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                          "column": 16,
+                          "line": 110
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 108 |\u001b[39m   test(\u001b[32m'employee form modal'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 109 |\u001b[39m     \u001b[90m// Login zuerst\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 110 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000/dashboard'\u001b[39m)\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 111 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[id=\"username\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'test'\u001b[39m)\n \u001b[90m 112 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[id=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'test'\u001b[39m)\n \u001b[90m 113 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'button:has-text(\"Anmelden\")'\u001b[39m)\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                            "column": 16,
+                            "line": 110
+                          },
+                          "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/dashboard\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 108 |\u001b[39m   test(\u001b[32m'employee form modal'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 109 |\u001b[39m     \u001b[90m// Login zuerst\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 110 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000/dashboard'\u001b[39m)\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 111 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[id=\"username\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'test'\u001b[39m)\n \u001b[90m 112 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[id=\"password\"]'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'test'\u001b[39m)\n \u001b[90m 113 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'button:has-text(\"Anmelden\")'\u001b[39m)\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:110:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:29:39.213Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-64cff-E-Tests-employee-form-modal-firefox\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-64cff-E-Tests-employee-form-modal-firefox\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-64cff-E-Tests-employee-form-modal-firefox\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                        "column": 16,
+                        "line": 110
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "3bddbfdd273f2be1cc69-0282cfe60f69f31480c0",
-              "file": "test_employee_workflow.spec.js",
-              "line": 113,
+              "id": "0d73925fc4c9b7dbafce-dd43796bd6d95751c48e",
+              "file": "tests-final.spec.js",
+              "line": 108,
+              "column": 3
+            },
+            {
+              "title": "logout functionality",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13084,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:27:08.187Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "edge",
+                  "projectName": "edge",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 19766,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:28:02.249Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 2,
+                      "status": "timedOut",
+                      "duration": 46160,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                            "column": 16,
+                            "line": 157
+                          },
+                          "message": "Error: page.waitForSelector: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[id=\"username\"]') to be visible\u001b[22m\n\u001b[2m    - locator resolved to visible <input value=\"\" required=\"\" type=\"text\" id=\"username\" class=\"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50\"/>\u001b[22m\n\n\n\u001b[0m \u001b[90m 155 |\u001b[39m     \n \u001b[90m 156 |\u001b[39m     \u001b[90m// Harte Assertion: Muss zurück zur Login-Seite\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 157 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'input[id=\"username\"]'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m5000\u001b[39m })\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 158 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[id=\"username\"]'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\n \u001b[90m 159 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[id=\"password\"]'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\n \u001b[90m 160 |\u001b[39m     \u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:157:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:31:15.373Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-eb7d0--Tests-logout-functionality-firefox\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-eb7d0--Tests-logout-functionality-firefox\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-eb7d0--Tests-logout-functionality-firefox\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0d73925fc4c9b7dbafce-03517ccc3386145d66b1",
+              "file": "tests-final.spec.js",
+              "line": 144,
+              "column": 3
+            },
+            {
+              "title": "form validation - empty fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 8481,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:27:14.182Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "edge",
+                  "projectName": "edge",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 21719,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:28:17.404Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 3,
+                      "status": "timedOut",
+                      "duration": 34789,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:9:8",
+                        "location": {
+                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                          "column": 8,
+                          "line": 9
+                        },
+                        "snippet": "\u001b[0m \u001b[90m  7 |\u001b[39m\n \u001b[90m  8 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Mitarbeiter Gehaltsabrechnung E2E Tests'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  9 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m    |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 10 |\u001b[39m     page\u001b[33m.\u001b[39msetDefaultTimeout(\u001b[35m10000\u001b[39m)\n \u001b[90m 11 |\u001b[39m   })\n \u001b[90m 12 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                            "column": 8,
+                            "line": 9
+                          },
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n\u001b[0m \u001b[90m  7 |\u001b[39m\n \u001b[90m  8 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Mitarbeiter Gehaltsabrechnung E2E Tests'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  9 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m    |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 10 |\u001b[39m     page\u001b[33m.\u001b[39msetDefaultTimeout(\u001b[35m10000\u001b[39m)\n \u001b[90m 11 |\u001b[39m   })\n \u001b[90m 12 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:9:8\u001b[22m"
+                        },
+                        {
+                          "message": "Error: browserContext.newPage: Test timeout of 30000ms exceeded."
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:31:32.585Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                        "column": 8,
+                        "line": 9
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0d73925fc4c9b7dbafce-7dacf676a478deffaf90",
+              "file": "tests-final.spec.js",
+              "line": 165,
               "column": 3
             },
             {
               "title": "responsive design",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -369,196 +1078,207 @@
                     {
                       "workerIndex": 4,
                       "parallelIndex": 1,
-                      "status": "failed",
-                      "duration": 9087,
-                      "error": {
-                        "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
-                        "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16",
-                        "location": {
-                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                          "column": 16,
-                          "line": 10
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                            "column": 16,
-                            "line": 10
-                          },
-                          "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 14320,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-01-27T10:50:26.572Z",
+                      "startTime": "2026-01-28T11:27:28.589Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-17fcb-ement-E2E-responsive-design-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-17fcb-ement-E2E-responsive-design-chromium\\video.webm"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                        "column": 16,
-                        "line": 10
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3bddbfdd273f2be1cc69-e89c9917e81a1e3579c3",
-              "file": "test_employee_workflow.spec.js",
-              "line": 140,
-              "column": 3
-            },
-            {
-              "title": "error handling",
-              "ok": false,
-              "tags": [],
-              "tests": [
+                  "status": "expected"
+                },
                 {
                   "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 5,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 3811,
-                      "error": {
-                        "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
-                        "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16",
-                        "location": {
-                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                          "column": 16,
-                          "line": 10
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                            "column": 16,
-                            "line": 10
-                          },
-                          "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16\u001b[22m"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-01-27T10:50:33.132Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-9fad7-nagement-E2E-error-handling-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Emp-9fad7-nagement-E2E-error-handling-chromium\\video.webm"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                        "column": 16,
-                        "line": 10
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3bddbfdd273f2be1cc69-02c7a0c898a2e13d7219",
-              "file": "test_employee_workflow.spec.js",
-              "line": 159,
-              "column": 3
-            },
-            {
-              "title": "accessibility",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
+                  "projectId": "edge",
+                  "projectName": "edge",
                   "results": [
                     {
                       "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 18940,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:28:22.181Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 15,
                       "parallelIndex": 1,
-                      "status": "failed",
-                      "duration": 3196,
+                      "status": "timedOut",
+                      "duration": 60022,
                       "error": {
-                        "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n",
-                        "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16",
-                        "location": {
-                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                          "column": 16,
-                          "line": 10
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m"
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
                       },
                       "errors": [
                         {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
                           "location": {
-                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
-                            "column": 16,
-                            "line": 10
+                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                            "column": 18,
+                            "line": 188
                           },
-                          "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m  8 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m  9 |\u001b[39m     \u001b[90m// Login before each test\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m     \n \u001b[90m 12 |\u001b[39m     \u001b[90m// Check if already logged in\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=Login'\u001b[39m)\u001b[33m.\u001b[39misVisible()) {\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js:10:16\u001b[22m"
+                          "message": "Error: page.goto: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 186 |\u001b[39m     \u001b[36mfor\u001b[39m (\u001b[36mconst\u001b[39m viewport \u001b[36mof\u001b[39m viewports) {\n \u001b[90m 187 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39msetViewportSize(viewport)\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 188 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'http://localhost:3000'\u001b[39m)\n \u001b[90m     |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 189 |\u001b[39m       \n \u001b[90m 190 |\u001b[39m       \u001b[90m// Harte Assertions für jede Viewport-Größe\u001b[39m\n \u001b[90m 191 |\u001b[39m       \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'h1'\u001b[39m))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'Mitarbeiter Gehaltsabrechnung'\u001b[39m)\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:188:18\u001b[22m"
+                        },
+                        {
+                          "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 30000ms.\u001b[39m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-01-27T10:50:39.744Z",
+                      "startTime": "2026-01-28T11:31:32.638Z",
                       "annotations": [],
                       "attachments": [
                         {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Employee-Management-E2E-accessibility-chromium\\test-failed-1.png"
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-8da9a-E2E-Tests-responsive-design-firefox\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0d73925fc4c9b7dbafce-6df57ad065bb7504c920",
+              "file": "tests-final.spec.js",
+              "line": 179,
+              "column": 3
+            },
+            {
+              "title": "basic browser capabilities",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12116,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:27:21.324Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "edge",
+                  "projectName": "edge",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8840,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:28:25.046Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 57820,
+                      "error": {
+                        "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"about:blank\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"about:blank\", waiting until \"load\"\u001b[22m\n\n    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:198:16",
+                        "location": {
+                          "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                          "column": 16,
+                          "line": 198
                         },
+                        "snippet": "\u001b[0m \u001b[90m 196 |\u001b[39m   test(\u001b[32m'basic browser capabilities'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 197 |\u001b[39m     \u001b[90m// Teste grundlegende Browser-Fähigkeiten\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 198 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'about:blank'\u001b[39m)\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 199 |\u001b[39m     \n \u001b[90m 200 |\u001b[39m     \u001b[90m// Teste JavaScript-Ausführung\u001b[39m\n \u001b[90m 201 |\u001b[39m     \u001b[36mconst\u001b[39m title \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
+                            "column": 16,
+                            "line": 198
+                          },
+                          "message": "TimeoutError: page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"about:blank\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 196 |\u001b[39m   test(\u001b[32m'basic browser capabilities'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 197 |\u001b[39m     \u001b[90m// Teste grundlegende Browser-Fähigkeiten\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 198 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'about:blank'\u001b[39m)\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 199 |\u001b[39m     \n \u001b[90m 200 |\u001b[39m     \u001b[90m// Teste JavaScript-Ausführung\u001b[39m\n \u001b[90m 201 |\u001b[39m     \u001b[36mconst\u001b[39m title \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js:198:16\u001b[22m"
+                        },
+                        {
+                          "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 30000ms.\u001b[39m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-28T11:31:34.076Z",
+                      "annotations": [],
+                      "attachments": [
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\test_employee_workflow-Employee-Management-E2E-accessibility-chromium\\video.webm"
+                          "path": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test-results\\tests-final-Mitarbeiter-Ge-29abf--basic-browser-capabilities-firefox\\video.webm"
                         }
                       ],
                       "errorLocation": {
-                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\test_employee_workflow.spec.js",
+                        "file": "C:\\Projekte\\Digitalisierung Gehaltsabrechnung\\testing\\e2e\\tests-final.spec.js",
                         "column": 16,
-                        "line": 10
+                        "line": 198
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "3bddbfdd273f2be1cc69-e76e3183004fa20b9ba8",
-              "file": "test_employee_workflow.spec.js",
-              "line": 171,
+              "id": "0d73925fc4c9b7dbafce-74001e68d1ca74c1f42c",
+              "file": "tests-final.spec.js",
+              "line": 196,
               "column": 3
             }
           ]
@@ -568,11 +1288,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-01-27T10:50:01.978Z",
-    "duration": 41453.385,
-    "expected": 0,
+    "startTime": "2026-01-28T11:26:15.596Z",
+    "duration": 408401.996,
+    "expected": 19,
     "skipped": 0,
-    "unexpected": 7,
+    "unexpected": 11,
     "flaky": 0
   }
 }

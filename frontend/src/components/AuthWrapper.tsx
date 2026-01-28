@@ -20,6 +20,8 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
     inactive: 0
   })
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
+  const [currentMonth, setCurrentMonth] = useState<number | null>(null)
+  const [exportType, setExportType] = useState<'yearly' | 'monthly'>('yearly')
   const router = useRouter()
 
   useEffect(() => {
@@ -57,10 +59,14 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
     onLogout()
   }
 
-  const handleExport = async (type: string) => {
+  const handleExport = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:8000/export/excel/${currentYear}`, {
+      const url = exportType === 'monthly' && currentMonth 
+        ? `http://localhost:8000/export/excel/${currentYear}/${currentMonth}`
+        : `http://localhost:8000/export/excel/${currentYear}`
+      
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -74,13 +80,16 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
       const blob = await response.blob()
       
       // Create blob and download
-      const url = window.URL.createObjectURL(blob)
+      const url_blob = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url
-      a.download = `gehaltsabrechnung_${currentYear}.xlsx`
+      a.href = url_blob
+      const filename = exportType === 'monthly' && currentMonth 
+        ? `gehaltsabrechnung_${currentYear}_${currentMonth}.xlsx`
+        : `gehaltsabrechnung_${currentYear}.xlsx`
+      a.download = filename
       document.body.appendChild(a)
       a.click()
-      window.URL.revokeObjectURL(url)
+      window.URL.revokeObjectURL(url_blob)
       document.body.removeChild(a)
     } catch (error) {
       console.error('Export error:', error)
@@ -104,15 +113,63 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
           </div>
           <div className="flex items-center gap-2">
             <select 
+              value={exportType} 
+              onChange={(e) => {
+                setExportType(e.target.value as 'yearly' | 'monthly')
+                if (e.target.value === 'yearly') {
+                  setCurrentMonth(null)
+                }
+              }}
+              className="px-3 py-2 border border-gray-300 rounded-md"
+            >
+              <option value="yearly">Jährlich</option>
+              <option value="monthly">Monatlich</option>
+            </select>
+            
+            <select 
               value={currentYear} 
               onChange={(e) => setCurrentYear(parseInt(e.target.value))}
               className="px-3 py-2 border border-gray-300 rounded-md"
             >
-              {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
+              {Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - 4 + i).map(y => (
                 <option key={y} value={y}>{y}</option>
               ))}
             </select>
-            <Button variant="outline" className="flex items-center gap-2" onClick={() => handleExport('complete')}>
+            
+            {exportType === 'monthly' && (
+              <select 
+                value={currentMonth || ''} 
+                onChange={(e) => setCurrentMonth(e.target.value ? parseInt(e.target.value) : null)}
+                className="px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Monat wählen...</option>
+                {[
+                  { value: 1, label: 'Januar' },
+                  { value: 2, label: 'Februar' },
+                  { value: 3, label: 'März' },
+                  { value: 4, label: 'April' },
+                  { value: 5, label: 'Mai' },
+                  { value: 6, label: 'Juni' },
+                  { value: 7, label: 'Juli' },
+                  { value: 8, label: 'August' },
+                  { value: 9, label: 'September' },
+                  { value: 10, label: 'Oktober' },
+                  { value: 11, label: 'November' },
+                  { value: 12, label: 'Dezember' }
+                ].map(month => (
+                  <option key={month.value} value={month.value}>
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+            )}
+            
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2" 
+              onClick={() => handleExport()}
+              disabled={exportType === 'monthly' && !currentMonth}
+            >
               <Download className="w-4 h-4" />
               Excel Export
             </Button>

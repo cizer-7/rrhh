@@ -5,10 +5,10 @@ module.exports = defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  timeout: 30000, // 30 Sekunden Timeout
+  workers: process.env.CI ? 1 : 4, // Erhöht von undefined auf 4
+  timeout: 30000, // Zurück auf 30 Sekunden
   expect: {
-    timeout: 10000, // 10 Sekunden für expect
+    timeout: 10000, // Zurück auf 10 Sekunden
   },
   reporter: [
     ['html'],
@@ -20,7 +20,7 @@ module.exports = defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    actionTimeout: 10000, // 10 Sekunden für Aktionen
+    actionTimeout: 8000, // Reduziert von 10 auf 8 Sekunden
   },
 
   projects: [
@@ -28,15 +28,14 @@ module.exports = defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    // Deaktiviere andere Browser für schnelle Tests
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
+    {
+      name: 'edge',
+      use: { ...devices['Desktop Edge'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
   ],
 
   // Deaktiviere webServer für manuelle Tests

@@ -18,7 +18,13 @@ python flask_api_server.py
 ```
 Backend läuft auf: http://localhost:8000
 
-### 2. Frontend starten
+### 3. Backend-Tests (empfohlen)
+```bash
+cd testing
+python test_backend.py
+```
+
+### 4. Frontend starten
 ```bash
 cd frontend
 npm install
@@ -26,7 +32,7 @@ npm run dev
 ```
 Frontend läuft auf: http://localhost:3000
 
-### 3. Anmeldung
+### 5. Anmeldung
  Kontaktieren Sie Ihren Administrator für Zugangsdaten.
 
 ## 📁 Verzeichnisstruktur
@@ -48,6 +54,12 @@ Mitarbeiter Gehaltsabrechnung/
 │   │   └── types/             # TypeScript Typen
 │   ├── package.json           # Node.js Abhängigkeiten
 │   └── .env.local             # API Konfiguration
+├── testing/                   # Backend-Tests
+│   ├── test_backend.py        # Einfacher Test-Runner
+│   ├── test_backend_core.py  # DatabaseManager Tests
+│   ├── test_api_core.py      # Flask API Tests
+│   ├── test_integration_simple.py # Integrationstests
+│   └── run_backend_tests.py  # Umfassender Test-Runner
 └── README.md                  # Diese Datei
 ```
 
@@ -179,6 +191,32 @@ Diese Web-Anwendung ersetzt die ursprüngliche Python/Tkinter Desktop-Anwendung:
 - ✅ **Keine doppelte Logik** - Nutzt bestehenden `database_manager.py`
 - ✅ **Moderne Architektur** - Web-basiert und zukunftssicher
 - ✅ **Parallelbetrieb möglich** - Desktop-App kann weiterhin verwendet werden
+
+## 🧪 Testing
+
+### Backend-Tests ausführen
+```bash
+cd testing
+python test_backend.py
+```
+
+### Umfassende Tests mit Optionen
+```bash
+cd testing
+python run_backend_tests.py --help
+```
+
+### Test-Abdeckung
+- **66 Tests** insgesamt
+- **DatabaseManager**: 31 Tests (Core-Funktionalität)
+- **Flask API**: 26 Tests (API-Endpunkte)
+- **Integration**: 9 Tests (komplette Workflows)
+
+### Test-Arten
+- ✅ **Unit-Tests** - Einzelne Komponenten
+- ✅ **Integrationstests** - Komplette Workflows  
+- ✅ **Fehler-Szenarien** - Robustheit
+- ✅ **Performance-Tests** - Geschwindigkeit
 
 ## 🚀 Entwicklung
 

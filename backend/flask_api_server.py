@@ -302,19 +302,23 @@ def update_deducciones(current_user, employee_id, year):
 
 # Excel Export Endpunkt
 @app.route('/export/excel/<int:year>', methods=['GET'])
+@app.route('/export/excel/<int:year>/<int:month>', methods=['GET'])
 @token_required
-def export_excel(current_user, year):
-    """Excel-Export für Gehaltsdaten"""
+def export_excel(current_user, year, month=None):
+    """Excel-Export für Gehaltsdaten - jährlich oder monatlich"""
     try:
         # Temporäre Datei erstellen
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        filename = f"gehaltsabrechnung_{year}_{timestamp}.xlsx"
+        if month:
+            filename = f"gehaltsabrechnung_{year}_{month}_{timestamp}.xlsx"
+        else:
+            filename = f"gehaltsabrechnung_{year}_{timestamp}.xlsx"
         filepath = f"C:/temp/{filename}"
         
         # Temp-Verzeichnis erstellen falls nicht vorhanden
         os.makedirs("C:/temp", exist_ok=True)
         
-        success = db_manager.export_nomina_excel(year, filepath)
+        success = db_manager.export_nomina_excel(year, filepath, month)
         if not success:
             return jsonify({"error": "Fehler beim Excel-Export"}), 400
         
@@ -326,7 +330,39 @@ def export_excel(current_user, year):
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     except Exception as e:
-        logger.error(f"Fehler beim Excel-Export für Jahr {year}: {e}")
+        logger.error(f"Fehler beim Excel-Export für Jahr {year}, Monat {month}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+# Monatliche Einkünfte Endpunkte
+@app.route('/employees/<int:employee_id>/ingresos/<int:year>/<int:month>', methods=['PUT'])
+@token_required
+def update_ingresos_mensuales(current_user, employee_id, year, month):
+    """Monatliche Bruttoeinkünfte für Mitarbeiter aktualisieren"""
+    try:
+        ingresos = request.get_json()
+        success = db_manager.update_ingresos_mensuales(employee_id, year, month, ingresos)
+        if not success:
+            return jsonify({"error": "Fehler beim Aktualisieren der monatlichen Bruttoeinkünfte"}), 400
+        
+        return jsonify({"message": "Monatliche Bruttoeinkünfte erfolgreich aktualisiert"})
+    except Exception as e:
+        logger.error(f"Fehler beim Aktualisieren der monatlichen Bruttoeinkünfte für Mitarbeiter {employee_id}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+# Monatliche Abzüge Endpunkte
+@app.route('/employees/<int:employee_id>/deducciones/<int:year>/<int:month>', methods=['PUT'])
+@token_required
+def update_deducciones_mensuales(current_user, employee_id, year, month):
+    """Monatliche Abzüge für Mitarbeiter aktualisieren"""
+    try:
+        deducciones = request.get_json()
+        success = db_manager.update_deducciones_mensuales(employee_id, year, month, deducciones)
+        if not success:
+            return jsonify({"error": "Fehler beim Aktualisieren der monatlichen Abzüge"}), 400
+        
+        return jsonify({"message": "Monatliche Abzüge erfolgreich aktualisiert"})
+    except Exception as e:
+        logger.error(f"Fehler beim Aktualisieren der monatlichen Abzüge für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
 
 # Health Check

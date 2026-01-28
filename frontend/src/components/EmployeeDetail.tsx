@@ -13,6 +13,8 @@ interface EmployeeDetailProps {
 export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps) {
   const [activeTab, setActiveTab] = useState<'salary' | 'ingresos' | 'deducciones'>('salary')
   const [year, setYear] = useState<number>(new Date().getFullYear())
+  const [month, setMonth] = useState<number | null>(null)
+  const [dataMode, setDataMode] = useState<'yearly' | 'monthly'>('yearly')
   const [customYear, setCustomYear] = useState<string>('')
   const [showCustomInput, setShowCustomInput] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -24,7 +26,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
   useEffect(() => {
     fetchData()
-  }, [employee.id_empleado, year])
+  }, [employee.id_empleado, year, month, dataMode])
 
   const fetchData = async () => {
     setLoading(true)
@@ -35,7 +37,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         'Content-Type': 'application/json'
       }
       
-      console.log(`Fetching data for employee ${employee.id_empleado}, year ${year}`)
+      console.log(`Fetching data for employee ${employee.id_empleado}, year ${year}, month ${month}, mode ${dataMode}`)
       
       // Fetch complete employee info
       const response = await fetch(`http://localhost:8000/employees/${employee.id_empleado}`, {
@@ -52,13 +54,24 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       console.log('Salaries:', data.salaries)
       console.log('Ingresos:', data.ingresos)
       console.log('Deducciones:', data.deducciones)
+      console.log('Ingresos Mensuales:', data.ingresos_mensuales)
+      console.log('Deducciones Mensuales:', data.deducciones_mensuales)
       
-      // Extract salary, ingresos, and deducciones from the response
+      // Extract salary data
       const salaryData = data.salaries?.find((s: any) => s.anio === year)
-      const ingresosData = data.ingresos?.find((i: any) => i.anio === year)
-      const deduccionesData = data.deducciones?.find((d: any) => d.anio === year)
       
-      console.log('Year data found:', { salaryData, ingresosData, deduccionesData })
+      // Extract ingresos and deducciones based on data mode
+      let ingresosData, deduccionesData
+      
+      if (dataMode === 'monthly' && month) {
+        ingresosData = data.ingresos_mensuales?.find((i: any) => i.anio === year && i.mes === month)
+        deduccionesData = data.deducciones_mensuales?.find((d: any) => d.anio === year && d.mes === month)
+      } else {
+        ingresosData = data.ingresos?.find((i: any) => i.anio === year)
+        deduccionesData = data.deducciones?.find((d: any) => d.anio === year)
+      }
+      
+      console.log('Data found:', { salaryData, ingresosData, deduccionesData })
       
       setSalary(salaryData || {
         modalidad: 12,
@@ -137,10 +150,17 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         'Authorization': `Bearer ${token}`
       }
       
-      await fetch(`http://localhost:8000/employees/${employee.id_empleado}/ingresos/${year}`, {
+      let url
+      if (dataMode === 'monthly' && month) {
+        url = `http://localhost:8000/employees/${employee.id_empleado}/ingresos/${year}/${month}`
+      } else {
+        url = `http://localhost:8000/employees/${employee.id_empleado}/ingresos/${year}`
+      }
+      
+      await fetch(url, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({ ...ingresos, anio: year })
+        body: JSON.stringify({ ...ingresos, anio: year, ...(dataMode === 'monthly' && month ? { mes: month } : {}) })
       })
       fetchData()
     } catch (error) {
@@ -159,10 +179,17 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         'Authorization': `Bearer ${token}`
       }
       
-      await fetch(`http://localhost:8000/employees/${employee.id_empleado}/deducciones/${year}`, {
+      let url
+      if (dataMode === 'monthly' && month) {
+        url = `http://localhost:8000/employees/${employee.id_empleado}/deducciones/${year}/${month}`
+      } else {
+        url = `http://localhost:8000/employees/${employee.id_empleado}/deducciones/${year}`
+      }
+      
+      await fetch(url, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({ ...deducciones, anio: year })
+        body: JSON.stringify({ ...deducciones, anio: year, ...(dataMode === 'monthly' && month ? { mes: month } : {}) })
       })
       fetchData()
     } catch (error) {
@@ -225,6 +252,20 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
           </div>
           <div className="flex items-center gap-2">
             <select 
+              value={dataMode} 
+              onChange={(e) => {
+                setDataMode(e.target.value as 'yearly' | 'monthly')
+                if (e.target.value === 'yearly') {
+                  setMonth(null)
+                }
+              }}
+              className="px-3 py-2 border border-gray-300 rounded-md"
+            >
+              <option value="yearly">Jährlich</option>
+              <option value="monthly">Monatlich</option>
+            </select>
+            
+            <select 
               value={showCustomInput ? 'custom' : year} 
               onChange={(e) => {
                 const value = e.target.value
@@ -256,6 +297,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
               })}
               <option value="custom">Anderes Jahr...</option>
             </select>
+            
             {showCustomInput && (
               <input
                 type="number"
@@ -284,6 +326,34 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 max="2100"
               />
             )}
+            
+            {dataMode === 'monthly' && (
+              <select 
+                value={month || ''} 
+                onChange={(e) => setMonth(e.target.value ? parseInt(e.target.value) : null)}
+                className="px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="">Monat wählen...</option>
+                {[
+                  { value: 1, label: 'Januar' },
+                  { value: 2, label: 'Februar' },
+                  { value: 3, label: 'März' },
+                  { value: 4, label: 'April' },
+                  { value: 5, label: 'Mai' },
+                  { value: 6, label: 'Juni' },
+                  { value: 7, label: 'Juli' },
+                  { value: 8, label: 'August' },
+                  { value: 9, label: 'September' },
+                  { value: 10, label: 'Oktober' },
+                  { value: 11, label: 'November' },
+                  { value: 12, label: 'Dezember' }
+                ].map(month => (
+                  <option key={month.value} value={month.value}>
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
@@ -310,10 +380,13 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
           <div className="bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center gap-2 text-orange-600 mb-2">
               <Calendar className="w-6 h-6" />
-              <h3 className="font-semibold">Jahr</h3>
+              <h3 className="font-semibold">{dataMode === 'monthly' ? 'Monat/Jahr' : 'Jahr'}</h3>
             </div>
             <div className="text-2xl font-bold text-gray-900">
-              {year}
+              {dataMode === 'monthly' && month 
+                ? `${month}/${year}` 
+                : year.toString()
+              }
             </div>
           </div>
         </div>

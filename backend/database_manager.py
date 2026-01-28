@@ -118,11 +118,34 @@ class DatabaseManager:
         """
         deducciones_results = self.execute_query(deducciones_query, (employee_id,))
         
+        # Monatliche Bruttoeinkünfte
+        ingresos_mensuales_query = """
+        SELECT anio, mes, ticket_restaurant, primas, 
+               dietas_cotizables, horas_extras, dias_exentos, 
+               dietas_exentas, seguro_pensiones, lavado_coche, fecha_modificacion
+        FROM t003_ingresos_brutos_mensuales 
+        WHERE id_empleado = %s
+        ORDER BY anio DESC, mes ASC
+        """
+        ingresos_mensuales_results = self.execute_query(ingresos_mensuales_query, (employee_id,))
+        
+        # Monatliche Abzüge
+        deducciones_mensuales_query = """
+        SELECT anio, mes, seguro_accidentes, adelas, sanitas, 
+               gasolina_arval, cotizacion_especie, fecha_modificacion
+        FROM t004_deducciones_mensuales 
+        WHERE id_empleado = %s
+        ORDER BY anio DESC, mes ASC
+        """
+        deducciones_mensuales_results = self.execute_query(deducciones_mensuales_query, (employee_id,))
+        
         return {
             'employee': employee,
             'salaries': salaries,
             'ingresos': ingresos_results,
-            'deducciones': deducciones_results
+            'deducciones': deducciones_results,
+            'ingresos_mensuales': ingresos_mensuales_results,
+            'deducciones_mensuales': deducciones_mensuales_results
         }
     
     def update_employee(self, employee_id: int, table: str, data: Dict[str, Any]) -> bool:
@@ -277,6 +300,50 @@ class DatabaseManager:
         VALUES (%s, 0, 0, 0, 0, 0)
         """
         self.execute_update(deducciones_query, (employee_id,))
+        
+        # Monatliche Standarddatensätze für das aktuelle Jahr erstellen
+        current_year = datetime.now().year
+        self._create_monthly_default_records(employee_id, current_year)
+    
+    def _create_monthly_default_records(self, employee_id: int, year: int):
+        """Erstellt Standard-Monatsdatensätze für einen Mitarbeiter"""
+        try:
+            # Monatliche Bruttoeinkünfte für alle 12 Monate erstellen
+            for month in range(1, 13):
+                ingresos_monthly_query = """
+                INSERT INTO t003_ingresos_brutos_mensuales (id_empleado, anio, mes, ticket_restaurant, 
+                                                           primas, dietas_cotizables, horas_extras, dias_exentos, 
+                                                           dietas_exentas, seguro_pensiones, lavado_coche) 
+                VALUES (%s, %s, %s, 0, 0, 0, 0, 0, 0, 0, 0)
+                ON DUPLICATE KEY UPDATE
+                    ticket_restaurant = VALUES(ticket_restaurant),
+                    primas = VALUES(primas),
+                    dietas_cotizables = VALUES(dietas_cotizables),
+                    horas_extras = VALUES(horas_extras),
+                    dias_exentos = VALUES(dias_exentos),
+                    dietas_exentas = VALUES(dietas_exentas),
+                    seguro_pensiones = VALUES(seguro_pensiones),
+                    lavado_coche = VALUES(lavado_coche)
+                """
+                self.execute_update(ingresos_monthly_query, (employee_id, year, month))
+            
+            # Monatliche Abzüge für alle 12 Monate erstellen
+            for month in range(1, 13):
+                deducciones_monthly_query = """
+                INSERT INTO t004_deducciones_mensuales (id_empleado, anio, mes, seguro_accidentes, 
+                                                        adelas, sanitas, gasolina_arval, cotizacion_especie) 
+                VALUES (%s, %s, %s, 0, 0, 0, 0, 0)
+                ON DUPLICATE KEY UPDATE
+                    seguro_accidentes = VALUES(seguro_accidentes),
+                    adelas = VALUES(adelas),
+                    sanitas = VALUES(sanitas),
+                    gasolina_arval = VALUES(gasolina_arval),
+                    cotizacion_especie = VALUES(cotizacion_especie)
+                """
+                self.execute_update(deducciones_monthly_query, (employee_id, year, month))
+                
+        except Exception as e:
+            self.logger.error(f"Fehler beim Erstellen der monatlichen Standarddatensätze: {e}")
     
     def add_salary(self, employee_id: int, salary_data: Dict[str, Any]) -> bool:
         try:
@@ -410,7 +477,7 @@ class DatabaseManager:
             ]
             
             if exists:
-                # Update
+                # Update jährliche Daten
                 update_fields = []
                 update_values = []
                 
@@ -430,7 +497,13 @@ class DatabaseManager:
                 update_values.extend([employee_id, year])
                 self.logger.info(f"Update Query: {query}")
                 self.logger.info(f"Update Params: {tuple(update_values)}")
-                return self.execute_update(query, tuple(update_values))
+                result = self.execute_update(query, tuple(update_values))
+                
+                # Wenn erfolgreich, aktualisiere auch alle monatlichen Datensätze
+                if result:
+                    self._update_monthly_from_yearly(employee_id, year, data, 'ingresos')
+                
+                return result
             else:
                 # Insert
                 insert_fields = ['id_empleado', 'anio'] + [field for field in data.keys() if field in allowed_fields]
@@ -443,7 +516,13 @@ class DatabaseManager:
                 """
                 self.logger.info(f"Insert Query: {query}")
                 self.logger.info(f"Insert Params: {tuple(insert_values)}")
-                return self.execute_update(query, tuple(insert_values))
+                result = self.execute_update(query, tuple(insert_values))
+                
+                # Wenn erfolgreich, erstelle/aktualisiere auch monatliche Datensätze
+                if result:
+                    self._update_monthly_from_yearly(employee_id, year, data, 'ingresos')
+                
+                return result
                 
         except Exception as e:
             self.logger.error(f"Fehler beim Aktualisieren der Bruttoeinkünfte: {e}")
@@ -462,7 +541,7 @@ class DatabaseManager:
             allowed_fields = ['seguro_accidentes', 'adelas', 'sanitas', 'gasolina_arval', 'cotizacion_especie']
             
             if exists:
-                # Update
+                # Update jährliche Daten
                 update_fields = []
                 update_values = []
                 
@@ -480,7 +559,13 @@ class DatabaseManager:
                 WHERE id_empleado = %s AND anio = %s
                 """
                 update_values.extend([employee_id, year])
-                return self.execute_update(query, tuple(update_values))
+                result = self.execute_update(query, tuple(update_values))
+                
+                # Wenn erfolgreich, aktualisiere auch alle monatlichen Datensätze
+                if result:
+                    self._update_monthly_from_yearly(employee_id, year, data, 'deducciones')
+                
+                return result
             else:
                 # Insert
                 insert_fields = ['id_empleado', 'anio'] + [field for field in data.keys() if field in allowed_fields]
@@ -491,11 +576,75 @@ class DatabaseManager:
                 INSERT INTO t004_deducciones ({', '.join(insert_fields)}) 
                 VALUES ({placeholders})
                 """
-                return self.execute_update(query, tuple(insert_values))
+                result = self.execute_update(query, tuple(insert_values))
+                
+                # Wenn erfolgreich, erstelle/aktualisiere auch monatliche Datensätze
+                if result:
+                    self._update_monthly_from_yearly(employee_id, year, data, 'deducciones')
+                
+                return result
                 
         except Exception as e:
             self.logger.error(f"Fehler beim Aktualisieren der Abzüge: {e}")
             return False
+    
+    def _update_monthly_from_yearly(self, employee_id: int, year: int, data: Dict[str, Any], table_type: str) -> None:
+        """Aktualisiert alle monatlichen Datensätze basierend auf den jährlichen Daten"""
+        try:
+            if table_type == 'ingresos':
+                table_name = 't003_ingresos_brutos_mensuales'
+                allowed_fields = [
+                    'ticket_restaurant', 'primas', 
+                    'dietas_cotizables', 'horas_extras', 'dias_exentos', 
+                    'dietas_exentas', 'seguro_pensiones', 'lavado_coche'
+                ]
+            elif table_type == 'deducciones':
+                table_name = 't004_deducciones_mensuales'
+                allowed_fields = ['seguro_accidentes', 'adelas', 'sanitas', 'gasolina_arval', 'cotizacion_especie']
+            else:
+                return
+            
+            # Für jeden Monat (1-12) die monatlichen Datensätze aktualisieren
+            for month in range(1, 13):
+                # Prüfen ob monatlicher Datensatz existiert
+                check_query = f"""
+                SELECT id_empleado FROM {table_name} 
+                WHERE id_empleado = %s AND anio = %s AND mes = %s
+                """
+                exists = self.execute_query(check_query, (employee_id, year, month))
+                
+                if exists:
+                    # Update existierenden monatlichen Datensatz
+                    update_fields = []
+                    update_values = []
+                    
+                    for field, value in data.items():
+                        if field in allowed_fields:
+                            update_fields.append(f"{field} = %s")
+                            update_values.append(value)
+                    
+                    if update_fields:
+                        query = f"""
+                        UPDATE {table_name} 
+                        SET {', '.join(update_fields)} 
+                        WHERE id_empleado = %s AND anio = %s AND mes = %s
+                        """
+                        update_values.extend([employee_id, year, month])
+                        self.execute_update(query, tuple(update_values))
+                else:
+                    # Create neuen monatlichen Datensatz
+                    insert_fields = ['id_empleado', 'anio', 'mes'] + [field for field in data.keys() if field in allowed_fields]
+                    insert_values = [employee_id, year, month] + [data[field] for field in insert_fields[3:]]
+                    
+                    placeholders = ', '.join(['%s'] * len(insert_fields))
+                    query = f"""
+                    INSERT INTO {table_name} ({', '.join(insert_fields)}) 
+                    VALUES ({placeholders})
+                    """
+                    self.execute_update(query, tuple(insert_values))
+                    
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Aktualisierung der monatlichen Daten aus jährlichen Daten: {e}")
     
     def delete_salary(self, employee_id: int, year: int) -> bool:
         """Löscht einen Gehaltsdatensatz für einen Mitarbeiter und Jahr"""
@@ -600,36 +749,62 @@ class DatabaseManager:
             self.logger.error(f"Fehler beim Erstellen des Benutzers: {e}")
             return False
     
-    def export_nomina_excel(self, year: int, output_path: str) -> bool:
+    def export_nomina_excel(self, year: int, output_path: str, month: int = None) -> bool:
         """Exportiert Gehaltsdaten im Excel-Format gemäss Referenzdatei"""
         try:
-            # SQL-Abfrage für alle benötigten Daten
-            query = """
-            SELECT 
-                CONCAT(e.apellido, ', ', e.nombre) as nombre_completo,
-                e.ceco,
-                COALESCE(s.salario_mensual_con_atrasos, s.salario_mensual_bruto, 0) as salario_mes,
-                COALESCE(i.ticket_restaurant, 0) as ticket_restaurant,
-                COALESCE(i.dietas_cotizables, 0) + COALESCE(d.cotizacion_especie, 0) as cotizacion_especie,
-                COALESCE(i.primas, 0) as primas,
-                COALESCE(i.dietas_cotizables, 0) as dietas_cotizables,
-                COALESCE(i.horas_extras, 0) as horas_extras,
-                COALESCE(i.seguro_pensiones, 0) as seguro_pensiones,
-                COALESCE(d.seguro_accidentes, 0) as seguro_accidentes,
-                COALESCE(i.dias_exentos, 0) as dias_exentos,
-                COALESCE(d.adelas, 0) as adelas,
-                COALESCE(d.sanitas, 0) as sanitas,
-                COALESCE(d.gasolina_arval, 0) as gasolina_arval,
-                COALESCE(i.dietas_exentas, 0) as dietas_exentas
-            FROM t001_empleados e
-            LEFT JOIN t002_salarios s ON e.id_empleado = s.id_empleado AND s.anio = %s
-            LEFT JOIN t003_ingresos_brutos i ON e.id_empleado = i.id_empleado AND i.anio = %s
-            LEFT JOIN t004_deducciones d ON e.id_empleado = d.id_empleado AND d.anio = %s
-            WHERE e.activo = TRUE
-            ORDER BY e.apellido, e.nombre
-            """
-            
-            data = self.execute_query(query, (year, year, year))
+            # SQL-Abfrage für alle benötigten Daten - monatlich oder jährlich
+            if month:
+                query = """
+                SELECT 
+                    CONCAT(e.apellido, ', ', e.nombre) as nombre_completo,
+                    e.ceco,
+                    COALESCE(s.salario_mensual_con_atrasos, s.salario_mensual_bruto, 0) as salario_mes,
+                    COALESCE(i.ticket_restaurant, 0) as ticket_restaurant,
+                    COALESCE(i.dietas_cotizables, 0) + COALESCE(d.cotizacion_especie, 0) as cotizacion_especie,
+                    COALESCE(i.primas, 0) as primas,
+                    COALESCE(i.dietas_cotizables, 0) as dietas_cotizables,
+                    COALESCE(i.horas_extras, 0) as horas_extras,
+                    COALESCE(i.seguro_pensiones, 0) as seguro_pensiones,
+                    COALESCE(d.seguro_accidentes, 0) as seguro_accidentes,
+                    COALESCE(i.dias_exentos, 0) as dias_exentos,
+                    COALESCE(d.adelas, 0) as adelas,
+                    COALESCE(d.sanitas, 0) as sanitas,
+                    COALESCE(d.gasolina_arval, 0) as gasolina_arval,
+                    COALESCE(i.dietas_exentas, 0) as dietas_exentas
+                FROM t001_empleados e
+                LEFT JOIN t002_salarios s ON e.id_empleado = s.id_empleado AND s.anio = %s
+                LEFT JOIN t003_ingresos_brutos_mensuales i ON e.id_empleado = i.id_empleado AND i.anio = %s AND i.mes = %s
+                LEFT JOIN t004_deducciones_mensuales d ON e.id_empleado = d.id_empleado AND d.anio = %s AND d.mes = %s
+                WHERE e.activo = TRUE
+                ORDER BY e.apellido, e.nombre
+                """
+                data = self.execute_query(query, (year, year, month, year, month))
+            else:
+                query = """
+                SELECT 
+                    CONCAT(e.apellido, ', ', e.nombre) as nombre_completo,
+                    e.ceco,
+                    COALESCE(s.salario_mensual_con_atrasos, s.salario_mensual_bruto, 0) as salario_mes,
+                    COALESCE(i.ticket_restaurant, 0) as ticket_restaurant,
+                    COALESCE(i.dietas_cotizables, 0) + COALESCE(d.cotizacion_especie, 0) as cotizacion_especie,
+                    COALESCE(i.primas, 0) as primas,
+                    COALESCE(i.dietas_cotizables, 0) as dietas_cotizables,
+                    COALESCE(i.horas_extras, 0) as horas_extras,
+                    COALESCE(i.seguro_pensiones, 0) as seguro_pensiones,
+                    COALESCE(d.seguro_accidentes, 0) as seguro_accidentes,
+                    COALESCE(i.dias_exentos, 0) as dias_exentos,
+                    COALESCE(d.adelas, 0) as adelas,
+                    COALESCE(d.sanitas, 0) as sanitas,
+                    COALESCE(d.gasolina_arval, 0) as gasolina_arval,
+                    COALESCE(i.dietas_exentas, 0) as dietas_exentas
+                FROM t001_empleados e
+                LEFT JOIN t002_salarios s ON e.id_empleado = s.id_empleado AND s.anio = %s
+                LEFT JOIN t003_ingresos_brutos i ON e.id_empleado = i.id_empleado AND i.anio = %s
+                LEFT JOIN t004_deducciones d ON e.id_empleado = d.id_empleado AND d.anio = %s
+                WHERE e.activo = TRUE
+                ORDER BY e.apellido, e.nombre
+                """
+                data = self.execute_query(query, (year, year, year))
             
             if not data:
                 self.logger.warning(f"Keine Daten für Jahr {year} gefunden")
@@ -676,4 +851,105 @@ class DatabaseManager:
             
         except Exception as e:
             self.logger.error(f"Fehler beim Excel-Export: {e}")
+            return False
+    
+    # Monatliche Methoden für Zuschläge und Abzüge
+    def update_ingresos_mensuales(self, employee_id: int, year: int, month: int, data: Dict[str, Any]) -> bool:
+        """Aktualisiert oder fügt monatliche Bruttoeinkünfte für einen Mitarbeiter hinzu"""
+        try:
+            # Prüfen ob Daten für diesen Monat existieren
+            check_query = """
+            SELECT id_empleado FROM t003_ingresos_brutos_mensuales 
+            WHERE id_empleado = %s AND anio = %s AND mes = %s
+            """
+            exists = self.execute_query(check_query, (employee_id, year, month))
+            
+            allowed_fields = [
+                'ticket_restaurant', 'primas', 
+                'dietas_cotizables', 'horas_extras', 'dias_exentos', 
+                'dietas_exentas', 'seguro_pensiones', 'lavado_coche'
+            ]
+            
+            if exists:
+                # Update
+                update_fields = []
+                update_values = []
+                
+                for field, value in data.items():
+                    if field in allowed_fields:
+                        update_fields.append(f"{field} = %s")
+                        update_values.append(value)
+                
+                if not update_fields:
+                    return False
+                
+                query = f"""
+                UPDATE t003_ingresos_brutos_mensuales 
+                SET {', '.join(update_fields)} 
+                WHERE id_empleado = %s AND anio = %s AND mes = %s
+                """
+                update_values.extend([employee_id, year, month])
+                return self.execute_update(query, tuple(update_values))
+            else:
+                # Insert
+                insert_fields = ['id_empleado', 'anio', 'mes'] + [field for field in data.keys() if field in allowed_fields]
+                insert_values = [employee_id, year, month] + [data[field] for field in insert_fields[3:]]
+                
+                placeholders = ', '.join(['%s'] * len(insert_fields))
+                query = f"""
+                INSERT INTO t003_ingresos_brutos_mensuales ({', '.join(insert_fields)}) 
+                VALUES ({placeholders})
+                """
+                return self.execute_update(query, tuple(insert_values))
+                
+        except Exception as e:
+            self.logger.error(f"Fehler beim Aktualisieren der monatlichen Bruttoeinkünfte: {e}")
+            return False
+    
+    def update_deducciones_mensuales(self, employee_id: int, year: int, month: int, data: Dict[str, Any]) -> bool:
+        """Aktualisiert oder fügt monatliche Abzüge für einen Mitarbeiter hinzu"""
+        try:
+            # Prüfen ob Daten für diesen Monat existieren
+            check_query = """
+            SELECT id_empleado FROM t004_deducciones_mensuales 
+            WHERE id_empleado = %s AND anio = %s AND mes = %s
+            """
+            exists = self.execute_query(check_query, (employee_id, year, month))
+            
+            allowed_fields = ['seguro_accidentes', 'adelas', 'sanitas', 'gasolina_arval', 'cotizacion_especie']
+            
+            if exists:
+                # Update
+                update_fields = []
+                update_values = []
+                
+                for field, value in data.items():
+                    if field in allowed_fields:
+                        update_fields.append(f"{field} = %s")
+                        update_values.append(value)
+                
+                if not update_fields:
+                    return False
+                
+                query = f"""
+                UPDATE t004_deducciones_mensuales 
+                SET {', '.join(update_fields)} 
+                WHERE id_empleado = %s AND anio = %s AND mes = %s
+                """
+                update_values.extend([employee_id, year, month])
+                return self.execute_update(query, tuple(update_values))
+            else:
+                # Insert
+                insert_fields = ['id_empleado', 'anio', 'mes'] + [field for field in data.keys() if field in allowed_fields]
+                insert_values = [employee_id, year, month] + [data[field] for field in insert_fields[3:]]
+                
+                placeholders = ', '.join(['%s'] * len(insert_fields))
+                query = f"""
+                INSERT INTO t004_deducciones_mensuales ({', '.join(insert_fields)}) 
+                VALUES ({placeholders})
+                """
+                return self.execute_update(query, tuple(insert_values))
+                
+        except Exception as e:
+            self.logger.error(f"Fehler beim Aktualisieren der monatlichen Abzüge: {e}")
             return False

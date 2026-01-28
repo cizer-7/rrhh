@@ -1,247 +1,434 @@
-<testsuites id="" name="" tests="7" failures="7" skipped="0" errors="0" time="41.453385000000004">
-<testsuite name="test_employee_workflow.spec.js" timestamp="2026-01-27T10:50:02.039Z" hostname="chromium" tests="7" failures="7" skipped="0" time="46.458" errors="0">
-<testcase name="Employee Management E2E › complete employee workflow" classname="test_employee_workflow.spec.js" time="9.195">
-<failure message="test_employee_workflow.spec.js:23:3 complete employee workflow" type="FAILURE">
-<![CDATA[  [chromium] › test_employee_workflow.spec.js:23:3 › Employee Management E2E › complete employee workflow 
+<testsuites id="" name="" tests="30" failures="11" skipped="0" errors="0" time="408.401996">
+<testsuite name="tests-final.spec.js" timestamp="2026-01-28T11:26:15.707Z" hostname="chromium" tests="10" failures="2" skipped="0" time="163.163" errors="0">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › home page loads correctly" classname="tests-final.spec.js" time="17.689">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › navigation to login page" classname="tests-final.spec.js" time="18.019">
+<failure message="tests-final.spec.js:28:3 navigation to login page" type="FAILURE">
+<![CDATA[  [chromium] › tests-final.spec.js:28:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › navigation to login page 
 
-    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    TimeoutError: page.goto: Timeout 10000ms exceeded.
     Call log:
       - navigating to "http://localhost:3000/", waiting until "load"
 
 
-       8 |   test.beforeEach(async ({ page }) => {
-       9 |     // Login before each test
-    > 10 |     await page.goto('http://localhost:3000')
+      27 |
+      28 |   test('navigation to login page', async ({ page }) => {
+    > 29 |     await page.goto('http://localhost:3000')
          |                ^
-      11 |     
-      12 |     // Check if already logged in
-      13 |     if (await page.locator('text=Login').isVisible()) {
-        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+      30 |     await page.click('button:has-text("Zur Anwendung")')
+      31 |     
+      32 |     // Warte auf Login-Formular mit explizitem Timeout
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:29:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-f0fa6--complete-employee-workflow-chromium\test-failed-1.png
+    test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-chromium\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-f0fa6--complete-employee-workflow-chromium\video.webm
+    test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-chromium\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-chromium\error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-f0fa6--complete-employee-workflow-chromium\test-failed-1.png]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-chromium\test-failed-1.png]]
 
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-f0fa6--complete-employee-workflow-chromium\video.webm]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-chromium\video.webm]]
+
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-chromium\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Employee Management E2E › create new employee" classname="test_employee_workflow.spec.js" time="8.619">
-<failure message="test_employee_workflow.spec.js:78:3 create new employee" type="FAILURE">
-<![CDATA[  [chromium] › test_employee_workflow.spec.js:78:3 › Employee Management E2E › create new employee ─
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › successful login workflow" classname="tests-final.spec.js" time="26.169">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › invalid login should fail" classname="tests-final.spec.js" time="23.09">
+<failure message="tests-final.spec.js:62:3 invalid login should fail" type="FAILURE">
+<![CDATA[  [chromium] › tests-final.spec.js:62:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › invalid login should fail 
 
-    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    TimeoutError: page.goto: Timeout 10000ms exceeded.
     Call log:
-      - navigating to "http://localhost:3000/", waiting until "load"
+      - navigating to "http://localhost:3000/dashboard", waiting until "load"
 
 
-       8 |   test.beforeEach(async ({ page }) => {
-       9 |     // Login before each test
-    > 10 |     await page.goto('http://localhost:3000')
+      61 |
+      62 |   test('invalid login should fail', async ({ page }) => {
+    > 63 |     await page.goto('http://localhost:3000/dashboard')
          |                ^
-      11 |     
-      12 |     // Check if already logged in
-      13 |     if (await page.locator('text=Login').isVisible()) {
-        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+      64 |     
+      65 |     await page.waitForSelector('input[id="username"]', { timeout: 5000 })
+      66 |     
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:63:16
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-ef643-ent-E2E-create-new-employee-chromium\test-failed-1.png
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-chromium\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-ef643-ent-E2E-create-new-employee-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Error Context: test-results\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-chromium\error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-ef643-ent-E2E-create-new-employee-chromium\test-failed-1.png]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-chromium\video.webm]]
 
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-ef643-ent-E2E-create-new-employee-chromium\video.webm]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-chromium\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Employee Management E2E › export functionality" classname="test_employee_workflow.spec.js" time="3.406">
-<failure message="test_employee_workflow.spec.js:99:3 export functionality" type="FAILURE">
-<![CDATA[  [chromium] › test_employee_workflow.spec.js:99:3 › Employee Management E2E › export functionality 
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table functionality" classname="tests-final.spec.js" time="16.195">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee form modal" classname="tests-final.spec.js" time="14">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › logout functionality" classname="tests-final.spec.js" time="13.084">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › form validation - empty fields" classname="tests-final.spec.js" time="8.481">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › responsive design" classname="tests-final.spec.js" time="14.32">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › basic browser capabilities" classname="tests-final.spec.js" time="12.116">
+</testcase>
+</testsuite>
+<testsuite name="tests-final.spec.js" timestamp="2026-01-28T11:26:15.707Z" hostname="edge" tests="10" failures="1" skipped="0" time="147.582" errors="0">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › home page loads correctly" classname="tests-final.spec.js" time="6.618">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › navigation to login page" classname="tests-final.spec.js" time="7.796">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › successful login workflow" classname="tests-final.spec.js" time="12.942">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › invalid login should fail" classname="tests-final.spec.js" time="6.881">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table functionality" classname="tests-final.spec.js" time="17.598">
+<failure message="tests-final.spec.js:83:3 employee table functionality" type="FAILURE">
+<![CDATA[  [edge] › tests-final.spec.js:83:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › employee table functionality 
 
-    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    TimeoutError: page.waitForSelector: Timeout 5000ms exceeded.
     Call log:
-      - navigating to "http://localhost:3000/", waiting until "load"
+      - waiting for locator('button:has-text("Abmelden")') to be visible
 
 
-       8 |   test.beforeEach(async ({ page }) => {
-       9 |     // Login before each test
-    > 10 |     await page.goto('http://localhost:3000')
+      89 |     
+      90 |     // Warte auf successful Login
+    > 91 |     await page.waitForSelector('button:has-text("Abmelden")', { timeout: 5000 })
          |                ^
-      11 |     
-      12 |     // Check if already logged in
-      13 |     if (await page.locator('text=Login').isVisible()) {
-        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+      92 |     
+      93 |     // Warte auf Tabelle
+      94 |     await page.waitForSelector('table', { timeout: 5000 })
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:91:16
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-6dca7-nt-E2E-export-functionality-chromium\test-failed-1.png
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\tests-final-Mitarbeiter-Ge-abec1-mployee-table-functionality-edge\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-6dca7-nt-E2E-export-functionality-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Error Context: test-results\tests-final-Mitarbeiter-Ge-abec1-mployee-table-functionality-edge\error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-6dca7-nt-E2E-export-functionality-chromium\test-failed-1.png]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-abec1-mployee-table-functionality-edge\video.webm]]
 
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-6dca7-nt-E2E-export-functionality-chromium\video.webm]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-abec1-mployee-table-functionality-edge\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Employee Management E2E › search functionality" classname="test_employee_workflow.spec.js" time="9.144">
-<failure message="test_employee_workflow.spec.js:113:3 search functionality" type="FAILURE">
-<![CDATA[  [chromium] › test_employee_workflow.spec.js:113:3 › Employee Management E2E › search functionality 
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee form modal" classname="tests-final.spec.js" time="26.482">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › logout functionality" classname="tests-final.spec.js" time="19.766">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › form validation - empty fields" classname="tests-final.spec.js" time="21.719">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › responsive design" classname="tests-final.spec.js" time="18.94">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › basic browser capabilities" classname="tests-final.spec.js" time="8.84">
+</testcase>
+</testsuite>
+<testsuite name="tests-final.spec.js" timestamp="2026-01-28T11:26:15.707Z" hostname="firefox" tests="10" failures="8" skipped="0" time="391.014" errors="0">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › home page loads correctly" classname="tests-final.spec.js" time="24.249">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › navigation to login page" classname="tests-final.spec.js" time="37.729">
+<failure message="tests-final.spec.js:28:3 navigation to login page" type="FAILURE">
+<![CDATA[  [firefox] › tests-final.spec.js:28:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › navigation to login page 
 
-    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    TimeoutError: page.goto: Timeout 10000ms exceeded.
     Call log:
       - navigating to "http://localhost:3000/", waiting until "load"
 
 
-       8 |   test.beforeEach(async ({ page }) => {
-       9 |     // Login before each test
-    > 10 |     await page.goto('http://localhost:3000')
+      27 |
+      28 |   test('navigation to login page', async ({ page }) => {
+    > 29 |     await page.goto('http://localhost:3000')
          |                ^
-      11 |     
-      12 |     // Check if already logged in
-      13 |     if (await page.locator('text=Login').isVisible()) {
-        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+      30 |     await page.click('button:has-text("Zur Anwendung")')
+      31 |     
+      32 |     // Warte auf Login-Formular mit explizitem Timeout
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:29:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-7823b-nt-E2E-search-functionality-chromium\test-failed-1.png
+    test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-firefox\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-7823b-nt-E2E-search-functionality-chromium\video.webm
+    test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-firefox\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-firefox\error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-7823b-nt-E2E-search-functionality-chromium\test-failed-1.png]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-firefox\test-failed-1.png]]
 
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-7823b-nt-E2E-search-functionality-chromium\video.webm]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-firefox\video.webm]]
+
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-ce395-ts-navigation-to-login-page-firefox\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Employee Management E2E › responsive design" classname="test_employee_workflow.spec.js" time="9.087">
-<failure message="test_employee_workflow.spec.js:140:3 responsive design" type="FAILURE">
-<![CDATA[  [chromium] › test_employee_workflow.spec.js:140:3 › Employee Management E2E › responsive design ──
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › successful login workflow" classname="tests-final.spec.js" time="39.275">
+<failure message="tests-final.spec.js:41:3 successful login workflow" type="FAILURE">
+<![CDATA[  [firefox] › tests-final.spec.js:41:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › successful login workflow 
 
-    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Test timeout of 30000ms exceeded.
+
+    TimeoutError: page.goto: Timeout 10000ms exceeded.
     Call log:
-      - navigating to "http://localhost:3000/", waiting until "load"
+      - navigating to "http://localhost:3000/dashboard", waiting until "load"
 
 
-       8 |   test.beforeEach(async ({ page }) => {
-       9 |     // Login before each test
-    > 10 |     await page.goto('http://localhost:3000')
+      40 |
+      41 |   test('successful login workflow', async ({ page }) => {
+    > 42 |     await page.goto('http://localhost:3000/dashboard')
          |                ^
-      11 |     
-      12 |     // Check if already logged in
-      13 |     if (await page.locator('text=Login').isVisible()) {
-        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+      43 |     
+      44 |     // Warte auf Login-Formular
+      45 |     await page.waitForSelector('input[id="username"]', { timeout: 5000 })
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:42:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-17fcb-ement-E2E-responsive-design-chromium\test-failed-1.png
+    test-results\tests-final-Mitarbeiter-Ge-1154a-s-successful-login-workflow-firefox\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-17fcb-ement-E2E-responsive-design-chromium\video.webm
+    test-results\tests-final-Mitarbeiter-Ge-1154a-s-successful-login-workflow-firefox\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\tests-final-Mitarbeiter-Ge-1154a-s-successful-login-workflow-firefox\error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-17fcb-ement-E2E-responsive-design-chromium\test-failed-1.png]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-1154a-s-successful-login-workflow-firefox\test-failed-1.png]]
 
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-17fcb-ement-E2E-responsive-design-chromium\video.webm]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-1154a-s-successful-login-workflow-firefox\video.webm]]
+
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-1154a-s-successful-login-workflow-firefox\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Employee Management E2E › error handling" classname="test_employee_workflow.spec.js" time="3.811">
-<failure message="test_employee_workflow.spec.js:159:3 error handling" type="FAILURE">
-<![CDATA[  [chromium] › test_employee_workflow.spec.js:159:3 › Employee Management E2E › error handling ─────
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › invalid login should fail" classname="tests-final.spec.js" time="46.292">
+<failure message="tests-final.spec.js:62:3 invalid login should fail" type="FAILURE">
+<![CDATA[  [firefox] › tests-final.spec.js:62:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › invalid login should fail 
 
-    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Test timeout of 30000ms exceeded.
+
+    TimeoutError: page.goto: Timeout 10000ms exceeded.
     Call log:
-      - navigating to "http://localhost:3000/", waiting until "load"
+      - navigating to "http://localhost:3000/dashboard", waiting until "load"
 
 
-       8 |   test.beforeEach(async ({ page }) => {
-       9 |     // Login before each test
-    > 10 |     await page.goto('http://localhost:3000')
+      61 |
+      62 |   test('invalid login should fail', async ({ page }) => {
+    > 63 |     await page.goto('http://localhost:3000/dashboard')
          |                ^
-      11 |     
-      12 |     // Check if already logged in
-      13 |     if (await page.locator('text=Login').isVisible()) {
-        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+      64 |     
+      65 |     await page.waitForSelector('input[id="username"]', { timeout: 5000 })
+      66 |     
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:63:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-9fad7-nagement-E2E-error-handling-chromium\test-failed-1.png
+    test-results\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-firefox\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Emp-9fad7-nagement-E2E-error-handling-chromium\video.webm
+    test-results\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-firefox\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-firefox\error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-9fad7-nagement-E2E-error-handling-chromium\test-failed-1.png]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-firefox\test-failed-1.png]]
 
-[[ATTACHMENT|test-results\test_employee_workflow-Emp-9fad7-nagement-E2E-error-handling-chromium\video.webm]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-firefox\video.webm]]
+
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-06397-s-invalid-login-should-fail-firefox\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Employee Management E2E › accessibility" classname="test_employee_workflow.spec.js" time="3.196">
-<failure message="test_employee_workflow.spec.js:171:3 accessibility" type="FAILURE">
-<![CDATA[  [chromium] › test_employee_workflow.spec.js:171:3 › Employee Management E2E › accessibility ──────
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table functionality" classname="tests-final.spec.js" time="20.13">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee form modal" classname="tests-final.spec.js" time="24.548">
+<failure message="tests-final.spec.js:108:3 employee form modal" type="FAILURE">
+<![CDATA[  [firefox] › tests-final.spec.js:108:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › employee form modal 
 
-    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    TimeoutError: page.goto: Timeout 10000ms exceeded.
+    Call log:
+      - navigating to "http://localhost:3000/dashboard", waiting until "load"
+
+
+      108 |   test('employee form modal', async ({ page }) => {
+      109 |     // Login zuerst
+    > 110 |     await page.goto('http://localhost:3000/dashboard')
+          |                ^
+      111 |     await page.fill('input[id="username"]', 'test')
+      112 |     await page.fill('input[id="password"]', 'test')
+      113 |     await page.click('button:has-text("Anmelden")')
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:110:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\tests-final-Mitarbeiter-Ge-64cff-E-Tests-employee-form-modal-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\tests-final-Mitarbeiter-Ge-64cff-E-Tests-employee-form-modal-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\tests-final-Mitarbeiter-Ge-64cff-E-Tests-employee-form-modal-firefox\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-64cff-E-Tests-employee-form-modal-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-64cff-E-Tests-employee-form-modal-firefox\video.webm]]
+
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-64cff-E-Tests-employee-form-modal-firefox\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › logout functionality" classname="tests-final.spec.js" time="46.16">
+<failure message="tests-final.spec.js:144:3 logout functionality" type="FAILURE">
+<![CDATA[  [firefox] › tests-final.spec.js:144:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › logout functionality 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('input[id="username"]') to be visible
+        - locator resolved to visible <input value="" required="" type="text" id="username" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"/>
+
+
+      155 |     
+      156 |     // Harte Assertion: Muss zurück zur Login-Seite
+    > 157 |     await page.waitForSelector('input[id="username"]', { timeout: 5000 })
+          |                ^
+      158 |     await expect(page.locator('input[id="username"]')).toBeVisible()
+      159 |     await expect(page.locator('input[id="password"]')).toBeVisible()
+      160 |     
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:157:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\tests-final-Mitarbeiter-Ge-eb7d0--Tests-logout-functionality-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\tests-final-Mitarbeiter-Ge-eb7d0--Tests-logout-functionality-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\tests-final-Mitarbeiter-Ge-eb7d0--Tests-logout-functionality-firefox\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-eb7d0--Tests-logout-functionality-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-eb7d0--Tests-logout-functionality-firefox\video.webm]]
+
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-eb7d0--Tests-logout-functionality-firefox\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › form validation - empty fields" classname="tests-final.spec.js" time="34.789">
+<failure message="tests-final.spec.js:165:3 form validation - empty fields" type="FAILURE">
+<![CDATA[  [firefox] › tests-final.spec.js:165:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › form validation - empty fields 
+
+    Test timeout of 30000ms exceeded while running "beforeEach" hook.
+
+       7 |
+       8 | test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
+    >  9 |   test.beforeEach(async ({ page }) => {
+         |        ^
+      10 |     page.setDefaultTimeout(10000)
+      11 |   })
+      12 |
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:9:8
+
+    Error: browserContext.newPage: Test timeout of 30000ms exceeded.
+]]>
+</failure>
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › responsive design" classname="tests-final.spec.js" time="60.022">
+<failure message="tests-final.spec.js:179:3 responsive design" type="FAILURE">
+<![CDATA[  [firefox] › tests-final.spec.js:179:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › responsive design 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.goto: Test timeout of 30000ms exceeded.
     Call log:
       - navigating to "http://localhost:3000/", waiting until "load"
 
 
-       8 |   test.beforeEach(async ({ page }) => {
-       9 |     // Login before each test
-    > 10 |     await page.goto('http://localhost:3000')
-         |                ^
-      11 |     
-      12 |     // Check if already logged in
-      13 |     if (await page.locator('text=Login').isVisible()) {
-        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\test_employee_workflow.spec.js:10:16
+      186 |     for (const viewport of viewports) {
+      187 |       await page.setViewportSize(viewport)
+    > 188 |       await page.goto('http://localhost:3000')
+          |                  ^
+      189 |       
+      190 |       // Harte Assertions für jede Viewport-Größe
+      191 |       await expect(page.locator('h1')).toContainText('Mitarbeiter Gehaltsabrechnung')
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:188:18
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Employee-Management-E2E-accessibility-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Tearing down "context" exceeded the test timeout of 30000ms.
 
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\test_employee_workflow-Employee-Management-E2E-accessibility-chromium\video.webm
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\tests-final-Mitarbeiter-Ge-8da9a-E2E-Tests-responsive-design-firefox\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|test-results\test_employee_workflow-Employee-Management-E2E-accessibility-chromium\test-failed-1.png]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-8da9a-E2E-Tests-responsive-design-firefox\video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › basic browser capabilities" classname="tests-final.spec.js" time="57.82">
+<failure message="tests-final.spec.js:196:3 basic browser capabilities" type="FAILURE">
+<![CDATA[  [firefox] › tests-final.spec.js:196:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › basic browser capabilities 
 
-[[ATTACHMENT|test-results\test_employee_workflow-Employee-Management-E2E-accessibility-chromium\video.webm]]
+    TimeoutError: page.goto: Timeout 10000ms exceeded.
+    Call log:
+      - navigating to "about:blank", waiting until "load"
+
+
+      196 |   test('basic browser capabilities', async ({ page }) => {
+      197 |     // Teste grundlegende Browser-Fähigkeiten
+    > 198 |     await page.goto('about:blank')
+          |                ^
+      199 |     
+      200 |     // Teste JavaScript-Ausführung
+      201 |     const title = await page.evaluate(() => {
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:198:16
+
+    Tearing down "context" exceeded the test timeout of 30000ms.
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\tests-final-Mitarbeiter-Ge-29abf--basic-browser-capabilities-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-29abf--basic-browser-capabilities-firefox\video.webm]]
 ]]>
 </system-out>
 </testcase>
