@@ -86,3 +86,22 @@ testing/test_results.xml
 
 # Commands file
 commands.md
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+database/*.db
+backend/*.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Backup files
+*.bak
+*.backup
+backup/
+testing/backup/

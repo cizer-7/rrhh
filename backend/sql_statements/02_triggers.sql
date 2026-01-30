@@ -7,6 +7,7 @@
 -- Drop existing triggers
 DROP TRIGGER IF EXISTS trg_before_insert_t002_salarios;
 DROP TRIGGER IF EXISTS trg_before_update_t002_salarios;
+DROP TRIGGER IF EXISTS trg_create_monthly_records_new_employee;
 
 DELIMITER $$
 
@@ -109,3 +110,60 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- ============================================================================
+-- INDEXES FÜR PERFORMANCE MONATLICHE TABELLEN
+-- ============================================================================
+
+-- Indexes für schnelle Abfragen nach Jahr und Monat
+CREATE INDEX idx_ingresos_mensuales_anio_mes ON t003_ingresos_brutos_mensuales(anio, mes);
+CREATE INDEX idx_deducciones_mensuales_anio_mes ON t004_deducciones_mensuales(anio, mes);
+
+-- Indexes für schnelle Mitarbeiterabfragen
+CREATE INDEX idx_ingresos_mensuales_empleado ON t003_ingresos_brutos_mensuales(id_empleado);
+CREATE INDEX idx_deducciones_mensuales_empleado ON t004_deducciones_mensuales(id_empleado);
+
+-- ============================================================================
+-- TRIGGER FÜR AUTOMATISCHE DATENSATZERZEUGUNG MONATLICHE TABELLEN
+-- ============================================================================
+
+DELIMITER $$
+
+-- Trigger für neue Mitarbeiter - erstellt automatisch 12 monatliche Datensätze für das aktuelle Jahr
+CREATE TRIGGER trg_create_monthly_records_new_employee
+AFTER INSERT ON t001_empleados
+FOR EACH ROW
+BEGIN
+    DECLARE current_year INT;
+    DECLARE month_counter INT;
+    
+    SET current_year = YEAR(CURDATE());
+    SET month_counter = 1;
+    
+    -- Monatliche Bruttoeinkünfte erstellen
+    WHILE month_counter <= 12 DO
+        INSERT INTO t003_ingresos_brutos_mensuales (id_empleado, anio, mes)
+        VALUES (NEW.id_empleado, current_year, month_counter);
+        SET month_counter = month_counter + 1;
+    END WHILE;
+    
+    -- Monatliche Abzüge erstellen
+    SET month_counter = 1;
+    WHILE month_counter <= 12 DO
+        INSERT INTO t004_deducciones_mensuales (id_empleado, anio, mes)
+        VALUES (NEW.id_empleado, current_year, month_counter);
+        SET month_counter = month_counter + 1;
+    END WHILE;
+END$$
+
+DELIMITER ;
+
+-- ============================================================================
+-- KOMMENTARE MONATLICHE TABELLEN
+-- ============================================================================
+
+COMMENT ON TABLE t003_ingresos_brutos_mensuales IS 'Monatliche Bruttoeinkünfte pro Mitarbeiter - ermöglicht individuelle Bearbeitung pro Monat';
+COMMENT ON TABLE t004_deducciones_mensuales IS 'Monatliche Abzüge pro Mitarbeiter - ermöglicht individuelle Bearbeitung pro Monat';
+
+COMMENT ON COLUMN t003_ingresos_brutos_mensuales.mes IS 'Monat (1=Januar, 12=Dezember)';
+COMMENT ON COLUMN t004_deducciones_mensuales.mes IS 'Monat (1=Januar, 12=Dezember)';

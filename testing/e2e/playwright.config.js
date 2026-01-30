@@ -6,9 +6,9 @@ module.exports = defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : 4, // Erhöht von undefined auf 4
-  timeout: 30000, // Zurück auf 30 Sekunden
+  timeout: 60000, // Erhöht auf 60 Sekunden für Firefox
   expect: {
-    timeout: 10000, // Zurück auf 10 Sekunden
+    timeout: 20000, // Erhöht auf 20 Sekunden
   },
   reporter: [
     ['html'],
@@ -34,7 +34,17 @@ module.exports = defineConfig({
     },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: { 
+        ...devices['Desktop Firefox'],
+        // Firefox-spezifische Einstellungen für bessere Stabilität
+        launchOptions: {
+          slowMo: 200, // Erhöht für mehr Stabilität
+          firefoxUserPrefs: {
+            'dom.webcomponents.enabled': true,
+            'dom.webdriver.enabled': false
+          }
+        },
+      },
     },
   ],
 

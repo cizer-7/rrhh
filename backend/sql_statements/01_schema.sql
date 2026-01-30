@@ -7,7 +7,7 @@
 -- TABLA 1: empleados (Mitarbeiter)
 -- Stammdaten der Mitarbeiter
 -- ============================================================================
-CREATE TABLE t001_empleados (
+CREATE TABLE IF NOT EXISTS t001_empleados (
     id_empleado INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(200) NOT NULL,
     apellido VARCHAR(200) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE t001_empleados (
 -- TABLA 2: salarios (Gehälter)
 -- Gehaltsinformationen pro Mitarbeiter und Jahr
 -- ============================================================================
-CREATE TABLE t002_salarios (
+CREATE TABLE IF NOT EXISTS t002_salarios (
     id_empleado INT NOT NULL,
     anio INT NOT NULL,
     modalidad INT NOT NULL, 
@@ -141,12 +141,13 @@ DELIMITER;
 
 
 -- ============================================================================
--- TABLA 3: ingresos brutos
--- Bruttoeinkommen Informationen pro Mitarbeiter
+-- TABLA 3: ingresos brutos mensuales
+-- Monatliches Bruttoeinkommen Informationen pro Mitarbeiter
 -- ============================================================================
-CREATE TABLE t003_ingresos_brutos (
+CREATE TABLE IF NOT EXISTS t003_ingresos_brutos_mensuales (
     id_empleado INT NOT NULL,
     anio INT NOT NULL,
+    mes INT NOT NULL,
     ticket_restaurant DECIMAL(10,2) DEFAULT 0.00,
     primas DECIMAL(10,2) DEFAULT 0.00,
     dietas_cotizables DECIMAL(10,2) DEFAULT 0.00,
@@ -155,45 +156,67 @@ CREATE TABLE t003_ingresos_brutos (
     dietas_exentas DECIMAL(10,2) DEFAULT 0.00,
     seguro_pensiones DECIMAL(10,2) DEFAULT 0.00,
     lavado_coche DECIMAL(10,2) DEFAULT 0.00,
+    formacion DECIMAL(10,2) DEFAULT 0.00,
+    tickets DECIMAL(10,2) DEFAULT 0.00,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_empleado, anio),
+    PRIMARY KEY (id_empleado, anio, mes),
     FOREIGN KEY (id_empleado) REFERENCES t001_empleados(id_empleado) ON DELETE CASCADE
 );
 
 -- ============================================================================
--- TABLA 4: deducciones
--- Abzüge Informationen pro Mitarbeiter
+-- TABLA 4: deducciones mensuales
+-- Monatliche Abzüge Informationen pro Mitarbeiter
 -- ============================================================================
-CREATE TABLE t004_deducciones (
+CREATE TABLE IF NOT EXISTS t004_deducciones_mensuales (
     id_empleado INT NOT NULL,
     anio INT NOT NULL,
+    mes INT NOT NULL,
     seguro_accidentes DECIMAL(10,2) DEFAULT 0.00,
     adelas DECIMAL(10,2) DEFAULT 0.00,
     sanitas DECIMAL(10,2) DEFAULT 0.00,
     gasolina_arval DECIMAL(10,2) DEFAULT 0.00,
+    gasolina_ald DECIMAL(10,2) DEFAULT 0.00,
+    ret_especie DECIMAL(10,2) DEFAULT 0.00,
+    seguro_medico DECIMAL(10,2) DEFAULT 0.00,
     cotizacion_especie DECIMAL(10,2) DEFAULT 0.00,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_empleado, anio),
+    PRIMARY KEY (id_empleado, anio, mes),
     FOREIGN KEY (id_empleado) REFERENCES t001_empleados(id_empleado) ON DELETE CASCADE
-    
 );
-
 
 -- ============================================================================
 -- TABLA 5: benutzer (Benutzer)
 -- Benutzer für die Anwendungsanmeldung
 -- ============================================================================
-CREATE TABLE t005_benutzer (
-    id_benutzer INT AUTO_INCREMENT PRIMARY KEY,
-    benutzername VARCHAR(50) NOT NULL UNIQUE,
-    passwort_hash VARCHAR(256) NOT NULL,
-    voller_name VARCHAR(200) NOT NULL,
-    rolle VARCHAR(50) DEFAULT 'benutzer',
-    aktiv BOOLEAN DEFAULT TRUE,
-    datum_erstellung TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    datum_modifikation TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS t005_benutzer (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
+    hash_contraseña VARCHAR(256) NOT NULL,
+    nombre_completo VARCHAR(200) NOT NULL,
+    rol VARCHAR(50) DEFAULT 'benutzer',
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS t006_valores_calculados_mensuales (
+    id_empleado INT NOT NULL,
+    anio INT NOT NULL,
+    mes INT NOT NULL,
+    total DECIMAL(12,2) DEFAULT 0.00,           -- SUMME(C6:K6) - Summe der relevanten Spalten
+    anticipos DECIMAL(10,2) DEFAULT 0.00,       -- D6+ G6 + K6 (Anticipos = bestimmte Spaltenkombination)
+    total_especie DECIMAL(10,2) DEFAULT 0.00,   -- E6 + I6 + J6 (Total Especie = bestimmte Spaltenkombination)
+    dias_exentos DECIMAL(10,2) DEFAULT 0.00,    -- Exente Tage
+    base_imponible DECIMAL(12,2) DEFAULT 0.00,  -- Steuerpflichtige Basis
+    dietas_cotizables_total DECIMAL(10,2) DEFAULT 0.00,  -- Gesamt der cotizables Dietas
+    dietas_exentas_total DECIMAL(10,2) DEFAULT 0.00,    -- Gesamt der exentas Dietas
+    tickets_total DECIMAL(10,2) DEFAULT 0.00,    -- Gesamt der Tickets
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_empleado, anio, mes),
+    FOREIGN KEY (id_empleado) REFERENCES t001_empleados(id_empleado) ON DELETE CASCADE
 );
 
 
