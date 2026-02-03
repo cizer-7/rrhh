@@ -4,7 +4,7 @@ import os
 from unittest.mock import Mock, patch
 
 # Backend-Verzeichnis zum Pfad hinzufügen
-backend_path = os.path.join(os.path.dirname(__file__), '..', 'backend')
+backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
 sys.path.insert(0, backend_path)
 
 from database_manager import DatabaseManager

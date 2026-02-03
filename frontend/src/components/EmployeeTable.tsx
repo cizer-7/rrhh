@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Search, Plus, Edit, Trash2, Eye } from 'lucide-react'
 import EmployeeForm from './EmployeeForm'
 import EmployeeDetail from './EmployeeDetail'
+import SalaryCopyManager from './SalaryCopyManager'
 
 interface EmployeeTableProps {
   onEmployeeChange?: () => void
@@ -219,6 +220,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
             {searchTerm ? 'Keine Mitarbeiter gefunden' : 'Keine Mitarbeiter vorhanden'}
           </div>
         )}
+      </div>
+
+      {/* Gehaltsverwaltung */}
+      <div id="salary-management" className="mt-6">
+        <SalaryCopyManager />
       </div>
 
       <EmployeeForm

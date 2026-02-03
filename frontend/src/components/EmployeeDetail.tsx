@@ -24,7 +24,7 @@ interface EmployeeDetailProps {
 
 export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps) {
 
-  const [activeTab, setActiveTab] = useState<'salary' | 'ingresos' | 'deducciones' | 'stammdaten'>('salary')
+  const [activeTab, setActiveTab] = useState<'salary' | 'ingresos' | 'deducciones' | 'stammdaten' | 'gehaltserhoehung'>('salary')
 
   const [year, setYear] = useState<number>(new Date().getFullYear())
 
@@ -46,6 +46,12 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     ceco: employee.ceco || '',
     activo: employee.activo ?? true
   })
+
+  // State for salary increase
+  const [increaseYear, setIncreaseYear] = useState<string>('')
+  const [increasePercentage, setIncreasePercentage] = useState<string>('')
+  const [increaseLoading, setIncreaseLoading] = useState(false)
+  const [increaseResult, setIncreaseResult] = useState<any>(null)
 
 
 
@@ -468,13 +474,96 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     }
   }
 
+  const handleSalaryIncrease = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!increaseYear || !increasePercentage) {
+      alert('Bitte geben Sie Jahr und Prozentsatz ein')
+      return
+    }
+    
+    setIncreaseLoading(true)
+    setIncreaseResult(null)
+    
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        console.error('Kein Token gefunden')
+        return
+      }
+
+      const headers = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+      
+      const requestData = {
+        target_year: parseInt(increaseYear),
+        percentage_increase: parseFloat(increasePercentage)
+      }
+      
+      console.log('Sending salary increase request:', requestData)
+      
+      const response = await fetch('http://localhost:8000/salaries/percentage-increase', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestData)
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok) {
+        console.log('Gehaltserhöhung erfolgreich:', result)
+        setIncreaseResult(result)
+        // Refresh data to show updated salaries
+        fetchData()
+      } else {
+        console.error('Fehler bei Gehaltserhöhung:', result)
+        setIncreaseResult(result)
+      }
+    } catch (error) {
+      console.error('Error applying salary increase:', error)
+      setIncreaseResult({ success: false, message: 'Netzwerkfehler' })
+    } finally {
+      setIncreaseLoading(false)
+    }
+  }
+
+  const calculateMonthlySalary = (selectedMonth: number | null) => {
+    // Wenn kein Monat ausgewählt, Jahresdurchschnitt verwenden
+    if (!selectedMonth) {
+      return typeof salary?.salario_mensual_bruto === 'string' 
+        ? parseFloat(salary.salario_mensual_bruto) || 0 
+        : (salary?.salario_mensual_bruto || 0)
+    }
+    
+    // Für Monate Januar-März: Gehalt vom Vorjahr verwenden
+    if (selectedMonth >= 1 && selectedMonth <= 3) {
+      // Berechne altes Monatsgehalt (aktuelles Jahresgehalt - Erhöhung)
+      const currentAnnualSalary = typeof salary?.salario_anual_bruto === 'string' 
+        ? parseFloat(salary.salario_anual_bruto) || 0 
+        : (salary?.salario_anual_bruto || 0)
+      const atrasos = typeof salary?.atrasos === 'string' 
+        ? parseFloat(salary.atrasos) || 0 
+        : (salary?.atrasos || 0)
+      const modalidad = salary?.modalidad || 12
+      
+      // Altes Jahresgehalt = aktuelles Jahresgehalt - (atrasos * modalidad / 3)
+      const oldAnnualSalary = currentAnnualSalary - (atrasos * modalidad / 3)
+      const oldMonthlySalary = oldAnnualSalary / modalidad
+      
+      return oldMonthlySalary
+    }
+    
+    // Für Monate April-Dezember: neues Gehalt (inkl. atrasos)
+    return typeof salary?.salario_mensual_con_atrasos === 'string' 
+      ? parseFloat(salary.salario_mensual_con_atrasos) || 0 
+      : (salary?.salario_mensual_con_atrasos || salary?.salario_mensual_bruto || 0)
+  }
+
   const calculateTotal = () => {
 
-    const baseSalary = typeof salary?.salario_mensual_bruto === 'string' 
-
-      ? parseFloat(salary.salario_mensual_bruto) || 0 
-
-      : (salary?.salario_mensual_bruto || 0)
+    const baseSalary = calculateMonthlySalary(month)
 
     const ingresosTotal = (typeof ingresos?.ticket_restaurant === 'string' ? parseFloat(ingresos.ticket_restaurant) || 0 : (ingresos?.ticket_restaurant || 0)) + 
 
@@ -814,7 +903,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
             <div className="text-2xl font-bold text-gray-900">
 
-              €{((typeof salary?.salario_anual_bruto === 'string' ? parseFloat(salary.salario_anual_bruto) : (salary?.salario_anual_bruto || 0)) / (salary?.modalidad || 12)).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              €{calculateMonthlySalary(month).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 
             </div>
 
@@ -874,7 +963,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
             <nav className="flex space-x-8 px-6">
 
-              {['salary', 'ingresos', 'deducciones', 'stammdaten'].map((tab) => (
+              {['salary', 'ingresos', 'deducciones', 'stammdaten', 'gehaltserhoehung'].map((tab) => (
 
                 <button
 
@@ -894,7 +983,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
                 >
 
-                  {tab === 'salary' ? 'Gehalt' : tab === 'ingresos' ? 'Zulagen' : tab === 'deducciones' ? 'Abzüge' : 'Stammdaten'}
+                  {tab === 'salary' ? 'Gehalt' : tab === 'ingresos' ? 'Zulagen' : tab === 'deducciones' ? 'Abzüge' : tab === 'gehaltserhoehung' ? 'Gehaltserhöhung' : 'Stammdaten'}
 
                 </button>
 
@@ -1216,6 +1305,103 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                       </Button>
                     </div>
                   </form>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'gehaltserhoehung' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Prozentuale Gehaltserhöhung</h3>
+                  <p className="text-sm text-gray-600 mb-6">
+                    Wendet eine prozentuale Gehaltserhöhung auf alle aktiven Mitarbeiter an. 
+                    Die Erhöhung wird erst im April des Zieljahres wirksam mit Nachzahlung für Januar-März.
+                  </p>
+                </div>
+
+                <form onSubmit={handleSalaryIncrease} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Zieljahr</label>
+                      <input
+                        type="number"
+                        min="2020"
+                        max="2030"
+                        value={increaseYear}
+                        onChange={(e) => setIncreaseYear(e.target.value)}
+                        placeholder="z.B. 2026"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Prozentsatz (%)</label>
+                      <input
+                        type="number"
+                        min="0.1"
+                        max="100"
+                        step="0.1"
+                        value={increasePercentage}
+                        onChange={(e) => setIncreasePercentage(e.target.value)}
+                        placeholder="z.B. 10.0"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    disabled={increaseLoading}
+                    className="flex items-center gap-2"
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    {increaseLoading ? 'Wird verarbeitet...' : 'Gehaltserhöhung anwenden'}
+                  </Button>
+                </form>
+
+                {increaseResult && (
+                  <div className={`mt-6 p-4 rounded-md ${
+                    increaseResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+                  }`}>
+                    <h4 className={`font-medium mb-2 ${
+                      increaseResult.success ? 'text-green-800' : 'text-red-800'
+                    }`}>
+                      {increaseResult.success ? '✅ Erfolg' : '❌ Fehler'}
+                    </h4>
+                    <p className={`text-sm mb-2 ${
+                      increaseResult.success ? 'text-green-700' : 'text-red-700'
+                    }`}>
+                      {increaseResult.message}
+                    </p>
+                    
+                    {increaseResult.success && increaseResult.employees && (
+                      <div className="mt-3">
+                        <p className="text-sm font-medium text-green-800 mb-2">
+                          {increaseResult.updated_count} Mitarbeiter aktualisiert:
+                        </p>
+                        <div className="max-h-40 overflow-y-auto">
+                          {increaseResult.employees.map((emp: any, index: number) => (
+                            <div key={index} className="text-xs text-green-700 py-1">
+                              {emp.name}: {emp.old_salary}€ → {emp.new_salary}€ 
+                              (+{emp.increase_percent}%, atrasos: {emp.atrasos.toFixed(2)}€)
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {increaseResult.errors && increaseResult.errors.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-sm font-medium text-red-800 mb-2">Fehler:</p>
+                        <div className="max-h-40 overflow-y-auto">
+                          {increaseResult.errors.map((error: string, index: number) => (
+                            <div key={index} className="text-xs text-red-700 py-1">{error}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             )}

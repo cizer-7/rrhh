@@ -12,10 +12,10 @@ import time
 from pathlib import Path
 
 # Backend-Verzeichnis zum Pfad hinzufügen
-backend_path = os.path.join(os.path.dirname(__file__), '..', 'backend')
+backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
 sys.path.insert(0, backend_path)
 
-def run_command(cmd, cwd=None, capture_output=True):
+def run_command(cmd, cwd=None, capture_output=True, env=None):
     """Führt einen Befehl aus und gibt das Ergebnis zurück"""
     try:
         result = subprocess.run(
@@ -24,6 +24,7 @@ def run_command(cmd, cwd=None, capture_output=True):
             cwd=cwd, 
             capture_output=capture_output, 
             text=True,
+            env=env,
             timeout=300  # 5 Minuten Timeout
         )
         return result.returncode == 0, result.stdout, result.stderr
@@ -85,9 +86,9 @@ def run_unit_tests():
     print_section("Unit-Tests")
     
     test_files = [
-        'backend/test_backend_core.py',
-        'backend/test_integration_simple.py',
-        'backend/test_api_core.py'
+        'test_backend_core.py',
+        'test_integration_simple.py',
+        'test_api_core.py'
     ]
     
     all_passed = True
@@ -95,8 +96,11 @@ def run_unit_tests():
     for test_file in test_files:
         print_subsection(f"Teste {test_file}")
         
+        backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+        env = os.environ.copy()
+        env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
         cmd = f'python -m pytest {test_file} -v --tb=short'
-        success, stdout, stderr = run_command(cmd)
+        success, stdout, stderr = run_command(cmd, env=env)
         
         print(stdout)
         if stderr:
@@ -114,8 +118,11 @@ def run_integration_tests():
     """Führt Integration-Tests aus"""
     print_section("Integration-Tests")
     
-    cmd = 'python -m pytest backend/test_integration_simple.py -v --tb=short'
-    success, stdout, stderr = run_command(cmd)
+    backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+    env = os.environ.copy()
+    env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
+    cmd = f'python -m pytest test_integration_simple.py -v --tb=short'
+    success, stdout, stderr = run_command(cmd, env=env)
     
     print(stdout)
     if stderr:
@@ -132,8 +139,11 @@ def run_performance_tests():
     """Führt Performance-Tests aus"""
     print_section("Performance-Tests")
     
-    cmd = 'python -m pytest test_backend_core.py::TestDatabaseManagerCore::test_performance_hash_password -v --tb=short'
-    success, stdout, stderr = run_command(cmd)
+    backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+    env = os.environ.copy()
+    env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
+    cmd = f'python -m pytest test_backend_core.py::TestDatabaseManagerCore::test_performance_hash_password -v --tb=short'
+    success, stdout, stderr = run_command(cmd, env=env)
     
     print(stdout)
     if stderr:
@@ -152,8 +162,11 @@ def run_coverage_analysis():
     
     # DatabaseManager Coverage
     print_subsection("DatabaseManager Coverage")
-    cmd = 'python -m pytest test_backend_core.py --cov=../backend/database_manager --cov-report=term-missing'
-    success, stdout, stderr = run_command(cmd)
+    backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+    env = os.environ.copy()
+    env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
+    cmd = f'python -m pytest test_backend_core.py --cov=../backend/database_manager --cov-report=term-missing'
+    success, stdout, stderr = run_command(cmd, env=env)
     
     print(stdout)
     if stderr:
@@ -166,8 +179,11 @@ def run_coverage_analysis():
     
     # Flask API Coverage
     print_subsection("Flask API Coverage")
-    cmd = 'python -m pytest test_api_core.py --cov=../backend/flask_api_server --cov-report=term-missing'
-    success2, stdout2, stderr2 = run_command(cmd)
+    backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+    env = os.environ.copy()
+    env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
+    cmd = f'python -m pytest test_api_core.py --cov=../backend/flask_api_server --cov-report=term-missing'
+    success2, stdout2, stderr2 = run_command(cmd, env=env)
     
     print(stdout2)
     if stderr2:
@@ -196,8 +212,11 @@ def run_security_tests():
     for test in security_tests:
         print_subsection(f"Security Test: {test.split('::')[-1]}")
         
+        backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+        env = os.environ.copy()
+        env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
         cmd = f'python -m pytest {test} -v --tb=short'
-        success, stdout, stderr = run_command(cmd)
+        success, stdout, stderr = run_command(cmd, env=env)
         
         print(stdout)
         if stderr:
@@ -215,8 +234,11 @@ def run_error_scenario_tests():
     """Führt Fehler-Szenario Tests aus"""
     print_section("Fehler-Szenario Tests")
     
-    cmd = 'python -m pytest backend/test_backend_core.py::TestDatabaseManagerCore::test_error_recovery -v --tb=short'
-    success, stdout, stderr = run_command(cmd)
+    backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+    env = os.environ.copy()
+    env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
+    cmd = f'python -m pytest test_backend_core.py::TestDatabaseManagerCore::test_error_recovery -v --tb=short'
+    success, stdout, stderr = run_command(cmd, env=env)
     
     print(stdout)
     if stderr:

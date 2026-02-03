@@ -111,7 +111,7 @@ describe('EmployeeDetail Component', () => {
 
     render(<EmployeeDetail employee={mockEmployee} onBack={mockOnBack} />)
 
-    // Wait for basic employee info to load first
+    // Wait for loading to complete and employee name to appear
     await waitFor(() => {
       expect(screen.getByText('Perez, Juan')).toBeInTheDocument()
     }, { timeout: 3000 })

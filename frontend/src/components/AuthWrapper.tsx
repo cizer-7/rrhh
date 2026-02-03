@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Login from '@/components/Login'
-import { ArrowLeft, Download, Users, FileText, LogOut } from 'lucide-react'
+import { ArrowLeft, Download, Users, FileText, LogOut, TrendingUp } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import EmployeeTable from '@/components/EmployeeTable'
 import { Button } from '@/components/ui/button'
-import apiClient from '@/lib/api'
 
 interface DashboardProps {
   user?: any
@@ -22,6 +21,15 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
   const [currentMonth, setCurrentMonth] = useState<number | null>(null)
   const [exportType, setExportType] = useState<'yearly' | 'monthly'>('yearly')
+  const [exportFormat, setExportFormat] = useState<'nomina_total' | 'asiento_nomina'>('nomina_total')
+  
+  // State für Gehaltserhöhung
+  const [showSalaryIncrease, setShowSalaryIncrease] = useState(false)
+  const [increaseYear, setIncreaseYear] = useState('')
+  const [increasePercentage, setIncreasePercentage] = useState('')
+  const [increaseLoading, setIncreaseLoading] = useState(false)
+  const [increaseResult, setIncreaseResult] = useState<any>(null)
+  
   const router = useRouter()
 
   useEffect(() => {
@@ -49,6 +57,61 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
     }
   }
 
+  const handleSalaryIncrease = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!increaseYear || !increasePercentage) {
+      alert('Bitte geben Sie Jahr und Prozentsatz ein')
+      return
+    }
+    
+    setIncreaseLoading(true)
+    setIncreaseResult(null)
+    
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        console.error('Kein Token gefunden')
+        return
+      }
+
+      const headers = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+      
+      const requestData = {
+        target_year: parseInt(increaseYear),
+        percentage_increase: parseFloat(increasePercentage)
+      }
+      
+      console.log('Sending salary increase request:', requestData)
+      
+      const response = await fetch('http://localhost:8000/salaries/percentage-increase', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestData)
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok) {
+        console.log('Gehaltserhöhung erfolgreich:', result)
+        setIncreaseResult(result)
+        // Refresh stats to show updated data
+        fetchEmployeeStats()
+      } else {
+        console.error('Fehler bei Gehaltserhöhung:', result)
+        setIncreaseResult(result)
+      }
+    } catch (error) {
+      console.error('Error applying salary increase:', error)
+      setIncreaseResult({ success: false, message: 'Netzwerkfehler' })
+    } finally {
+      setIncreaseLoading(false)
+    }
+  }
+
   const handleBack = () => {
     router.push('/')
   }
@@ -62,9 +125,23 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
   const handleExport = async () => {
     try {
       const token = localStorage.getItem('token')
-      const url = exportType === 'monthly' && currentMonth 
-        ? `http://localhost:8000/export/excel/${currentYear}/${currentMonth}`
-        : `http://localhost:8000/export/excel/${currentYear}`
+      
+      // Asiento Nomina erfordert monatlichen Export
+      if (exportFormat === 'asiento_nomina' && (!currentMonth || exportType !== 'monthly')) {
+        alert('Asiento Nomina Export erfordert monatliche Auswahl')
+        return
+      }
+      
+      let url: string
+      if (exportFormat === 'asiento_nomina') {
+        // Asiento Nomina API Endpunkt
+        url = `http://localhost:8000/export/asiento_nomina/${currentYear}/${currentMonth}`
+      } else {
+        // Nomina Total API Endpunkt
+        url = exportType === 'monthly' && currentMonth 
+          ? `http://localhost:8000/export/excel/${currentYear}/${currentMonth}`
+          : `http://localhost:8000/export/excel/${currentYear}`
+      }
       
       const response = await fetch(url, {
         headers: {
@@ -83,9 +160,16 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
       const url_blob = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url_blob
-      const filename = exportType === 'monthly' && currentMonth 
-        ? `gehaltsabrechnung_${currentYear}_${currentMonth}.xlsx`
-        : `gehaltsabrechnung_${currentYear}.xlsx`
+      
+      let filename: string
+      if (exportFormat === 'asiento_nomina') {
+        filename = `asiento_nomina_${currentYear}_${currentMonth}.xlsx`
+      } else {
+        filename = exportType === 'monthly' && currentMonth 
+          ? `gehaltsabrechnung_${currentYear}_${currentMonth}.xlsx`
+          : `gehaltsabrechnung_${currentYear}.xlsx`
+      }
+      
       a.download = filename
       document.body.appendChild(a)
       a.click()
@@ -112,19 +196,61 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Gehaltserhöhung Button */}
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2 bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+              onClick={() => setShowSalaryIncrease(!showSalaryIncrease)}
+            >
+              <TrendingUp className="w-4 h-4" />
+              {showSalaryIncrease ? 'Abbrechen' : 'Gehaltserhöhung'}
+            </Button>
+            
+            {/* Link zur Gehaltsverwaltung */}
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+              onClick={() => {
+                const element = document.getElementById('salary-management')
+                element?.scrollIntoView({ behavior: 'smooth' })
+              }}
+            >
+              <Download className="w-4 h-4" />
+              Gehaltsverwaltung
+            </Button>
             <select 
-              value={exportType} 
+              value={exportFormat} 
               onChange={(e) => {
-                setExportType(e.target.value as 'yearly' | 'monthly')
-                if (e.target.value === 'yearly') {
-                  setCurrentMonth(null)
+                setExportFormat(e.target.value as 'nomina_total' | 'asiento_nomina')
+                // Asiento Nomina erfordert monatlichen Export
+                if (e.target.value === 'asiento_nomina') {
+                  setExportType('monthly')
+                  if (!currentMonth) {
+                    setCurrentMonth(new Date().getMonth() + 1)
+                  }
                 }
               }}
               className="px-3 py-2 border border-gray-300 rounded-md"
             >
-              <option value="yearly">Jährlich</option>
-              <option value="monthly">Monatlich</option>
+              <option value="nomina_total">Nomina Total</option>
+              <option value="asiento_nomina">Asiento Nomina</option>
             </select>
+            
+            {exportFormat === 'nomina_total' && (
+              <select 
+                value={exportType} 
+                onChange={(e) => {
+                  setExportType(e.target.value as 'yearly' | 'monthly')
+                  if (e.target.value === 'yearly') {
+                    setCurrentMonth(null)
+                  }
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="yearly">Jährlich</option>
+                <option value="monthly">Monatlich</option>
+              </select>
+            )}
             
             <select 
               value={currentYear} 
@@ -136,7 +262,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
               ))}
             </select>
             
-            {exportType === 'monthly' && (
+            {(exportFormat === 'asiento_nomina' || exportType === 'monthly') && (
               <select 
                 value={currentMonth || ''} 
                 onChange={(e) => setCurrentMonth(e.target.value ? parseInt(e.target.value) : null)}
@@ -168,7 +294,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
               variant="outline" 
               className="flex items-center gap-2" 
               onClick={() => handleExport()}
-              disabled={exportType === 'monthly' && !currentMonth}
+              disabled={(exportFormat === 'asiento_nomina' || exportType === 'monthly') && !currentMonth}
             >
               <Download className="w-4 h-4" />
               Excel Export
@@ -179,6 +305,102 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
             </Button>
           </div>
         </div>
+
+        {/* Gehaltserhöhungs-Formular */}
+        {showSalaryIncrease && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Prozentuale Gehaltserhöhung für alle Mitarbeiter</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Wendet eine prozentuale Gehaltserhöhung auf alle aktiven Mitarbeiter an. 
+              Die Erhöhung wird erst im April des Zieljahres wirksam mit Nachzahlung für Januar-März.
+            </p>
+
+            <form onSubmit={handleSalaryIncrease} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Zieljahr</label>
+                  <input
+                    type="number"
+                    min="2020"
+                    max="2030"
+                    value={increaseYear}
+                    onChange={(e) => setIncreaseYear(e.target.value)}
+                    placeholder="z.B. 2026"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prozentsatz (%)</label>
+                  <input
+                    type="number"
+                    min="0.1"
+                    max="100"
+                    step="0.1"
+                    value={increasePercentage}
+                    onChange={(e) => setIncreasePercentage(e.target.value)}
+                    placeholder="z.B. 10.0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                disabled={increaseLoading}
+                className="flex items-center gap-2"
+              >
+                <TrendingUp className="w-4 h-4" />
+                {increaseLoading ? 'Wird verarbeitet...' : 'Gehaltserhöhung anwenden'}
+              </Button>
+            </form>
+
+            {increaseResult && (
+              <div className={`mt-6 p-4 rounded-md ${
+                increaseResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+              }`}>
+                <h4 className={`font-medium mb-2 ${
+                  increaseResult.success ? 'text-green-800' : 'text-red-800'
+                }`}>
+                  {increaseResult.success ? '✅ Erfolg' : '❌ Fehler'}
+                </h4>
+                <p className={`text-sm mb-2 ${
+                  increaseResult.success ? 'text-green-700' : 'text-red-700'
+                }`}>
+                  {increaseResult.message}
+                </p>
+                
+                {increaseResult.success && increaseResult.employees && (
+                  <div className="mt-3">
+                    <p className="text-sm font-medium text-green-800 mb-2">
+                      {increaseResult.updated_count} Mitarbeiter aktualisiert:
+                    </p>
+                    <div className="max-h-40 overflow-y-auto">
+                      {increaseResult.employees.map((emp: any, index: number) => (
+                        <div key={index} className="text-xs text-green-700 py-1">
+                          {emp.name}: {emp.old_salary}€ → {emp.new_salary}€ 
+                          (+{emp.increase_percent}%, atrasos: {emp.atrasos.toFixed(2)}€)
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {increaseResult.errors && increaseResult.errors.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-sm font-medium text-red-800 mb-2">Fehler:</p>
+                    <div className="max-h-40 overflow-y-auto">
+                      {increaseResult.errors.map((error: string, index: number) => (
+                        <div key={index} className="text-xs text-red-700 py-1">{error}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-lg p-6">

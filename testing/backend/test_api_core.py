@@ -7,7 +7,7 @@ import sys
 import os
 
 # Backend-Verzeichnis zum Pfad hinzufügen
-backend_path = os.path.join(os.path.dirname(__file__), '..', 'backend')
+backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
 sys.path.insert(0, backend_path)
 
 from flask_api_server import app, create_access_token, verify_token, SECRET_KEY, ALGORITHM

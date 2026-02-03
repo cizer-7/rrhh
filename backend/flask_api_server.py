@@ -333,6 +333,35 @@ def export_excel(current_user, year, month=None):
         logger.error(f"Fehler beim Excel-Export für Jahr {year}, Monat {month}: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
 
+# Asiento Nomina Export Endpunkt
+@app.route('/export/asiento_nomina/<int:year>/<int:month>', methods=['GET'])
+@token_required
+def export_asiento_nomina(current_user, year, month):
+    """Asiento Nomina Excel-Export für Gehaltsdaten - monatlich"""
+    try:
+        # Temporäre Datei erstellen
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        filename = f"asiento_nomina_{year}_{month}_{timestamp}.xlsx"
+        filepath = f"C:/temp/{filename}"
+        
+        # Temp-Verzeichnis erstellen falls nicht vorhanden
+        os.makedirs("C:/temp", exist_ok=True)
+        
+        success = db_manager.export_asiento_nomina_excel(year, month, filepath)
+        if not success:
+            return jsonify({"error": "Fehler beim Asiento Nomina Export"}), 400
+        
+        # Datei zurückgeben
+        return send_file(
+            filepath,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    except Exception as e:
+        logger.error(f"Fehler beim Asiento Nomina Export für Jahr {year}, Monat {month}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
 # Monatliche Einkünfte Endpunkte
 @app.route('/employees/<int:employee_id>/ingresos/<int:year>/<int:month>', methods=['PUT'])
 @token_required
@@ -373,6 +402,81 @@ def health_check():
         "status": "healthy", 
         "timestamp": datetime.now(timezone.utc).isoformat()
     })
+
+# Gehaltskopierung Endpunkte
+@app.route('/salaries/copy-to-year/<int:target_year>', methods=['POST'])
+@token_required
+def copy_salaries_to_year(current_user, target_year):
+    """Kopiert Gehälter vom Vorjahr ins Zieljahr"""
+    try:
+        result = db_manager.copy_salaries_to_new_year(target_year)
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Fehler bei der Gehaltskopierung für Jahr {target_year}: {e}")
+        return jsonify({
+            "success": False,
+            "message": "Interner Serverfehler bei der Gehaltskopierung",
+            "copied_count": 0,
+            "skipped_count": 0,
+            "errors": [str(e)]
+        }), 500
+
+@app.route('/salaries/missing-years', methods=['GET'])
+@token_required
+def get_missing_salary_years(current_user):
+    """Gibt Jahre zurück, für die Mitarbeiter keine Gehälter haben"""
+    try:
+        missing_years = db_manager.get_missing_salary_years()
+        return jsonify({
+            "success": True,
+            "missing_years": missing_years
+        })
+    except Exception as e:
+        logger.error(f"Fehler bei der Abfrage fehlender Gehaltsjahre: {e}")
+        return jsonify({
+            "success": False,
+            "message": "Interner Serverfehler bei der Abfrage",
+            "missing_years": []
+        }), 500
+
+# Gehaltserhöhung Endpunkt
+@app.route('/salaries/percentage-increase', methods=['POST'])
+@token_required
+def apply_percentage_increase(current_user):
+    """Wendet eine prozentuale Gehaltserhöhung auf alle aktiven Mitarbeiter an"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"error": "Keine Daten im Request Body gefunden"}), 400
+        
+        target_year = data.get('target_year')
+        percentage_increase = data.get('percentage_increase')
+        
+        if target_year is None or percentage_increase is None:
+            return jsonify({"error": "target_year und percentage_increase sind erforderlich"}), 400
+        
+        if not isinstance(target_year, int) or target_year < 2020:
+            return jsonify({"error": "target_year muss eine gültige Jahreszahl sein"}), 400
+        
+        if not isinstance(percentage_increase, (int, float)) or percentage_increase <= 0:
+            return jsonify({"error": "percentage_increase muss eine positive Zahl sein"}), 400
+        
+        # Wende die Gehaltserhöhung an
+        result = db_manager.apply_percentage_salary_increase(target_year, percentage_increase)
+        
+        if result['success']:
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Fehler bei prozentualer Gehaltserhöhung: {e}")
+        return jsonify({
+            "success": False,
+            "message": "Interner Serverfehler",
+            "errors": [str(e)]
+        }), 500
 
 if __name__ == "__main__":
     print("Starte Flask API Server auf http://localhost:8000")

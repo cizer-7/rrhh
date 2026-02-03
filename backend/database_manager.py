@@ -777,6 +777,110 @@ class DatabaseManager:
 
     
 
+    def apply_percentage_salary_increase(self, target_year: int, percentage_increase: float) -> Dict[str, Any]:
+        """
+        Wendet eine prozentuale Gehaltserhöhung auf alle aktiven Mitarbeiter an.
+        Die Erhöhung wird erst im April des target_year wirksam.
+        
+        Args:
+            target_year: Jahr in dem die Erhöhung wirksam wird
+            percentage_increase: Prozentsatz der Erhöhung (z.B. 10.0 für 10%)
+            
+        Returns:
+            Dict mit Ergebnissen der Operation
+        """
+        try:
+            # Hole alle aktiven Mitarbeiter mit ihrem aktuellen Gehalt (target_year-1)
+            query = """
+            SELECT e.id_empleado, e.nombre, e.apellido, 
+                   COALESCE(s.salario_anual_bruto, 0) as salario_actual,
+                   COALESCE(s.modalidad, 12) as modalidad
+            FROM t001_empleados e
+            LEFT JOIN t002_salarios s ON e.id_empleado = s.id_empleado AND s.anio = %s
+            WHERE e.activo = TRUE
+            """
+            
+            employees = self.execute_query(query, (target_year - 1,))
+            
+            if not employees:
+                return {"success": False, "message": "Keine Mitarbeiter gefunden oder keine Gehaltsdaten für Vorjahr"}
+            
+            updated_employees = []
+            errors = []
+            
+            for employee in employees:
+                try:
+                    employee_id = employee['id_empleado']
+                    current_salary = employee['salario_actual']
+                    modalidad = employee['modalidad']
+                    
+                    if current_salary == 0:
+                        errors.append(f"Mitarbeiter {employee['nombre']} {employee['apellido']}: Kein Gehalt für {target_year-1} gefunden")
+                        continue
+                    
+                    # Berechne neues Gehalt
+                    new_salary = current_salary * (1 + percentage_increase / 100)
+                    
+                    # Berechne atrasos korrekt für April-Wirksamkeit
+                    # Nachzahlung für die Monate Januar-März mit der Differenz zwischen alt und neu
+                    old_monthly = current_salary / modalidad
+                    new_monthly = new_salary / modalidad
+                    monthly_diff = new_monthly - old_monthly
+                    atrasos = monthly_diff * 3  # 3 Monate Nachzahlung
+                    
+                    # Füge oder aktualisiere Gehalt für target_year
+                    salary_data = {
+                        'salario_anual_bruto': new_salary,
+                        'modalidad': modalidad,
+                        'antiguedad': 0
+                    }
+                    
+                    result = self.add_salary(employee_id, target_year, salary_data)
+                    
+                    if result:
+                        # Manuelles Update der atrasos mit korrekter Berechnung
+                        update_atrasos_query = """
+                        UPDATE t002_salarios 
+                        SET atrasos = %s, 
+                            salario_mensual_con_atrasos = %s
+                        WHERE id_empleado = %s AND anio = %s
+                        """
+                        
+                        new_monthly_salary = new_salary / modalidad
+                        self.execute_update(update_atrasos_query, (
+                            atrasos,
+                            new_monthly_salary + atrasos,
+                            employee_id,
+                            target_year
+                        ))
+                        
+                        updated_employees.append({
+                            'id': employee_id,
+                            'name': f"{employee['nombre']} {employee['apellido']}",
+                            'old_salary': current_salary,
+                            'new_salary': new_salary,
+                            'increase_percent': percentage_increase,
+                            'atrasos': atrasos
+                        })
+                    else:
+                        errors.append(f"Fehler bei Aktualisierung von {employee['nombre']} {employee['apellido']}")
+                        
+                except Exception as e:
+                    errors.append(f"Mitarbeiter {employee['nombre']} {employee['apellido']}: {str(e)}")
+            
+            return {
+                "success": len(updated_employees) > 0,
+                "updated_count": len(updated_employees),
+                "error_count": len(errors),
+                "employees": updated_employees,
+                "errors": errors,
+                "message": f"{len(updated_employees)} Mitarbeiter erfolgreich aktualisiert"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Fehler bei prozentualer Gehaltserhöhung: {e}")
+            return {"success": False, "message": f"Datenbankfehler: {str(e)}"}
+
     def _update_subsequent_years_atrasos(self, employee_id: int, base_year: int) -> None:
 
         """Aktualisiert atrasos für alle Folgejahre eines Mitarbeiters"""
@@ -1597,16 +1701,40 @@ class DatabaseManager:
                 columns_df = pd.DataFrame([column_names])
                 columns_df.to_excel(writer, sheet_name='Sheet1', index=False, header=False, startrow=4)
 
-                # Daten ab Zeile 6 schreiben mit Komma als Dezimaltrennzeichen
+                # Daten ab Zeile 6 schreiben als echte numerische Werte
                 df.columns = column_names
 
-                # Konvertiere numerische Werte zu Strings mit Komma als Dezimaltrennzeichen
-                df_formatted = df.copy()
-                for col in df.columns:
-                    if col not in ['Etiquetas de fila', 'CECO']:  # Nicht für Name und CECO
-                        df_formatted[col] = df[col].apply(lambda x: f"{x:.2f}".replace('.', ',') if pd.notna(x) and x != 0 else '')
+                # Schreibe die Daten direkt als numerische Werte (nicht als Strings)
+                df.to_excel(writer, sheet_name='Sheet1', index=False, header=False, startrow=5)
 
-                df_formatted.to_excel(writer, sheet_name='Sheet1', index=False, header=False, startrow=5)
+                # Eine leere Zeile nach den Daten einfügen
+                empty_row_df = pd.DataFrame([[None] * len(column_names)])
+                empty_row_df.to_excel(writer, sheet_name='Sheet1', index=False, header=False, startrow=len(df) + 6)
+
+                # Summenzeile für Spalten C bis V mit Excel-Formeln hinzufügen
+                # Finde die letzte Datenzeile + leere Zeile
+                last_row = len(df) + 7  # +6 wegen Header + 1 wegen leerer Zeile
+                
+                # Hole das Worksheet-Objekt
+                worksheet = writer.sheets['Sheet1']
+                
+                # Berechne Summen für Spalten C bis V (Index 2 bis 21) mit Excel-Formeln
+                for col_idx in range(2, 22):  # Spalten C bis V
+                    col_letter = chr(65 + col_idx)  # A=65, B=66, C=67, etc.
+                    if col_letter <= 'V':  # Sicherstellen, dass wir nur bis V gehen
+                        # Spaltenname aus den column_names holen
+                        if col_idx - 1 < len(column_names):
+                            col_name = column_names[col_idx - 1]
+                            # Excel-Formel einfügen (nur für numerische Spalten, nicht für 'Etiquetas de fila' und 'CECO')
+                            if col_name not in ['Etiquetas de fila', 'CECO']:
+                                # Excel-Formel: =SUM(C6:C[letzte Datenzeile])
+                                data_start_row = 6  # Daten starten bei Zeile 6
+                                data_end_row = len(df) + 5  # Letzte Datenzeile
+                                formula = f"=SUM({col_letter}{data_start_row}:{col_letter}{data_end_row})"
+                                worksheet[f'{col_letter}{last_row}'] = formula
+                                # Zelle formatieren mit Komma als Dezimaltrennzeichen
+                                cell = worksheet[f'{col_letter}{last_row}']
+                                cell.number_format = '#,##0.00'
 
             self.logger.info(f"Excel-Export erfolgreich: {output_path}")
             return True
@@ -1615,6 +1743,229 @@ class DatabaseManager:
             self.logger.error(f"Fehler beim Excel-Export: {e}")
             return False
 
+
+    def export_asiento_nomina_excel(self, year: int, month: int, output_path: str) -> bool:
+        """Exportiert Gehaltsdaten im Asiento Nomina Excel-Format"""
+        
+        try:
+            # SQL-Abfrage für alle benötigten Daten - monatlich
+            query = """
+            SELECT 
+                e.id_empleado,
+                e.ceco,
+                CONCAT(e.apellido, ', ', e.nombre) as nombre_completo,
+                COALESCE(s.salario_mensual_con_atrasos, s.salario_mensual_bruto, 0) as salario_mes,
+                COALESCE(i.ticket_restaurant, 0) as ticket_restaurant,
+                COALESCE(d.cotizacion_especie, 0) as cotizacion_especie,
+                COALESCE(i.primas, 0) as primas,
+                COALESCE(i.dietas_cotizables, 0) as dietas_cotizables,
+                COALESCE(i.horas_extras, 0) as horas_extras,
+                COALESCE(i.seguro_pensiones, 0) as seguro_pensiones,
+                COALESCE(d.seguro_accidentes, 0) as seguro_accidentes,
+                COALESCE(i.dietas_exentas, 0) as dietas_exentas,
+                COALESCE(i.formacion, 0) as formacion,
+                COALESCE(d.adelas, 0) as adelas,
+                COALESCE(d.sanitas, 0) as sanitas,
+                COALESCE(d.gasolina_arval, 0) as gasolina_arval,
+                COALESCE(d.gasolina_ald, 0) as gasolina_ald,
+                COALESCE(i.dias_exentos, 0) as dias_exentos
+            FROM t001_empleados e
+            LEFT JOIN t002_salarios s ON e.id_empleado = s.id_empleado AND s.anio = %s
+            LEFT JOIN t003_ingresos_brutos_mensuales i ON e.id_empleado = i.id_empleado AND i.anio = %s AND i.mes = %s
+            LEFT JOIN t004_deducciones_mensuales d ON e.id_empleado = d.id_empleado AND d.anio = %s AND d.mes = %s
+            WHERE e.activo = TRUE
+            ORDER BY e.apellido, e.nombre
+            """
+
+            data = self.execute_query(query, (year, year, month, year, month))
+
+            if not data:
+                self.logger.warning(f"Keine Daten für Jahr {year}, Monat {month} gefunden")
+                return False
+
+            # DataFrame erstellen
+            df = pd.DataFrame(data)
+            
+            # Berechnete Werte
+            df['seguro_medico'] = df['adelas'] + df['sanitas']
+            df['combustible'] = df['gasolina_arval'] + df['gasolina_ald']
+            
+            # Monat und Jahr für G-Spalte
+            month_names = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+            month_str = month_names[month]
+            month_year_str = f"NOMINA {month}.{str(year)[2:]}"
+
+            # Excel-Datei erstellen
+            with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+                workbook = writer.book
+                worksheet = workbook.create_sheet('Sheet1')
+                
+                # Spaltenbreiten setzen
+                column_widths = {
+                    'A': 15, 'B': 3, 'C': 3, 'D': 15, 'E': 3, 'F': 3, 'G': 25,
+                    'H': 3, 'I': 3, 'J': 3, 'K': 3, 'L': 10, 'M': 25, 'N': 30
+                }
+                for col, width in column_widths.items():
+                    worksheet.column_dimensions[col].width = width
+                
+                row_num = 1
+                
+                # Zeile 1: Header aus Referenzdatei
+                worksheet[f'A{row_num}'] = 'Cta.General'
+                worksheet[f'B{row_num}'] = 'TEXTO BREVE'
+                worksheet[f'D{row_num}'] = 'IMPORTE'
+                worksheet[f'E{row_num}'] = 'IMPORTE EN MON.'
+                worksheet[f'G{row_num}'] = 'TEXTO'
+                worksheet[f'L{row_num}'] = 'CeCo'
+                row_num += 1
+                
+                # Zeile 2: IRPF Header
+                worksheet[f'A{row_num}'] = 142710300
+                worksheet[f'C{row_num}'] = 'H'
+                worksheet[f'G{row_num}'] = month_year_str
+                worksheet[f'M{row_num}'] = 'IRPF'
+                row_num += 1
+                
+                # Zeile 3: SEG.SOC. Header
+                worksheet[f'A{row_num}'] = 142921300
+                worksheet[f'C{row_num}'] = 'H'
+                worksheet[f'G{row_num}'] = month_year_str
+                worksheet[f'M{row_num}'] = 'SEG.SOC.'
+                row_num += 1
+                
+                # Block 1: SUELDOS Y SALARIOS (alle Mitarbeiter)
+                for idx, emp in df.iterrows():
+                    # Spalte A: gleiche Nummer für alle Mitarbeiter
+                    worksheet[f'A{row_num}'] = 162111110
+                    # Spalte C: D für Daten
+                    worksheet[f'C{row_num}'] = 'D'
+                    # Spalte D: Salario Mes Wert
+                    worksheet[f'D{row_num}'] = emp['salario_mes']
+                    # Spalte G: NOMINA + Monat + Jahr
+                    worksheet[f'G{row_num}'] = month_year_str
+                    # Spalte L: CeCo
+                    worksheet[f'L{row_num}'] = emp['ceco']
+                    # Spalte M: Blockbeschreibung nur beim ersten Mitarbeiter
+                    if idx == 0:
+                        worksheet[f'M{row_num}'] = 'SUELDOS Y SALARIOS'
+                    # Spalte N: Mitarbeiter Name
+                    worksheet[f'N{row_num}'] = emp['nombre_completo']
+                    row_num += 1
+                
+                # Block 2: SEG.SOCIAL A CARGO EMPRESA (alle Mitarbeiter)
+                for idx, emp in df.iterrows():
+                    # Spalte A: korrekte Kontonummer
+                    worksheet[f'A{row_num}'] = 162711150
+                    # Spalte C: D für Daten
+                    worksheet[f'C{row_num}'] = 'D'
+                    # Spalte D: Wert (leer wenn keiner)
+                    worksheet[f'D{row_num}'] = ''  # Kein Wert für diesen Block
+                    # Spalte G: NOMINA + Monat + Jahr
+                    worksheet[f'G{row_num}'] = month_year_str
+                    # Spalte L: CeCo
+                    worksheet[f'L{row_num}'] = emp['ceco']
+                    # Spalte M: Blockbeschreibung nur beim ersten Mitarbeiter
+                    if idx == 0:
+                        worksheet[f'M{row_num}'] = 'SEG.SOCIAL A CARGO EMPRESA'
+                    # Spalte N: Mitarbeiter Name
+                    worksheet[f'N{row_num}'] = emp['nombre_completo']
+                    row_num += 1
+                
+                # Block 3: HORAS EXTRAS (alle Mitarbeiter, auch wenn kein Wert)
+                for idx, emp in df.iterrows():
+                    # Spalte A: korrekte Kontonummer
+                    worksheet[f'A{row_num}'] = 162511500
+                    # Spalte C: D für Daten
+                    worksheet[f'C{row_num}'] = 'D'
+                    # Spalte D: Wert (nur wenn Überstunden vorhanden)
+                    worksheet[f'D{row_num}'] = emp['horas_extras'] if emp['horas_extras'] > 0 else ''
+                    # Spalte G: NOMINA + Monat + Jahr
+                    worksheet[f'G{row_num}'] = month_year_str
+                    # Spalte L: CeCo
+                    worksheet[f'L{row_num}'] = emp['ceco']
+                    # Spalte M: Blockbeschreibung nur beim ersten Mitarbeiter
+                    if idx == 0:
+                        worksheet[f'M{row_num}'] = 'HORAS EXTRAS'
+                    # Spalte N: Mitarbeiter Name
+                    worksheet[f'N{row_num}'] = emp['nombre_completo']
+                    row_num += 1
+                
+                # Block 4: PRIMAS (alle Mitarbeiter, auch wenn kein Wert)
+                for idx, emp in df.iterrows():
+                    # Spalte A: korrekte Kontonummer
+                    worksheet[f'A{row_num}'] = 162610500
+                    # Spalte C: D für Daten
+                    worksheet[f'C{row_num}'] = 'D'
+                    # Spalte D: Wert (nur wenn Primas vorhanden)
+                    worksheet[f'D{row_num}'] = emp['primas'] if emp['primas'] > 0 else ''
+                    # Spalte G: NOMINA + Monat + Jahr
+                    worksheet[f'G{row_num}'] = month_year_str
+                    # Spalte L: CeCo
+                    worksheet[f'L{row_num}'] = emp['ceco']
+                    # Spalte M: Blockbeschreibung nur beim ersten Mitarbeiter
+                    if idx == 0:
+                        worksheet[f'M{row_num}'] = 'PRIMAS'
+                    # Spalte N: Mitarbeiter Name
+                    worksheet[f'N{row_num}'] = emp['nombre_completo']
+                    row_num += 1
+                
+                # Letzte Zeilen mit Summen
+                total_seguro_medico = df['seguro_medico'].sum()
+                total_combustible = df['combustible'].sum()
+                
+                # Zeile: SANITAS+ADESLAS
+                worksheet[f'A{row_num}'] = 642100004
+                worksheet[f'C{row_num}'] = 'H'
+                worksheet[f'G{row_num}'] = f"{month_year_str} Seg. Medico"
+                worksheet[f'D{row_num}'] = total_seguro_medico
+                worksheet[f'M{row_num}'] = 'SANITAS+ADESLAS'
+                row_num += 1
+                
+                # Zeile: COMBUSTIBLE
+                worksheet[f'A{row_num}'] = 628100005
+                worksheet[f'C{row_num}'] = 'H'
+                worksheet[f'G{row_num}'] = f"{month_year_str} COMBUSTIBLE"
+                worksheet[f'D{row_num}'] = total_combustible
+                worksheet[f'M{row_num}'] = 'COMBUSTIBLE'
+                row_num += 1
+                
+                # Zeile: SEG. SOCIAL A PAGAR
+                worksheet[f'A{row_num}'] = 476000003
+                worksheet[f'C{row_num}'] = 'H'
+                worksheet[f'G{row_num}'] = month_year_str
+                worksheet[f'M{row_num}'] = 'SEG. SOCIAL A PAGAR'
+                row_num += 1
+                
+                # Zeile: LIQUIDO A PERCIBIR
+                worksheet[f'A{row_num}'] = 465000006
+                worksheet[f'C{row_num}'] = 'H'
+                worksheet[f'G{row_num}'] = month_year_str
+                worksheet[f'M{row_num}'] = 'LIQUIDO A PERCIBIR'
+                row_num += 1
+                
+                # Vorletzte Zeile: Kontonummer 142951200
+                worksheet[f'A{row_num}'] = 142951200
+                worksheet[f'C{row_num}'] = 'H'
+                worksheet[f'G{row_num}'] = month_year_str
+                row_num += 1
+                
+                # Letzte Zeile: Excel-Formel für Summe
+                # Summiere alle Zeilen in denen in Spalte N ein Mitarbeitername steht
+                # Ziehe alle Zeilen ab wo KEIN Mitarbeiter in Spalte N steht (außer die Summenzeile selbst)
+                sum_row = row_num  # Aktuelle Zeile wo die Summe steht
+                
+                # SUMMEWENN summiert alle Werte in Spalte D wo in Spalte N ein Text steht
+                # SUMMEWENN summiert alle Werte in Spalte D wo in Spalte N KEIN Text steht
+                formula = f'=SUMIF(N:N,"*",D:D)-SUMIF(N:N,"",D:D)+D{sum_row}'
+                worksheet[f'D{row_num}'] = formula
+
+            self.logger.info(f"Asiento Nomina Excel-Export erfolgreich: {output_path}")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Fehler beim Asiento Nomina Excel-Export: {e}")
+            return False
 
     def update_ingresos_mensuales(self, employee_id: int, year: int, month: int, data: Dict[str, Any]) -> bool:
 
@@ -1829,3 +2180,160 @@ class DatabaseManager:
             self.logger.error(f"Fehler beim Aktualisieren der monatlichen Abzüge: {e}")
 
             return False
+
+    def copy_salaries_to_new_year(self, target_year: int) -> Dict[str, Any]:
+        """Kopiert Gehälter aller aktiven Mitarbeiter vom Vorjahr ins Zieljahr"""
+        try:
+            source_year = target_year - 1
+            
+            # Prüfen ob Zieljahr in der Zukunft liegt (nicht mehr als 20 Jahre voraus)
+            current_year = datetime.now().year
+            if target_year > current_year + 20:
+                return {
+                    "success": False,
+                    "message": f"Zieljahr {target_year} ist zu weit in der Zukunft (max. {current_year + 20})",
+                    "copied_count": 0,
+                    "skipped_count": 0,
+                    "errors": []
+                }
+            
+            # Finde alle aktiven Mitarbeiter mit Gehalt im Vorjahr
+            # Für zukünftige Jahre kopiere alle aktiven Mitarbeiter, die Gehalt im Vorjahr haben
+            if target_year > datetime.now().year:
+                # Zukünftiges Jahr: kopiere alle aktiven Mitarbeiter mit Vorjahresgehalt
+                employees_with_salaries_query = """
+                SELECT DISTINCT e.id_empleado, e.nombre, e.apellido,
+                       s.modalidad, s.antiguedad, s.salario_anual_bruto
+                FROM t001_empleados e
+                INNER JOIN t002_salarios s ON e.id_empleado = s.id_empleado
+                WHERE e.activo = TRUE 
+                  AND s.anio = %s
+                  AND e.id_empleado NOT IN (
+                      SELECT id_empleado FROM t002_salarios WHERE anio = %s
+                  )
+                ORDER BY e.id_empleado
+                """
+            else:
+                # Vergangenheit/Gegenwart: nur fehlende Mitarbeiter kopieren
+                employees_with_salaries_query = """
+                SELECT DISTINCT e.id_empleado, e.nombre, e.apellido,
+                       s.modalidad, s.antiguedad, s.salario_anual_bruto
+                FROM t001_empleados e
+                INNER JOIN t002_salarios s ON e.id_empleado = s.id_empleado
+                WHERE e.activo = TRUE 
+                  AND s.anio = %s
+                  AND e.id_empleado NOT IN (
+                      SELECT id_empleado FROM t002_salarios WHERE anio = %s
+                  )
+                ORDER BY e.id_empleado
+                """
+            
+            employees_to_copy = self.execute_query(employees_with_salaries_query, (source_year, target_year))
+            
+            if not employees_to_copy:
+                return {
+                    "success": True,
+                    "message": f"Keine Mitarbeiter gefunden, deren Gehalt für {target_year} kopiert werden muss",
+                    "copied_count": 0,
+                    "skipped_count": 0,
+                    "errors": []
+                }
+            
+            copied_count = 0
+            skipped_count = 0
+            errors = []
+            
+            for employee in employees_to_copy:
+                try:
+                    # Gehalt für neues Jahr einfügen
+                    salary_data = {
+                        'anio': target_year,
+                        'modalidad': employee['modalidad'],
+                        'antiguedad': employee['antiguedad'],
+                        'salario_anual_bruto': employee['salario_anual_bruto']
+                    }
+                    
+                    success = self.add_salary(employee['id_empleado'], salary_data)
+                    
+                    if success:
+                        copied_count += 1
+                        self.logger.info(f"Gehalt für Mitarbeiter {employee['id_empleado']} ({employee['nombre']} {employee['apellido']}) nach {target_year} kopiert")
+                    else:
+                        skipped_count += 1
+                        errors.append(f"Fehler beim Kopieren für Mitarbeiter {employee['id_empleado']} ({employee['nombre']} {employee['apellido']})")
+                        
+                except Exception as e:
+                    skipped_count += 1
+                    error_msg = f"Ausnahme beim Kopieren für Mitarbeiter {employee['id_empleado']}: {str(e)}"
+                    errors.append(error_msg)
+                    self.logger.error(error_msg)
+            
+            result_message = f"Gehaltskopierung für {target_year} abgeschlossen: {copied_count} kopiert, {skipped_count} übersprungen"
+            
+            return {
+                "success": copied_count > 0,
+                "message": result_message,
+                "copied_count": copied_count,
+                "skipped_count": skipped_count,
+                "errors": errors
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Gehaltskopierung für Jahr {target_year}: {e}")
+            return {
+                "success": False,
+                "message": f"Allgemeiner Fehler bei der Gehaltskopierung: {str(e)}",
+                "copied_count": 0,
+                "skipped_count": 0,
+                "errors": [str(e)]
+            }
+
+    def get_missing_salary_years(self) -> List[Dict[str, Any]]:
+        """Gibt eine Liste der Jahre zurück, für die aktive Mitarbeiter keine Gehälter haben, aber nur wenn Vorjahresdaten existieren"""
+        try:
+            current_year = datetime.now().year
+            missing_years = []
+            
+            # Prüfe die letzten 2 Jahre und die nächsten 20 Jahre
+            for year in range(current_year - 1, current_year + 21):
+                # Prüfe zuerst ob es überhaupt Gehaltsdaten im Vorjahr gibt
+                prev_year_exists_query = """
+                SELECT COUNT(*) as count FROM t002_salarios 
+                WHERE anio = %s
+                """
+                prev_year_result = self.execute_query(prev_year_exists_query, (year - 1,))
+                
+                # Wenn keine Vorjahresdaten existieren, überspringe dieses Jahr
+                if prev_year_result[0]['count'] == 0:
+                    continue
+                
+                # Finde aktive Mitarbeiter ohne Gehalt für dieses Jahr
+                missing_query = """
+                SELECT e.id_empleado, e.nombre, e.apellido
+                FROM t001_empleados e
+                WHERE e.activo = TRUE
+                  AND e.id_empleado NOT IN (
+                      SELECT id_empleado FROM t002_salarios WHERE anio = %s
+                  )
+                ORDER BY e.id_empleado
+                """
+                
+                missing_employees = self.execute_query(missing_query, (year,))
+                
+                # Zeige Jahre an, wenn:
+                # 1. Mitarbeiter fehlen (für Vergangenheit/Gegenwart)
+                # 2. Für zukünftige Jahre immer anzeigen (wenn Vorjahresdaten existieren)
+                if missing_employees or year > current_year:
+                    missing_years.append({
+                        "year": year,
+                        "missing_count": len(missing_employees),
+                        "employees": missing_employees,
+                        "is_future_year": year > current_year,
+                        "has_previous_year_data": True
+                    })
+            
+            return missing_years
+            
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Ermittlung fehlender Gehaltsjahre: {e}")
+            return []
