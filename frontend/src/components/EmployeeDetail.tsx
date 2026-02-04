@@ -502,9 +502,9 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         percentage_increase: parseFloat(increasePercentage)
       }
       
-      console.log('Sending salary increase request:', requestData)
+      console.log('Sending salary increase request for single employee:', requestData)
       
-      const response = await fetch('http://localhost:8000/salaries/percentage-increase', {
+      const response = await fetch(`http://localhost:8000/employees/${employee.id_empleado}/salary-increase`, {
         method: 'POST',
         headers,
         body: JSON.stringify(requestData)
@@ -555,10 +555,21 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       return oldMonthlySalary
     }
     
-    // Für Monate April-Dezember: neues Gehalt (inkl. atrasos)
-    return typeof salary?.salario_mensual_con_atrasos === 'string' 
-      ? parseFloat(salary.salario_mensual_con_atrasos) || 0 
-      : (salary?.salario_mensual_con_atrasos || salary?.salario_mensual_bruto || 0)
+    // Für Monate April-Dezember: neues Gehalt (atrasos nur im April)
+    const baseMonthlySalary = typeof salary?.salario_mensual_bruto === 'string' 
+      ? parseFloat(salary.salario_mensual_bruto) || 0 
+      : (salary?.salario_mensual_bruto || 0)
+    
+    const atrasos = typeof salary?.atrasos === 'string' 
+      ? parseFloat(salary.atrasos) || 0 
+      : (salary?.atrasos || 0)
+    
+    // Atrasos nur im April dazurechnen
+    if (selectedMonth === 4) {
+      return baseMonthlySalary + atrasos
+    }
+    
+    return baseMonthlySalary
   }
 
   const calculateTotal = () => {
@@ -1312,9 +1323,9 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
             {activeTab === 'gehaltserhoehung' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Prozentuale Gehaltserhöhung</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Gehaltserhöhung für {employee.nombre} {employee.apellido}</h3>
                   <p className="text-sm text-gray-600 mb-6">
-                    Wendet eine prozentuale Gehaltserhöhung auf alle aktiven Mitarbeiter an. 
+                    Wendet eine prozentuale Gehaltserhöhung nur für diesen Mitarbeiter an. 
                     Die Erhöhung wird erst im April des Zieljahres wirksam mit Nachzahlung für Januar-März.
                   </p>
                 </div>
@@ -1356,7 +1367,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                     className="flex items-center gap-2"
                   >
                     <TrendingUp className="w-4 h-4" />
-                    {increaseLoading ? 'Wird verarbeitet...' : 'Gehaltserhöhung anwenden'}
+                    {increaseLoading ? 'Wird verarbeitet...' : 'Gehaltserhöhung für Mitarbeiter anwenden'}
                   </Button>
                 </form>
 
@@ -1378,7 +1389,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                     {increaseResult.success && increaseResult.employees && (
                       <div className="mt-3">
                         <p className="text-sm font-medium text-green-800 mb-2">
-                          {increaseResult.updated_count} Mitarbeiter aktualisiert:
+                          Gehaltserhöhung erfolgreich durchgeführt:
                         </p>
                         <div className="max-h-40 overflow-y-auto">
                           {increaseResult.employees.map((emp: any, index: number) => (

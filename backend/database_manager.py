@@ -88,7 +88,14 @@ class DatabaseManager:
 
         try:
 
-            cursor = self.connection.cursor(dictionary=True)
+            # Prüfe ob Verbindung aktiv ist, andernfalls neu verbinden
+            if not self.connection or not self.connection.is_connected():
+                self.logger.warning("Datenbankverbindung verloren, versuche neu zu verbinden...")
+                if not self.connect():
+                    self.logger.error("Neuverbindung zur Datenbank fehlgeschlagen")
+                    return []
+
+            cursor = self.connection.cursor(dictionary=True, buffered=True)
 
             cursor.execute(query, params)
 
@@ -101,6 +108,14 @@ class DatabaseManager:
         except Error as e:
 
             self.logger.error(f"Fehler bei der Abfrage: {e}")
+
+            # Versuche Verbindung wiederherstellen bei Verbindungsfehlern
+            if "Connection" in str(e) or "MySQL Connection not available" in str(e):
+                self.logger.warning("Versuche Datenbankverbindung wiederherzustellen...")
+                self.connect()
+
+            if 'cursor' in locals():
+                cursor.close()
 
             return []
 
@@ -777,12 +792,13 @@ class DatabaseManager:
 
     
 
-    def apply_percentage_salary_increase(self, target_year: int, percentage_increase: float) -> Dict[str, Any]:
+    def apply_employee_salary_increase(self, employee_id: int, target_year: int, percentage_increase: float) -> Dict[str, Any]:
         """
-        Wendet eine prozentuale Gehaltserhöhung auf alle aktiven Mitarbeiter an.
+        Wendet eine prozentuale Gehaltserhöhung auf einen einzelnen Mitarbeiter an.
         Die Erhöhung wird erst im April des target_year wirksam.
         
         Args:
+            employee_id: ID des Mitarbeiters
             target_year: Jahr in dem die Erhöhung wirksam wird
             percentage_increase: Prozentsatz der Erhöhung (z.B. 10.0 für 10%)
             
@@ -790,6 +806,111 @@ class DatabaseManager:
             Dict mit Ergebnissen der Operation
         """
         try:
+            # Hole den aktuellen Mitarbeiter und sein Gehalt (target_year-1)
+            query = """
+            SELECT e.id_empleado, e.nombre, e.apellido, 
+                   COALESCE(s.salario_anual_bruto, 0) as salario_actual,
+                   COALESCE(s.modalidad, 12) as modalidad
+            FROM t001_empleados e
+            LEFT JOIN t002_salarios s ON e.id_empleado = s.id_empleado AND s.anio = %s
+            WHERE e.id_empleado = %s
+            """
+            
+            employees = self.execute_query(query, (target_year - 1, employee_id))
+            
+            if not employees:
+                return {"success": False, "message": "Mitarbeiter nicht gefunden oder keine Gehaltsdaten für Vorjahr"}
+            
+            employee = employees[0]
+            current_salary = float(employee['salario_actual'])
+            modalidad = int(employee['modalidad'])
+            
+            if current_salary == 0:
+                return {"success": False, "message": f"Kein Gehalt für {target_year-1} gefunden"}
+            
+            # Berechne neues Gehalt
+            new_salary = current_salary * (1 + percentage_increase / 100)
+            
+            # Berechne atrasos korrekt für April-Wirksamkeit
+            # Nachzahlung für die Monate Januar-März mit der Differenz zwischen alt und neu
+            old_monthly = current_salary / modalidad
+            new_monthly = new_salary / modalidad
+            monthly_diff = new_monthly - old_monthly
+            atrasos = monthly_diff * 3  # 3 Monate Nachzahlung
+            
+            # Füge oder aktualisiere Gehalt für target_year
+            salary_data = {
+                'anio': target_year,  # Jahr muss im salary_data enthalten sein
+                'salario_anual_bruto': new_salary,
+                'modalidad': modalidad,
+                'antiguedad': 0
+            }
+            
+            # Versuche zuerst zu aktualisieren, wenn nicht vorhanden dann hinzufügen
+            result = self.update_salary(employee_id, target_year, salary_data)
+            
+            if not result:
+                # Wenn kein Gehalt für dieses Jahr existiert, füge es hinzu
+                result = self.add_salary(employee_id, salary_data)
+            
+            if result:
+                # Manuelles Update der atrasos mit korrekter Berechnung
+                update_atrasos_query = """
+                UPDATE t002_salarios 
+                SET atrasos = %s, 
+                    salario_mensual_con_atrasos = %s
+                WHERE id_empleado = %s AND anio = %s
+                """
+                
+                new_monthly_salary = new_salary / modalidad
+                # Atrasos werden nur gespeichert, aber nicht zum regulären Monatsgehalt addiert
+                # Sie werden nur einmalig im April gezahlt
+                self.execute_update(update_atrasos_query, (
+                    atrasos,
+                    new_monthly_salary,  # Normales Monatsgehalt ohne atrasos
+                    employee_id,
+                    target_year
+                ))
+                
+                return {
+                    "success": True,
+                    "updated_count": 1,
+                    "error_count": 0,
+                    "employees": [{
+                        'id': employee_id,
+                        'name': f"{employee['nombre']} {employee['apellido']}",
+                        'old_salary': current_salary,
+                        'new_salary': new_salary,
+                        'increase_percent': percentage_increase,
+                        'atrasos': atrasos
+                    }],
+                    "errors": [],
+                    "message": f"Gehaltserhöhung für {employee['nombre']} {employee['apellido']} erfolgreich durchgeführt"
+                }
+            else:
+                return {"success": False, "message": f"Fehler bei Aktualisierung von {employee['nombre']} {employee['apellido']}"}
+            
+        except Exception as e:
+            self.logger.error(f"Fehler bei prozentualer Gehaltserhöhung für Mitarbeiter {employee_id}: {e}")
+            return {"success": False, "message": f"Datenbankfehler: {str(e)}"}
+
+    def apply_percentage_salary_increase(self, target_year: int, percentage_increase: float, excluded_employee_ids: List[int] = None) -> Dict[str, Any]:
+        """
+        Wendet eine prozentuale Gehaltserhöhung auf alle aktiven Mitarbeiter an.
+        Die Erhöhung wird erst im April des target_year wirksam.
+        
+        Args:
+            target_year: Jahr in dem die Erhöhung wirksam wird
+            percentage_increase: Prozentsatz der Erhöhung (z.B. 10.0 für 10%)
+            excluded_employee_ids: Liste von Mitarbeiter-IDs, die von der Erhöhung ausgeschlossen werden sollen
+            
+        Returns:
+            Dict mit Ergebnissen der Operation
+        """
+        try:
+            if excluded_employee_ids is None:
+                excluded_employee_ids = []
+            
             # Hole alle aktiven Mitarbeiter mit ihrem aktuellen Gehalt (target_year-1)
             query = """
             SELECT e.id_empleado, e.nombre, e.apellido, 
@@ -800,7 +921,15 @@ class DatabaseManager:
             WHERE e.activo = TRUE
             """
             
-            employees = self.execute_query(query, (target_year - 1,))
+            if excluded_employee_ids:
+                # Schließe ausgeschlossene Mitarbeiter aus
+                placeholders = ','.join(['%s'] * len(excluded_employee_ids))
+                query += f" AND e.id_empleado NOT IN ({placeholders})"
+                params = (target_year - 1,) + tuple(excluded_employee_ids)
+            else:
+                params = (target_year - 1,)
+            
+            employees = self.execute_query(query, params)
             
             if not employees:
                 return {"success": False, "message": "Keine Mitarbeiter gefunden oder keine Gehaltsdaten für Vorjahr"}
@@ -811,8 +940,8 @@ class DatabaseManager:
             for employee in employees:
                 try:
                     employee_id = employee['id_empleado']
-                    current_salary = employee['salario_actual']
-                    modalidad = employee['modalidad']
+                    current_salary = float(employee['salario_actual'])
+                    modalidad = int(employee['modalidad'])
                     
                     if current_salary == 0:
                         errors.append(f"Mitarbeiter {employee['nombre']} {employee['apellido']}: Kein Gehalt für {target_year-1} gefunden")
@@ -830,12 +959,18 @@ class DatabaseManager:
                     
                     # Füge oder aktualisiere Gehalt für target_year
                     salary_data = {
+                        'anio': target_year,  # Jahr muss im salary_data enthalten sein
                         'salario_anual_bruto': new_salary,
                         'modalidad': modalidad,
                         'antiguedad': 0
                     }
                     
-                    result = self.add_salary(employee_id, target_year, salary_data)
+                    # Versuche zuerst zu aktualisieren, wenn nicht vorhanden dann hinzufügen
+                    result = self.update_salary(employee_id, target_year, salary_data)
+                    
+                    if not result:
+                        # Wenn kein Gehalt für dieses Jahr existiert, füge es hinzu
+                        result = self.add_salary(employee_id, salary_data)
                     
                     if result:
                         # Manuelles Update der atrasos mit korrekter Berechnung
@@ -847,9 +982,11 @@ class DatabaseManager:
                         """
                         
                         new_monthly_salary = new_salary / modalidad
+                        # Atrasos werden nur gespeichert, aber nicht zum regulären Monatsgehalt addiert
+                        # Sie werden nur einmalig im April gezahlt
                         self.execute_update(update_atrasos_query, (
                             atrasos,
-                            new_monthly_salary + atrasos,
+                            new_monthly_salary,  # Normales Monatsgehalt ohne atrasos
                             employee_id,
                             target_year
                         ))
@@ -905,6 +1042,24 @@ class DatabaseManager:
 
             
 
+            # Finde das Gehalt des base_year, um die ursprüngliche Gehaltserhöhung zu identifizieren
+
+            base_year_query = """
+
+            SELECT salario_anual_bruto 
+
+            FROM t002_salarios 
+
+            WHERE id_empleado = %s AND anio = %s
+
+            """
+
+            base_year_data = self.execute_query(base_year_query, (employee_id, base_year))
+
+            base_year_salary = base_year_data[0]['salario_anual_bruto'] if base_year_data else 0
+
+            
+
             for year_data in subsequent_years:
 
                 current_year = year_data['anio']
@@ -937,62 +1092,54 @@ class DatabaseManager:
 
                     
 
-                    # Berechne neues atrasos
+                    # Berechne atrasos: Nur für das erste Jahr nach der Gehaltserhöhung, wenn sich das Gehalt wirklich geändert hat
 
-                    if modalidad == 12:
+                    # Wenn das aktuelle Gehalt gleich dem Gehalt des base_year ist, gibt es keine neue Gehaltserhöhung
 
-                        new_atrasos = (current_salario - prev_salario) / 12 * 3
+                    if current_year == base_year + 1 and current_salario != prev_salario:
 
-                    elif modalidad == 14:
+                        # Erste Gehaltserhöhung - berechne atrasos für Januar-März
 
-                        new_atrasos = (current_salario - prev_salario) / 14 * 3
+                        if modalidad == 12:
+
+                            new_atrasos = (current_salario - prev_salario) / 12 * 3
+
+                        elif modalidad == 14:
+
+                            new_atrasos = (current_salario - prev_salario) / 14 * 3
+
+                        else:
+
+                            new_atrasos = 0
 
                     else:
+
+                        # Folgejahre oder keine Gehaltsänderung - keine atrasos
 
                         new_atrasos = 0
 
                     
 
                     # Berechne neues salario_mensual_bruto
-
                     new_salario_mensual = current_salario / modalidad if modalidad in [12, 14] else current_salario / 12
-
                     
-
                     # Aktualisiere den Datensatz
-
                     update_query = """
-
                     UPDATE t002_salarios 
-
                     SET atrasos = %s, 
-
                         salario_mensual_con_atrasos = %s,
-
                         salario_mensual_bruto = %s
-
                     WHERE id_empleado = %s AND anio = %s
-
                     """
-
                     self.execute_update(update_query, (
-
                         new_atrasos,
-
-                        new_salario_mensual + new_atrasos,
-
+                        new_salario_mensual,  # Normales Monatsgehalt ohne atrasos
                         new_salario_mensual,
-
                         employee_id,
-
                         current_year
-
                     ))
-
                     
-
         except Exception as e:
-
             self.logger.error(f"Fehler bei der Aktualisierung der Folgejahre: {e}")
 
     
@@ -2303,8 +2450,8 @@ class DatabaseManager:
                 """
                 prev_year_result = self.execute_query(prev_year_exists_query, (year - 1,))
                 
-                # Wenn keine Vorjahresdaten existieren, überspringe dieses Jahr
-                if prev_year_result[0]['count'] == 0:
+                # Wenn keine Vorjahresdaten existieren oder DB-Verbindung fehlt, überspringe dieses Jahr
+                if not prev_year_result or prev_year_result[0]['count'] == 0:
                     continue
                 
                 # Finde aktive Mitarbeiter ohne Gehalt für dieses Jahr

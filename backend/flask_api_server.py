@@ -452,6 +452,7 @@ def apply_percentage_increase(current_user):
         
         target_year = data.get('target_year')
         percentage_increase = data.get('percentage_increase')
+        excluded_employee_ids = data.get('excluded_employee_ids', [])
         
         if target_year is None or percentage_increase is None:
             return jsonify({"error": "target_year und percentage_increase sind erforderlich"}), 400
@@ -462,8 +463,11 @@ def apply_percentage_increase(current_user):
         if not isinstance(percentage_increase, (int, float)) or percentage_increase <= 0:
             return jsonify({"error": "percentage_increase muss eine positive Zahl sein"}), 400
         
+        if not isinstance(excluded_employee_ids, list):
+            return jsonify({"error": "excluded_employee_ids muss eine Liste sein"}), 400
+        
         # Wende die Gehaltserhöhung an
-        result = db_manager.apply_percentage_salary_increase(target_year, percentage_increase)
+        result = db_manager.apply_percentage_salary_increase(target_year, percentage_increase, excluded_employee_ids)
         
         if result['success']:
             return jsonify(result), 200
@@ -472,6 +476,45 @@ def apply_percentage_increase(current_user):
             
     except Exception as e:
         logger.error(f"Fehler bei prozentualer Gehaltserhöhung: {e}")
+        return jsonify({
+            "success": False,
+            "message": "Interner Serverfehler",
+            "errors": [str(e)]
+        }), 500
+
+# Gehaltserhöhung für einzelnen Mitarbeiter Endpunkt
+@app.route('/employees/<int:employee_id>/salary-increase', methods=['POST'])
+@token_required
+def apply_employee_salary_increase(current_user, employee_id):
+    """Wendet eine prozentuale Gehaltserhöhung auf einen einzelnen Mitarbeiter an"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"error": "Keine Daten im Request Body gefunden"}), 400
+        
+        target_year = data.get('target_year')
+        percentage_increase = data.get('percentage_increase')
+        
+        if target_year is None or percentage_increase is None:
+            return jsonify({"error": "target_year und percentage_increase sind erforderlich"}), 400
+        
+        if not isinstance(target_year, int) or target_year < 2020:
+            return jsonify({"error": "target_year muss eine gültige Jahreszahl sein"}), 400
+        
+        if not isinstance(percentage_increase, (int, float)) or percentage_increase <= 0:
+            return jsonify({"error": "percentage_increase muss eine positive Zahl sein"}), 400
+        
+        # Wende die Gehaltserhöhung für einen Mitarbeiter an
+        result = db_manager.apply_employee_salary_increase(employee_id, target_year, percentage_increase)
+        
+        if result['success']:
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Fehler bei prozentualer Gehaltserhöhung für Mitarbeiter {employee_id}: {e}")
         return jsonify({
             "success": False,
             "message": "Interner Serverfehler",
