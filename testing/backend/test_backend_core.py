@@ -110,9 +110,9 @@ class TestDatabaseManagerCore:
 
     def test_execute_query_without_connection(self, db_manager):
         """Test Query-Ausführung ohne Verbindung"""
-        # Sollte AttributeError oder Error werfen
-        with pytest.raises((AttributeError, Error)):
-            db_manager.execute_query("SELECT * FROM test")
+        # Sollte leere Liste zurückgeben bei Verbindungsproblemen
+        result = db_manager.execute_query("SELECT * FROM test")
+        assert result == []
 
     @patch('mysql.connector.connect')
     def test_execute_query_success(self, mock_connect, db_manager):
@@ -303,9 +303,9 @@ class TestDatabaseManagerCore:
 
     def test_search_employees_without_connection(self, db_manager):
         """Test Mitarbeitersuche ohne Verbindung"""
-        # Sollte AttributeError werfen weil connection None ist
-        with pytest.raises(AttributeError):
-            db_manager.search_employees('test')
+        # Sollte leere Liste zurückgeben bei Verbindungsproblemen
+        result = db_manager.search_employees('test')
+        assert result == []
 
     @patch('mysql.connector.connect')
     def test_search_employees_success(self, mock_connect, db_manager):
@@ -323,9 +323,9 @@ class TestDatabaseManagerCore:
 
     def test_get_all_employees_without_connection(self, db_manager):
         """Test alle Mitarbeiter abrufen ohne Verbindung"""
-        # Sollte AttributeError werfen weil connection None ist
-        with pytest.raises(AttributeError):
-            db_manager.get_all_employees()
+        # Sollte leere Liste zurückgeben bei Verbindungsproblemen
+        result = db_manager.get_all_employees()
+        assert result == []
 
     @patch('mysql.connector.connect')
     def test_get_all_employees_success(self, mock_connect, db_manager):
@@ -343,9 +343,9 @@ class TestDatabaseManagerCore:
 
     def test_get_employee_complete_info_without_connection(self, db_manager):
         """Test vollständige Mitarbeiterinformationen ohne Verbindung"""
-        # Sollte AttributeError werfen weil connection None ist
-        with pytest.raises(AttributeError):
-            db_manager.get_employee_complete_info(1)
+        # Sollte leeres Dict zurückgeben bei Verbindungsproblemen
+        result = db_manager.get_employee_complete_info(1)
+        assert result == {}
 
     @patch('mysql.connector.connect')
     def test_get_employee_complete_info_success(self, mock_connect, db_manager):

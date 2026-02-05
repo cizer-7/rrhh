@@ -19,7 +19,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
-  const [activeTab, setActiveTab] = useState<'employees' | 'increase' | 'salary-copy'>('employees')
+  const [activeTab, setActiveTab] = useState<'employees' | 'increase' | 'salary-copy' | 'overview'>('employees')
   
   // State for salary increase
   const [increaseYear, setIncreaseYear] = useState<string>('')
@@ -28,14 +28,28 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
   const [increaseResult, setIncreaseResult] = useState<any>(null)
   const [excludedEmployees, setExcludedEmployees] = useState<Set<number>>(new Set())
   const [selectAll, setSelectAll] = useState(true)
+  const [searchTermIncrease, setSearchTermIncrease] = useState('')
+  const [increaseType, setIncreaseType] = useState<'percentage' | 'absolute'>('percentage')
+  const [absoluteAmount, setAbsoluteAmount] = useState<string>('')
+
+  // State for salary overview
+  const [overviewYear, setOverviewYear] = useState<string>(new Date().getFullYear().toString())
+  const [overviewData, setOverviewData] = useState<any[]>([])
+  const [overviewLoading, setOverviewLoading] = useState(false)
 
   useEffect(() => {
     fetchEmployees()
   }, [])
 
+  useEffect(() => {
+    if (activeTab === 'overview' && overviewYear) {
+      fetchSalaryOverview(overviewYear)
+    }
+  }, [activeTab, overviewYear])
+
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('http://localhost:8000/employees', {
+      const response = await fetch(`http://localhost:8000/employees?_t=${Date.now()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -48,6 +62,43 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
       console.error('Error fetching employees:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchSalaryOverview = async (year: string) => {
+    setOverviewLoading(true)
+    try {
+      const token = localStorage.getItem('token')
+      
+      // Hole alle Mitarbeiter mit ihren Gehaltsdaten in einem einzigen Aufruf
+      const response = await fetch(`http://localhost:8000/employees/with-salaries?_t=${Date.now()}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      const employeesData = await response.json()
+      
+      // Verarbeite die Daten lokal ohne zusätzliche API-Aufrufe
+      const overviewData = employeesData.map((employee: any) => {
+        const salary = employee.salaries?.find((s: any) => s.anio === parseInt(year))
+        
+        return {
+          id: employee.id_empleado,
+          name: `${employee.nombre} ${employee.apellido}`,
+          ceco: employee.ceco || '-',
+          salary: salary?.salario_anual_bruto || 0,
+          has_salary: !!salary
+        }
+      })
+      
+      setOverviewData(overviewData)
+    } catch (error) {
+      console.error('Error fetching salary overview:', error)
+      setOverviewData([])
+    } finally {
+      setOverviewLoading(false)
     }
   }
 
@@ -121,8 +172,8 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
   const handleGlobalSalaryIncrease = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!increaseYear || !increasePercentage) {
-      alert('Bitte geben Sie Jahr und Prozentsatz ein')
+    if (!increaseYear || (increaseType === 'percentage' && !increasePercentage) || (increaseType === 'absolute' && !absoluteAmount)) {
+      alert('Bitte geben Sie Jahr und Prozentsatz oder Betrag ein')
       return
     }
     
@@ -141,10 +192,15 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
         'Authorization': `Bearer ${token}`
       }
       
-      const requestData = {
+      const requestData: any = {
         target_year: parseInt(increaseYear),
-        percentage_increase: parseFloat(increasePercentage),
         excluded_employee_ids: Array.from(excludedEmployees)
+      }
+      
+      if (increaseType === 'percentage') {
+        requestData.percentage_increase = parseFloat(increasePercentage)
+      } else {
+        requestData.absolute_increase = parseFloat(absoluteAmount)
       }
       
       console.log('Sending global salary increase request:', requestData)
@@ -190,16 +246,23 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
     if (checked) {
       setExcludedEmployees(new Set())
     } else {
-      setExcludedEmployees(new Set(filteredEmployees.map(emp => emp.id_empleado)))
+      setExcludedEmployees(new Set(filteredEmployeesForIncrease.map(emp => emp.id_empleado)))
     }
   }
 
-  const filteredEmployees = employees.filter(employee =>
+  const filteredEmployees = Array.isArray(employees) ? employees.filter(employee =>
     employee.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     employee.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
     employee.ceco?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     employee.id_empleado.toString().includes(searchTerm)
-  )
+  ) : []
+
+  const filteredEmployeesForIncrease = Array.isArray(employees) ? employees.filter(employee =>
+    employee.nombre.toLowerCase().includes(searchTermIncrease.toLowerCase()) ||
+    employee.apellido.toLowerCase().includes(searchTermIncrease.toLowerCase()) ||
+    employee.ceco?.toLowerCase().includes(searchTermIncrease.toLowerCase()) ||
+    employee.id_empleado.toString().includes(searchTermIncrease)
+  ) : []
 
   if (showDetail && selectedEmployee) {
     return (
@@ -228,7 +291,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-6">
           <nav className="flex space-x-8">
-            {['employees', 'increase', 'salary-copy'].map((tab) => (
+            {['employees', 'increase', 'salary-copy', 'overview'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
@@ -238,7 +301,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                {tab === 'employees' ? 'Mitarbeiter' : tab === 'increase' ? 'Erhöhung' : 'Gehaltskopie'}
+                {tab === 'employees' ? 'Mitarbeiter' : tab === 'increase' ? 'Erhöhung' : tab === 'salary-copy' ? 'Gehaltskopie' : 'Gehaltsübersicht'}
               </button>
             ))}
           </nav>
@@ -345,7 +408,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Gehaltserhöhung für ausgewählte Mitarbeiter</h3>
               <p className="text-sm text-gray-600 mb-6">
-                Wendet eine prozentuale Gehaltserhöhung auf ausgewählte aktive Mitarbeiter an. 
+                Wendet eine Gehaltserhöhung auf ausgewählte aktive Mitarbeiter an. 
                 Die Erhöhung wird erst im April des Zieljahres wirksam mit Nachzahlung für Januar-März.
               </p>
             </div>
@@ -366,17 +429,43 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prozentsatz (%)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Erhöhungstyp</label>
+                  <select
+                    value={increaseType}
+                    onChange={(e) => setIncreaseType(e.target.value as 'percentage' | 'absolute')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="percentage">Prozentual (%)</option>
+                    <option value="absolute">Absoluter Betrag (€)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {increaseType === 'percentage' ? 'Prozentsatz (%)' : 'Absoluter Betrag (€)'}
+                  </label>
                   <input
                     type="number"
-                    min="0.1"
-                    max="100"
-                    step="0.1"
-                    value={increasePercentage}
-                    onChange={(e) => setIncreasePercentage(e.target.value)}
-                    placeholder="z.B. 10.0"
+                    min={increaseType === 'percentage' ? '0.1' : '0'}
+                    max={increaseType === 'percentage' ? '100' : '999999'}
+                    step={increaseType === 'percentage' ? '0.1' : '1'}
+                    value={increaseType === 'percentage' ? increasePercentage : absoluteAmount}
+                    onChange={(e) => increaseType === 'percentage' ? setIncreasePercentage(e.target.value) : setAbsoluteAmount(e.target.value)}
+                    placeholder={increaseType === 'percentage' ? 'z.B. 10.0' : 'z.B. 5000'}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Suche (Mitarbeiter)</label>
+                  <input
+                    type="text"
+                    value={searchTermIncrease}
+                    onChange={(e) => setSearchTermIncrease(e.target.value)}
+                    placeholder="Mitarbeiter suchen..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
                 </div>
               </div>
@@ -385,7 +474,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-md font-medium text-gray-900">
-                    Mitarbeiter für Gehaltserhöhung ({filteredEmployees.filter(emp => !excludedEmployees.has(emp.id_empleado)).length} von {filteredEmployees.length} ausgewählt)
+                    Mitarbeiter für Gehaltserhöhung ({filteredEmployeesForIncrease.filter(emp => !excludedEmployees.has(emp.id_empleado)).length} von {filteredEmployeesForIncrease.length} ausgewählt)
                   </h4>
                   <label className="flex items-center gap-2 text-sm text-gray-600">
                     <input
@@ -400,7 +489,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                 
                 <div className="border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
                   <div className="grid grid-cols-1 gap-2 p-4">
-                    {filteredEmployees.map((employee) => (
+                    {filteredEmployeesForIncrease.map((employee) => (
                       <label key={employee.id_empleado} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
                         <input
                           type="checkbox"
@@ -429,11 +518,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               <Button 
                 type="submit" 
-                disabled={increaseLoading || filteredEmployees.filter(emp => !excludedEmployees.has(emp.id_empleado)).length === 0}
+                disabled={increaseLoading || filteredEmployeesForIncrease.filter(emp => !excludedEmployees.has(emp.id_empleado)).length === 0}
                 className="flex items-center gap-2"
               >
                 <TrendingUp className="w-4 h-4" />
-                {increaseLoading ? 'Wird verarbeitet...' : `Gehaltserhöhung für ${filteredEmployees.filter(emp => !excludedEmployees.has(emp.id_empleado)).length} Mitarbeiter anwenden`}
+                {increaseLoading ? 'Wird verarbeitet...' : `Gehaltserhöhung für ${filteredEmployeesForIncrease.filter(emp => !excludedEmployees.has(emp.id_empleado)).length} Mitarbeiter anwenden`}
               </Button>
             </form>
 
@@ -461,7 +550,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                       {increaseResult.employees.map((emp: any, index: number) => (
                         <div key={index} className="text-xs text-green-700 py-1">
                           {emp.name}: {emp.old_salary}€ → {emp.new_salary}€ 
-                          (+{emp.increase_percent}%, atrasos: {emp.atrasos.toFixed(2)}€)
+                          ({emp.increase_info}, atrasos: {emp.atrasos.toFixed(2)}€)
                         </div>
                       ))}
                     </div>
@@ -486,6 +575,89 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
         {activeTab === 'salary-copy' && (
           <div>
             <SalaryCopyManager />
+          </div>
+        )}
+
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Gehaltsübersicht</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Zeigt alle Mitarbeiter mit ihren Jahresgehältern für das ausgewählte Jahr an.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Jahr</label>
+                <select
+                  value={overviewYear}
+                  onChange={(e) => setOverviewYear(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {overviewLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="text-lg text-gray-600">Lade Gehaltsdaten...</div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Mitarbeiter
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        CECO
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Jahresgehalt
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {overviewData.map((employee) => (
+                      <tr key={employee.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {employee.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {employee.ceco}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {employee.salary.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            employee.has_salary 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {employee.has_salary ? 'Gehalt vorhanden' : 'Kein Gehalt'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {overviewData.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    Keine Mitarbeiter gefunden
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

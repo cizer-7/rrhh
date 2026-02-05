@@ -135,13 +135,34 @@ def login():
 # Mitarbeiter Endpunkte
 @app.route('/employees', methods=['GET'])
 @token_required
-def get_all_employees(current_user):
+def get_employees(current_user):
     """Alle Mitarbeiter abrufen"""
     try:
         employees = db_manager.get_all_employees()
-        return jsonify(employees)
+        
+        response = jsonify(employees)
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
     except Exception as e:
         logger.error(f"Fehler beim Abrufen der Mitarbeiter: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+@app.route('/employees/with-salaries', methods=['GET'])
+@token_required
+def get_employees_with_salaries(current_user):
+    """Alle Mitarbeiter mit Gehaltsdaten abrufen"""
+    try:
+        employees = db_manager.get_all_employees_with_salaries()
+        
+        response = jsonify(employees)
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der Mitarbeiter mit Gehältern: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
 
 @app.route('/employees/<int:employee_id>', methods=['GET'])
@@ -152,7 +173,12 @@ def get_employee(current_user, employee_id):
         employee_info = db_manager.get_employee_complete_info(employee_id)
         if not employee_info:
             return jsonify({"error": "Mitarbeiter nicht gefunden"}), 404
-        return jsonify(employee_info)
+        
+        response = jsonify(employee_info)
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
     except Exception as e:
         logger.error(f"Fehler beim Abrufen des Mitarbeiters {employee_id}: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
@@ -452,22 +478,29 @@ def apply_percentage_increase(current_user):
         
         target_year = data.get('target_year')
         percentage_increase = data.get('percentage_increase')
+        absolute_increase = data.get('absolute_increase')
         excluded_employee_ids = data.get('excluded_employee_ids', [])
         
-        if target_year is None or percentage_increase is None:
-            return jsonify({"error": "target_year und percentage_increase sind erforderlich"}), 400
+        if target_year is None:
+            return jsonify({"error": "target_year ist erforderlich"}), 400
+        
+        if percentage_increase is None and absolute_increase is None:
+            return jsonify({"error": "Entweder percentage_increase oder absolute_increase ist erforderlich"}), 400
         
         if not isinstance(target_year, int) or target_year < 2020:
             return jsonify({"error": "target_year muss eine gültige Jahreszahl sein"}), 400
         
-        if not isinstance(percentage_increase, (int, float)) or percentage_increase <= 0:
+        if percentage_increase is not None and (not isinstance(percentage_increase, (int, float)) or percentage_increase <= 0):
             return jsonify({"error": "percentage_increase muss eine positive Zahl sein"}), 400
+        
+        if absolute_increase is not None and (not isinstance(absolute_increase, (int, float)) or absolute_increase <= 0):
+            return jsonify({"error": "absolute_increase muss eine positive Zahl sein"}), 400
         
         if not isinstance(excluded_employee_ids, list):
             return jsonify({"error": "excluded_employee_ids muss eine Liste sein"}), 400
         
         # Wende die Gehaltserhöhung an
-        result = db_manager.apply_percentage_salary_increase(target_year, percentage_increase, excluded_employee_ids)
+        result = db_manager.apply_percentage_salary_increase(target_year, percentage_increase, absolute_increase, excluded_employee_ids)
         
         if result['success']:
             return jsonify(result), 200

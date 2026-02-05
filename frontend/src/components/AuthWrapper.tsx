@@ -32,7 +32,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
   const fetchEmployeeStats = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:8000/employees', {
+      const response = await fetch(`http://localhost:8000/employees?_t=${Date.now()}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

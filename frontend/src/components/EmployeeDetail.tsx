@@ -50,6 +50,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
   // State for salary increase
   const [increaseYear, setIncreaseYear] = useState<string>('')
   const [increasePercentage, setIncreasePercentage] = useState<string>('')
+  const [increaseAbsolute, setIncreaseAbsolute] = useState<string>('')
+  const [increaseType, setIncreaseType] = useState<'percentage' | 'absolute'>('percentage')
   const [increaseLoading, setIncreaseLoading] = useState(false)
   const [increaseResult, setIncreaseResult] = useState<any>(null)
 
@@ -107,7 +109,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
       // Fetch complete employee info
 
-      const response = await fetch(`http://localhost:8000/employees/${employee.id_empleado}`, {
+      const response = await fetch(`http://localhost:8000/employees/${employee.id_empleado}?_t=${Date.now()}`, {
 
         headers
 
@@ -477,8 +479,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
   const handleSalaryIncrease = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!increaseYear || !increasePercentage) {
-      alert('Bitte geben Sie Jahr und Prozentsatz ein')
+    if (!increaseYear || (increaseType === 'percentage' && !increasePercentage) || (increaseType === 'absolute' && !increaseAbsolute)) {
+      alert('Bitte geben Sie Jahr und Erhöhungswert ein')
       return
     }
     
@@ -497,9 +499,14 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         'Authorization': `Bearer ${token}`
       }
       
-      const requestData = {
-        target_year: parseInt(increaseYear),
-        percentage_increase: parseFloat(increasePercentage)
+      const requestData: any = {
+        target_year: parseInt(increaseYear)
+      }
+      
+      if (increaseType === 'percentage') {
+        requestData.percentage_increase = parseFloat(increasePercentage)
+      } else {
+        requestData.absolute_increase = parseFloat(increaseAbsolute)
       }
       
       console.log('Sending salary increase request for single employee:', requestData)
@@ -1325,7 +1332,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Gehaltserhöhung für {employee.nombre} {employee.apellido}</h3>
                   <p className="text-sm text-gray-600 mb-6">
-                    Wendet eine prozentuale Gehaltserhöhung nur für diesen Mitarbeiter an. 
+                    Wendet eine Gehaltserhöhung (prozentual oder absolut) für diesen Mitarbeiter an. 
                     Die Erhöhung wird erst im April des Zieljahres wirksam mit Nachzahlung für Januar-März.
                   </p>
                 </div>
@@ -1346,15 +1353,28 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Prozentsatz (%)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Erhöhungstyp</label>
+                      <select
+                        value={increaseType}
+                        onChange={(e) => setIncreaseType(e.target.value as 'percentage' | 'absolute')}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="percentage">Prozentual (%)</option>
+                        <option value="absolute">Absolut (€)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {increaseType === 'percentage' ? 'Prozentsatz (%)' : 'Absoluter Betrag (€)'}
+                      </label>
                       <input
                         type="number"
-                        min="0.1"
-                        max="100"
-                        step="0.1"
-                        value={increasePercentage}
-                        onChange={(e) => setIncreasePercentage(e.target.value)}
-                        placeholder="z.B. 10.0"
+                        min={increaseType === 'percentage' ? '0.1' : '0'}
+                        max={increaseType === 'percentage' ? '100' : '999999'}
+                        step={increaseType === 'percentage' ? '0.1' : '1'}
+                        value={increaseType === 'percentage' ? increasePercentage : increaseAbsolute}
+                        onChange={(e) => increaseType === 'percentage' ? setIncreasePercentage(e.target.value) : setIncreaseAbsolute(e.target.value)}
+                        placeholder={increaseType === 'percentage' ? 'z.B. 10.0' : 'z.B. 5000'}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         required
                       />
@@ -1367,7 +1387,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                     className="flex items-center gap-2"
                   >
                     <TrendingUp className="w-4 h-4" />
-                    {increaseLoading ? 'Wird verarbeitet...' : 'Gehaltserhöhung für Mitarbeiter anwenden'}
+                    {increaseLoading ? 'Wird verarbeitet...' : `Gehaltserhöhung für Mitarbeiter anwenden`}
                   </Button>
                 </form>
 
@@ -1395,7 +1415,9 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                           {increaseResult.employees.map((emp: any, index: number) => (
                             <div key={index} className="text-xs text-green-700 py-1">
                               {emp.name}: {emp.old_salary}€ → {emp.new_salary}€ 
-                              (+{emp.increase_percent}%, atrasos: {emp.atrasos.toFixed(2)}€)
+                              ({emp.increase_percent ? `+${emp.increase_percent}%` : `+${emp.increase_absolute}€`}, 
+                              atrasos: {emp.atrasos.toFixed(2)}€, 
+                              Basis: {emp.base_year})
                             </div>
                           ))}
                         </div>
