@@ -101,6 +101,58 @@ const localStorageMock = {
 }
 global.localStorage = localStorageMock
 
+// Mock apiClient
+jest.mock('@/lib/api', () => ({
+  __esModule: true,
+  default: {
+    login: jest.fn(),
+    getEmployees: jest.fn(),
+    getEmployee: jest.fn(),
+    createEmployee: jest.fn(),
+    updateEmployee: jest.fn(),
+    deleteEmployee: jest.fn(),
+    searchEmployees: jest.fn(),
+    addSalary: jest.fn(),
+    updateSalary: jest.fn(),
+    deleteSalary: jest.fn(),
+    updateIngresos: jest.fn(),
+    updateIngresosMensuales: jest.fn(),
+    updateDeducciones: jest.fn(),
+    updateDeduccionesMensuales: jest.fn(),
+    exportExcel: jest.fn(),
+    healthCheck: jest.fn(),
+    getPayoutMonth: jest.fn(),
+    setPayoutMonth: jest.fn(),
+    applyIngresosDeduccionesToAllActive: jest.fn(),
+  }
+}))
+
+// Mock apiClient for tests that need it
+const apiClientMock = {
+  login: jest.fn(),
+  getEmployees: jest.fn(),
+  getEmployee: jest.fn(),
+  createEmployee: jest.fn(),
+  updateEmployee: jest.fn(),
+  deleteEmployee: jest.fn(),
+  searchEmployees: jest.fn(),
+  addSalary: jest.fn(),
+  updateSalary: jest.fn(),
+  deleteSalary: jest.fn(),
+  updateIngresos: jest.fn(),
+  updateIngresosMensuales: jest.fn(),
+  updateDeducciones: jest.fn(),
+  updateDeduccionesMensuales: jest.fn(),
+  exportExcel: jest.fn(),
+  healthCheck: jest.fn(),
+  getPayoutMonth: jest.fn(),
+  setPayoutMonth: jest.fn(),
+  applyIngresosDeduccionesToAllActive: jest.fn(),
+}
+
+// Make apiClient available globally for tests
+global.apiClient = apiClientMock
+
 // Suppress console warnings during tests
 const originalError = console.error
 beforeAll(() => {

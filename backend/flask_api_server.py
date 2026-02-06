@@ -429,6 +429,112 @@ def health_check():
         "timestamp": datetime.now(timezone.utc).isoformat()
     })
 
+
+
+# Settings Endpunkte
+@app.route('/settings/payout-month', methods=['GET'])
+@token_required
+def get_payout_month(current_user):
+    """Gibt den globalen Auszahlungsmonat (1-12) zurück"""
+    try:
+        payout_month = db_manager.get_payout_month()
+        return jsonify({"payout_month": payout_month})
+    except Exception as e:
+        logger.error(f"Fehler beim Lesen von payout_month: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+
+
+@app.route('/settings/payout-month', methods=['PUT'])
+@token_required
+def set_payout_month(current_user):
+    """Setzt den globalen Auszahlungsmonat (1-12)"""
+    try:
+        data = request.get_json() or {}
+        payout_month = data.get('payout_month')
+
+        if payout_month is None or not isinstance(payout_month, int) or payout_month < 1 or payout_month > 12:
+            return jsonify({"error": "payout_month muss eine Zahl von 1 bis 12 sein"}), 400
+
+        success = db_manager.set_payout_month(payout_month)
+        if not success:
+            return jsonify({"error": "Konnte payout_month nicht speichern"}), 400
+
+        return jsonify({"success": True, "payout_month": payout_month})
+
+    except Exception as e:
+        logger.error(f"Fehler beim Setzen von payout_month: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+# Atrasos Neuberechnung Endpunkt
+@app.route('/settings/recalculate-atrasos', methods=['POST'])
+@token_required
+def recalculate_atrasos(current_user):
+    """Berechnet alle Atrasos für ein bestimmtes Jahr neu"""
+    try:
+        data = request.get_json() or {}
+        year = data.get('year')
+        
+        if year is None or not isinstance(year, int) or year < 2020 or year > 2030:
+            return jsonify({"error": "year muss eine gültige Jahreszahl zwischen 2020 und 2030 sein"}), 400
+        
+        # Führe die Neuberechnung durch
+        result = db_manager.recalculate_all_atrasos_for_year(year)
+        
+        if result['success']:
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Fehler bei der Neuberechnung der Atrasos: {e}")
+        return jsonify({
+            "success": False,
+            "message": "Interner Serverfehler bei der Neuberechnung",
+            "updated_count": 0,
+            "total_count": 0,
+            "errors": [str(e)]
+        }), 500
+
+
+
+# Bulk Ingresos/Deducciones für alle aktiven Mitarbeiter
+@app.route('/settings/apply-ingresos-deducciones', methods=['POST'])
+@token_required
+def apply_ingresos_deducciones_to_all_active(current_user):
+    """Setzt Zulagen (ingresos) und/oder Abzüge (deducciones) für ein Jahr für alle aktiven Mitarbeiter"""
+    try:
+        data = request.get_json() or {}
+        year = data.get('year')
+        ingresos = data.get('ingresos')
+        deducciones = data.get('deducciones')
+
+        if year is None or not isinstance(year, int) or year < 2020 or year > 2030:
+            return jsonify({"error": "year muss eine gültige Jahreszahl zwischen 2020 und 2030 sein"}), 400
+
+        if ingresos is None and deducciones is None:
+            return jsonify({"error": "Mindestens ingresos oder deducciones muss gesetzt sein"}), 400
+
+        result = db_manager.apply_yearly_ingresos_and_deducciones_to_all_active(
+            year=year,
+            ingresos=ingresos,
+            deducciones=deducciones,
+        )
+
+        if result.get('success'):
+            return jsonify(result), 200
+        return jsonify(result), 400
+
+    except Exception as e:
+        logger.error(f"Fehler beim Bulk-Setzen von ingresos/deducciones: {e}")
+        return jsonify({
+            "success": False,
+            "message": "Interner Serverfehler",
+            "updated_count": 0,
+            "total_count": 0,
+            "errors": [str(e)]
+        }), 500
+
 # Gehaltskopierung Endpunkte
 @app.route('/salaries/copy-to-year/<int:target_year>', methods=['POST'])
 @token_required

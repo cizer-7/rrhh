@@ -13,7 +13,7 @@ Moderne Web-Anwendung für Mitarbeiterverwaltung und Gehaltsabrechnung mit React
 ### 1. Backend starten
 ```bash
 cd backend
-pip install -r requirements_api.txt
+pip install -r requirements.txt
 python flask_api_server.py
 ```
 Backend läuft auf: http://localhost:8000
@@ -21,7 +21,7 @@ Backend läuft auf: http://localhost:8000
 ### 3. Backend-Tests (empfohlen)
 ```bash
 cd testing
-python test_backend.py
+python run_backend_tests.py
 ```
 
 ### 4. Frontend starten
@@ -43,8 +43,8 @@ Mitarbeiter Gehaltsabrechnung/
 │   ├── flask_api_server.py    # Haupt-API-Server
 │   ├── database_manager.py    # Datenbankverwaltung (bestehende Logik)
 │   ├── start_backend.py       # Einfaches Start-Script
-│   ├── requirements_api.txt    # Python Abhängigkeiten
-│   ├── db_schema.sql          # Datenbank-Schema
+│   ├── requirements.txt       # Python Abhängigkeiten
+│   ├── settings.json          # Konfiguration
 │   └── sql_statements/        # SQL Statements
 ├── frontend/                   # React/Next.js Frontend
 │   ├── src/
@@ -54,12 +54,17 @@ Mitarbeiter Gehaltsabrechnung/
 │   │   └── types/             # TypeScript Typen
 │   ├── package.json           # Node.js Abhängigkeiten
 │   └── .env.local             # API Konfiguration
-├── testing/                   # Backend-Tests
-│   ├── test_backend.py        # Einfacher Test-Runner
-│   ├── test_backend_core.py  # DatabaseManager Tests
-│   ├── test_api_core.py      # Flask API Tests
-│   ├── test_integration_simple.py # Integrationstests
-│   └── run_backend_tests.py  # Umfassender Test-Runner
+├── testing/                   # Tests
+│   ├── README_TESTING.md      # Test-Dokumentation
+│   ├── run_backend_tests.py   # Umfassender Backend Test-Runner
+│   ├── test_api_core.py       # Flask API Tests
+│   ├── conftest_comprehensive.py # Test-Konfiguration
+│   ├── backend/               # Backend-spezifische Tests
+│   ├── frontend/              # Frontend-Tests
+│   └── e2e/                   # End-to-End Tests
+├── pyproject.toml             # Python Projekt-Konfiguration
+├── pytest.ini                # pytest Konfiguration
+├── commands.md                # Nützliche Befehle
 └── README.md                  # Diese Datei
 ```
 
@@ -161,7 +166,7 @@ Die Benutzer sind in der `t005_benutzer` Tabelle gespeichert. Für Testzwecke k�
 ### Backend Dependencies
 ```bash
 cd backend
-pip install -r requirements_api.txt
+pip install -r requirements.txt
 ```
 
 ### Frontend Dependencies
@@ -197,7 +202,7 @@ Diese Web-Anwendung ersetzt die ursprüngliche Python/Tkinter Desktop-Anwendung:
 ### Backend-Tests ausführen
 ```bash
 cd testing
-python test_backend.py
+python run_backend_tests.py
 ```
 
 ### Umfassende Tests mit Optionen

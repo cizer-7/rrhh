@@ -88,7 +88,9 @@ def run_unit_tests():
     test_files = [
         'test_backend_core.py',
         'test_integration_simple.py',
-        'test_api_core.py'
+        'test_api_core.py',
+        'test_api_missing_endpoints.py',
+        'test_edge_cases.py'
     ]
     
     all_passed = True

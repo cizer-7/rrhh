@@ -9,6 +9,7 @@ import { Employee, Salary, Ingresos, Deducciones } from '@/types/employee'
 import { Button } from '@/components/ui/button'
 
 import { ArrowLeft, Save, Download, Euro, TrendingUp, TrendingDown, Calendar } from 'lucide-react'
+import apiClient from '@/lib/api'
 
 
 
@@ -57,6 +58,11 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
 
 
+  // Global payout month setting
+  const [payoutMonth, setPayoutMonth] = useState<number>(4)
+
+
+
   // Salary state
 
   const [salary, setSalary] = useState<Salary | null>(null)
@@ -72,6 +78,25 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     fetchData()
 
   }, [employee.id_empleado, year, month, dataMode])
+
+
+
+  useEffect(() => {
+    fetchPayoutMonth()
+  }, [])
+
+
+
+  const fetchPayoutMonth = async () => {
+    try {
+      const res = await apiClient.getPayoutMonth()
+      if (typeof res?.payout_month === 'number') {
+        setPayoutMonth(res.payout_month)
+      }
+    } catch (e) {
+      console.error('Error fetching payout month:', e)
+    }
+  }
 
   // Update employee form data when employee prop changes
   useEffect(() => {
@@ -544,8 +569,10 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         : (salary?.salario_mensual_bruto || 0)
     }
     
-    // Für Monate Januar-März: Gehalt vom Vorjahr verwenden
-    if (selectedMonth >= 1 && selectedMonth <= 3) {
+    const monthsBeforePayout = Math.max(0, payoutMonth - 1)
+
+    // Für Monate vor dem Auszahlungsmonat: Gehalt vom Vorjahr verwenden
+    if (monthsBeforePayout > 0 && selectedMonth >= 1 && selectedMonth <= monthsBeforePayout) {
       // Berechne altes Monatsgehalt (aktuelles Jahresgehalt - Erhöhung)
       const currentAnnualSalary = typeof salary?.salario_anual_bruto === 'string' 
         ? parseFloat(salary.salario_anual_bruto) || 0 
@@ -555,14 +582,16 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         : (salary?.atrasos || 0)
       const modalidad = salary?.modalidad || 12
       
-      // Altes Jahresgehalt = aktuelles Jahresgehalt - (atrasos * modalidad / 3)
-      const oldAnnualSalary = currentAnnualSalary - (atrasos * modalidad / 3)
+      // Altes Jahresgehalt = aktuelles Jahresgehalt - (atrasos * modalidad / monthsBeforePayout)
+      const oldAnnualSalary = monthsBeforePayout > 0
+        ? currentAnnualSalary - (atrasos * modalidad / monthsBeforePayout)
+        : currentAnnualSalary
       const oldMonthlySalary = oldAnnualSalary / modalidad
       
       return oldMonthlySalary
     }
     
-    // Für Monate April-Dezember: neues Gehalt (atrasos nur im April)
+    // Für Monate ab Auszahlungsmonat: neues Gehalt (atrasos nur im Auszahlungsmonat)
     const baseMonthlySalary = typeof salary?.salario_mensual_bruto === 'string' 
       ? parseFloat(salary.salario_mensual_bruto) || 0 
       : (salary?.salario_mensual_bruto || 0)
@@ -571,8 +600,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       ? parseFloat(salary.atrasos) || 0 
       : (salary?.atrasos || 0)
     
-    // Atrasos nur im April dazurechnen
-    if (selectedMonth === 4) {
+    // Atrasos nur im Auszahlungsmonat dazurechnen
+    if (selectedMonth === payoutMonth) {
       return baseMonthlySalary + atrasos
     }
     
@@ -1102,6 +1131,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                       onChange={(e) => setSalary({...salary, atrasos: parseFloat(e.target.value)})}
 
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
+
+                      readOnly
 
                     />
 

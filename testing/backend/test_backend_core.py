@@ -69,40 +69,34 @@ class TestDatabaseManagerCore:
         assert len(hashed_special) == 64
         assert hashed_special != special_password
 
-    @patch('mysql.connector.connect')
-    def test_connection_success(self, mock_connect, db_manager):
+    @patch.object(DatabaseManager, '_create_connection')
+    def test_connection_success(self, mock_create_connection, db_manager):
         """Test erfolgreiche Datenbankverbindung"""
         mock_connection = Mock()
         mock_connection.is_connected.return_value = True
-        mock_connect.return_value = mock_connection
+        mock_create_connection.return_value = mock_connection
         
         result = db_manager.connect()
         
         assert result is True
         assert db_manager.connection == mock_connection
-        mock_connect.assert_called_once_with(
-            host='localhost',
-            database='test_db',
-            user='test_user',
-            password='test_password',
-            port=3307
-        )
+        mock_create_connection.assert_called_once()
 
-    @patch('mysql.connector.connect')
-    def test_connection_failure(self, mock_connect, db_manager):
+    @patch.object(DatabaseManager, '_create_connection')
+    def test_connection_failure(self, mock_create_connection, db_manager):
         """Test fehlgeschlagene Datenbankverbindung"""
-        mock_connect.side_effect = Error("Connection failed")
+        mock_create_connection.side_effect = Error("Connection failed")
         
         result = db_manager.connect()
         
         assert result is False
         assert db_manager.connection is None
 
-    @patch('mysql.connector.connect')
-    def test_connection_timeout(self, mock_connect, db_manager):
+    @patch.object(DatabaseManager, '_create_connection')
+    def test_connection_timeout(self, mock_create_connection, db_manager):
         """Test Connection Timeout"""
         import socket
-        mock_connect.side_effect = socket.timeout("Connection timeout")
+        mock_create_connection.side_effect = socket.timeout("Connection timeout")
         
         # Erwarte TimeoutError
         with pytest.raises(socket.timeout):
@@ -114,83 +108,80 @@ class TestDatabaseManagerCore:
         result = db_manager.execute_query("SELECT * FROM test")
         assert result == []
 
-    @patch('mysql.connector.connect')
-    def test_execute_query_success(self, mock_connect, db_manager):
+    @patch.object(DatabaseManager, '_create_connection')
+    def test_execute_query_success(self, mock_create_connection, db_manager):
         """Test erfolgreiche Query-Ausführung"""
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_cursor.fetchall.return_value = [{'id': 1, 'name': 'test'}]
+        mock_cursor.with_rows = True
         mock_connection.cursor.return_value = mock_cursor
-        mock_connect.return_value = mock_connection
-        
-        db_manager.connection = mock_connection
+        mock_create_connection.return_value = mock_connection
         result = db_manager.execute_query("SELECT * FROM test")
         
         assert result == [{'id': 1, 'name': 'test'}]
         mock_cursor.execute.assert_called_once_with("SELECT * FROM test", None)
         mock_cursor.close.assert_called_once()
+        mock_connection.close.assert_called_once()
 
-    @patch('mysql.connector.connect')
-    def test_execute_query_with_params(self, mock_connect, db_manager):
+    @patch.object(DatabaseManager, '_create_connection')
+    def test_execute_query_with_params(self, mock_create_connection, db_manager):
         """Test Query-Ausführung mit Parametern"""
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_cursor.fetchall.return_value = []
+        mock_cursor.with_rows = True
         mock_connection.cursor.return_value = mock_cursor
-        mock_connect.return_value = mock_connection
-        
-        db_manager.connection = mock_connection
+        mock_create_connection.return_value = mock_connection
         query = "SELECT * FROM test WHERE id = %s"
         params = (1,)
         
         db_manager.execute_query(query, params)
         
         mock_cursor.execute.assert_called_once_with(query, params)
+        mock_connection.close.assert_called_once()
 
-    @patch('mysql.connector.connect')
-    def test_execute_query_database_error(self, mock_connect, db_manager):
+    @patch.object(DatabaseManager, '_create_connection')
+    def test_execute_query_database_error(self, mock_create_connection, db_manager):
         """Test Query-Ausführung mit Datenbankfehler"""
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_cursor.execute.side_effect = Error("SQL Error")
         mock_connection.cursor.return_value = mock_cursor
-        mock_connect.return_value = mock_connection
-        
-        db_manager.connection = mock_connection
+        mock_create_connection.return_value = mock_connection
         result = db_manager.execute_query("SELECT * FROM test")
         
         assert result == []
+        mock_connection.close.assert_called_once()
 
-    @patch('mysql.connector.connect')
-    def test_execute_update_success(self, mock_connect, db_manager):
+    @patch.object(DatabaseManager, '_create_connection')
+    def test_execute_update_success(self, mock_create_connection, db_manager):
         """Test erfolgreiches Update"""
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_connection.cursor.return_value = mock_cursor
-        mock_connect.return_value = mock_connection
-        
-        db_manager.connection = mock_connection
+        mock_create_connection.return_value = mock_connection
         result = db_manager.execute_update("UPDATE test SET name = %s", ("new_name",))
         
         assert result is True
         mock_cursor.execute.assert_called_once()
         mock_connection.commit.assert_called_once()
         mock_cursor.close.assert_called_once()
+        mock_connection.close.assert_called_once()
 
-    @patch('mysql.connector.connect')
-    def test_execute_update_failure(self, mock_connect, db_manager):
+    @patch.object(DatabaseManager, '_create_connection')
+    def test_execute_update_failure(self, mock_create_connection, db_manager):
         """Test fehlgeschlagenes Update"""
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_cursor.execute.side_effect = Error("Update Error")
         mock_connection.cursor.return_value = mock_cursor
-        mock_connect.return_value = mock_connection
-        
-        db_manager.connection = mock_connection
+        mock_create_connection.return_value = mock_connection
         result = db_manager.execute_update("UPDATE test SET name = %s", ("new_name",))
         
         assert result is False
         mock_connection.rollback.assert_called_once()
+        mock_connection.close.assert_called_once()
 
     def test_add_employee_validation(self, db_manager):
         """Test Mitarbeiter-Erstellung Validierung"""
@@ -455,11 +446,12 @@ class TestDatabaseManagerCore:
                 # Sollte nicht crashen
                 assert isinstance(e, (MemoryError, OverflowError, AttributeError))
 
-    @patch('mysql.connector.connect')
-    def test_disconnect_functionality(self, mock_connect, db_manager):
+    @patch.object(DatabaseManager, '_create_connection')
+    def test_disconnect_functionality(self, mock_create_connection, db_manager):
         """Test Verbindungstrennung"""
         mock_connection = Mock()
-        mock_connect.return_value = mock_connection
+        mock_connection.is_connected.return_value = True
+        mock_create_connection.return_value = mock_connection
         
         # Verbindung herstellen
         db_manager.connect()

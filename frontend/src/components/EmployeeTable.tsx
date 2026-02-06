@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react'
 import { Employee } from '@/types/employee'
 import { Button } from '@/components/ui/button'
-import { Search, Plus, Edit, Trash2, Eye, TrendingUp } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Eye, TrendingUp, CheckCircle, AlertCircle } from 'lucide-react'
 import EmployeeForm from './EmployeeForm'
 import EmployeeDetail from './EmployeeDetail'
 import SalaryCopyManager from './SalaryCopyManager'
+import apiClient from '@/lib/api'
 
 interface EmployeeTableProps {
   onEmployeeChange?: () => void
@@ -19,7 +20,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
-  const [activeTab, setActiveTab] = useState<'employees' | 'increase' | 'salary-copy' | 'overview'>('employees')
+  const [activeTab, setActiveTab] = useState<'employees' | 'increase' | 'salary-copy' | 'overview' | 'settings' | 'bulk-ingresos-deducciones'>('employees')
   
   // State for salary increase
   const [increaseYear, setIncreaseYear] = useState<string>('')
@@ -37,9 +38,211 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
   const [overviewData, setOverviewData] = useState<any[]>([])
   const [overviewLoading, setOverviewLoading] = useState(false)
 
+
+
+  // Global payout month setting
+  const [payoutMonth, setPayoutMonth] = useState<number>(4)
+  const [payoutMonthLoading, setPayoutMonthLoading] = useState(false)
+  
+  // Atrasos recalculation state
+  const [recalcYear, setRecalcYear] = useState<string>(new Date().getFullYear().toString())
+  const [recalcLoading, setRecalcLoading] = useState(false)
+  const [recalcResult, setRecalcResult] = useState<any>(null)
+
+
+
+  // Bulk ingresos/deducciones state
+  const [bulkYear, setBulkYear] = useState<string>(new Date().getFullYear().toString())
+  const [bulkLoading, setBulkLoading] = useState(false)
+  const [bulkResult, setBulkResult] = useState<any>(null)
+  const [bulkIngresos, setBulkIngresos] = useState<any>({
+    ticket_restaurant: 0,
+    primas: 0,
+    dietas_cotizables: 0,
+    horas_extras: 0,
+    dias_exentos: 0,
+    dietas_exentas: 0,
+    seguro_pensiones: 0,
+    lavado_coche: 0,
+    formacion: 0,
+    tickets: 0
+  })
+  const [bulkDeducciones, setBulkDeducciones] = useState<any>({
+    seguro_accidentes: 0,
+    adelas: 0,
+    sanitas: 0,
+    gasolina_arval: 0,
+    gasolina_ald: 0,
+    ret_especie: 0,
+    seguro_medico: 0,
+    cotizacion_especie: 0
+  })
+
+
+
+  const [bulkIngresosEnabled, setBulkIngresosEnabled] = useState<Record<string, boolean>>({
+    ticket_restaurant: false,
+    primas: false,
+    dietas_cotizables: false,
+    horas_extras: false,
+    dias_exentos: false,
+    dietas_exentas: false,
+    seguro_pensiones: false,
+    lavado_coche: false,
+    formacion: false,
+    tickets: false,
+  })
+
+
+
+  const [bulkDeduccionesEnabled, setBulkDeduccionesEnabled] = useState<Record<string, boolean>>({
+    seguro_accidentes: false,
+    adelas: false,
+    sanitas: false,
+    gasolina_arval: false,
+    gasolina_ald: false,
+    ret_especie: false,
+    seguro_medico: false,
+    cotizacion_especie: false,
+  })
+
   useEffect(() => {
     fetchEmployees()
+    fetchPayoutMonth()
   }, [])
+
+
+
+  const fetchPayoutMonth = async () => {
+    setPayoutMonthLoading(true)
+    try {
+      const res = await apiClient.getPayoutMonth()
+      if (typeof res?.payout_month === 'number') {
+        setPayoutMonth(res.payout_month)
+      }
+    } catch (e) {
+      console.error('Error fetching payout month:', e)
+    } finally {
+      setPayoutMonthLoading(false)
+    }
+  }
+
+
+
+  const handleApplyBulkIngresosDeducciones = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+
+
+    const enabledIngresosKeys = Object.entries(bulkIngresosEnabled)
+      .filter(([, enabled]) => enabled)
+      .map(([key]) => key)
+
+    const enabledDeduccionesKeys = Object.entries(bulkDeduccionesEnabled)
+      .filter(([, enabled]) => enabled)
+      .map(([key]) => key)
+
+    if (enabledIngresosKeys.length === 0 && enabledDeduccionesKeys.length === 0) {
+      alert('Bitte wähle mindestens ein Feld aus (Checkbox), das gespeichert werden soll.')
+      return
+    }
+
+    if (!confirm(`Möchten Sie wirklich Zulagen/Abzüge für das Jahr ${bulkYear} für alle aktiven Mitarbeiter setzen? Dies überschreibt bestehende Werte für alle Monate des Jahres.`)) {
+      return
+    }
+
+    setBulkLoading(true)
+    setBulkResult(null)
+
+    try {
+      const year = parseInt(bulkYear)
+
+
+
+      const ingresosPayload = enabledIngresosKeys.length > 0
+        ? Object.fromEntries(enabledIngresosKeys.map((k) => [k, bulkIngresos[k]]))
+        : undefined
+
+      const deduccionesPayload = enabledDeduccionesKeys.length > 0
+        ? Object.fromEntries(enabledDeduccionesKeys.map((k) => [k, bulkDeducciones[k]]))
+        : undefined
+
+      const result = await apiClient.applyIngresosDeduccionesToAllActive(year, {
+        ...(ingresosPayload ? { ingresos: ingresosPayload } : {}),
+        ...(deduccionesPayload ? { deducciones: deduccionesPayload } : {}),
+      })
+
+      setBulkResult(result)
+      if (result?.success) {
+        fetchEmployees()
+      }
+    } catch (error: any) {
+      console.error('Error applying bulk ingresos/deducciones:', error)
+      setBulkResult({
+        success: false,
+        message: error?.message || 'Netzwerkfehler',
+        updated_count: 0,
+        total_count: 0,
+        errors: [error?.message || 'Netzwerkfehler']
+      })
+    } finally {
+      setBulkLoading(false)
+    }
+  }
+
+
+
+  const handleSavePayoutMonth = async () => {
+    setPayoutMonthLoading(true)
+    try {
+      await apiClient.setPayoutMonth(payoutMonth)
+      onEmployeeChange?.()
+    } catch (e) {
+      console.error('Error saving payout month:', e)
+      alert('Auszahlungsmonat konnte nicht gespeichert werden')
+    } finally {
+      setPayoutMonthLoading(false)
+    }
+  }
+
+  const handleRecalculateAtrasos = async () => {
+    if (!confirm(`Möchten Sie wirklich alle Atrasos für das Jahr ${recalcYear} neu berechnen? Dies aktualisiert die Werte für alle Mitarbeiter.`)) {
+      return
+    }
+
+    setRecalcLoading(true)
+    setRecalcResult(null)
+
+    try {
+      const response = await fetch('http://localhost:8000/settings/recalculate-atrasos', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ year: parseInt(recalcYear) })
+      })
+      
+      const result = await response.json()
+      setRecalcResult(result)
+      
+      if (result.success) {
+        // Aktualisiere die Mitarbeiterdaten nach erfolgreicher Neuberechnung
+        fetchEmployees()
+      }
+    } catch (error) {
+      console.error('Error recalculating atrasos:', error)
+      setRecalcResult({
+        success: false,
+        message: 'Fehler bei der Neuberechnung der Atrasos',
+        updated_count: 0,
+        total_count: 0,
+        errors: ['Netzwerkfehler']
+      })
+    } finally {
+      setRecalcLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (activeTab === 'overview' && overviewYear) {
@@ -291,7 +494,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-6">
           <nav className="flex space-x-8">
-            {['employees', 'increase', 'salary-copy', 'overview'].map((tab) => (
+            {['employees', 'increase', 'salary-copy', 'overview', 'settings', 'bulk-ingresos-deducciones'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
@@ -301,7 +504,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                {tab === 'employees' ? 'Mitarbeiter' : tab === 'increase' ? 'Erhöhung' : tab === 'salary-copy' ? 'Gehaltskopie' : 'Gehaltsübersicht'}
+                {tab === 'employees' ? 'Mitarbeiter' : tab === 'increase' ? 'Erhöhung' : tab === 'salary-copy' ? 'Gehaltskopie' : tab === 'overview' ? 'Gehaltsübersicht' : tab === 'settings' ? 'Settings' : 'Zulagen/Abzüge (Jahr)'}
               </button>
             ))}
           </nav>
@@ -398,6 +601,259 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
             {filteredEmployees.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 {searchTerm ? 'Keine Mitarbeiter gefunden' : 'Keine Mitarbeiter vorhanden'}
+              </div>
+            )}
+          </div>
+        )}
+
+
+
+        {activeTab === 'bulk-ingresos-deducciones' && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Zulagen & Abzüge (Jahreswerte)</h3>
+              <p className="text-sm text-gray-600">
+                Setzt die Werte für alle aktiven Mitarbeiter für alle Monate des ausgewählten Jahres.
+              </p>
+            </div>
+
+            <form onSubmit={handleApplyBulkIngresosDeducciones} className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Jahr</label>
+                  <select
+                    value={bulkYear}
+                    onChange={(e) => setBulkYear(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md"
+                    disabled={bulkLoading}
+                  >
+                    {Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - 4 + i).map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h4 className="text-md font-medium text-gray-900 mb-4">Zulagen</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(bulkIngresos).map(([key, value]) => (
+                      <div key={key}>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                          <input
+                            type="checkbox"
+                            className="mr-2"
+                            checked={!!bulkIngresosEnabled[key]}
+                            onChange={(e) => setBulkIngresosEnabled({ ...bulkIngresosEnabled, [key]: e.target.checked })}
+                            disabled={bulkLoading}
+                          />
+                          {key.replace(/_/g, ' ')}
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={value as any}
+                          onChange={(e) => setBulkIngresos({ ...bulkIngresos, [key]: parseFloat(e.target.value) })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          disabled={bulkLoading}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h4 className="text-md font-medium text-gray-900 mb-4">Abzüge</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(bulkDeducciones).map(([key, value]) => (
+                      <div key={key}>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                          <input
+                            type="checkbox"
+                            className="mr-2"
+                            checked={!!bulkDeduccionesEnabled[key]}
+                            onChange={(e) => setBulkDeduccionesEnabled({ ...bulkDeduccionesEnabled, [key]: e.target.checked })}
+                            disabled={bulkLoading}
+                          />
+                          {key.replace(/_/g, ' ')}
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={value as any}
+                          onChange={(e) => setBulkDeducciones({ ...bulkDeducciones, [key]: parseFloat(e.target.value) })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          disabled={bulkLoading}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <Button type="submit" disabled={bulkLoading} className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                {bulkLoading ? 'Wird verarbeitet...' : 'Für alle aktiven Mitarbeiter speichern'}
+              </Button>
+            </form>
+
+            {bulkResult && (
+              <div className={`border rounded-lg p-4 ${
+                bulkResult.success
+                  ? 'border-green-200 bg-green-50'
+                  : 'border-red-200 bg-red-50'
+              }`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {bulkResult.success ? (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                  )}
+                  <span className={`font-medium ${
+                    bulkResult.success ? 'text-green-800' : 'text-red-800'
+                  }`}>
+                    {bulkResult.message}
+                  </span>
+                </div>
+
+                {typeof bulkResult.updated_count === 'number' && typeof bulkResult.total_count === 'number' && (
+                  <div className="text-sm text-gray-700">
+                    Erfolgreich aktualisiert: {bulkResult.updated_count} von {bulkResult.total_count} Mitarbeitern
+                  </div>
+                )}
+
+                {bulkResult.errors && bulkResult.errors.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-sm font-medium text-red-700">Fehler:</p>
+                    <ul className="text-sm text-red-600 list-disc list-inside">
+                      {bulkResult.errors.slice(0, 3).map((error: string, index: number) => (
+                        <li key={index}>{error}</li>
+                      ))}
+                      {bulkResult.errors.length > 3 && (
+                        <li>... und {bulkResult.errors.length - 3} weitere Fehler</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+
+
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Settings</h3>
+              <p className="text-sm text-gray-600">
+                Globale Einstellungen, die nur selten geändert werden.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <div>
+                <div className="text-sm font-medium text-gray-900">Auszahlungsmonat (global)</div>
+                <div className="text-xs text-gray-600">
+                  Steuert, bis zu welchem Monat das alte Jahresgehalt gilt und in welchem Monat die atrasos ausgezahlt werden.
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={payoutMonth}
+                  onChange={(e) => setPayoutMonth(parseInt(e.target.value))}
+                  className="px-3 py-2 border border-gray-300 rounded-md"
+                  disabled={payoutMonthLoading}
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                <Button onClick={handleSavePayoutMonth} disabled={payoutMonthLoading}>
+                  Speichern
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-blue-50">
+              <div>
+                <div className="text-sm font-medium text-gray-900">Atrasos Neuberechnung</div>
+                <div className="text-xs text-gray-600">
+                  Berechnet alle Atrasos für das ausgewählte Jahr neu basierend auf dem aktuellen Auszahlungsmonat.
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={recalcYear}
+                  onChange={(e) => setRecalcYear(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md"
+                  disabled={recalcLoading}
+                >
+                  {Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - 4 + i).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+                <Button 
+                  onClick={handleRecalculateAtrasos} 
+                  disabled={recalcLoading}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  {recalcLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      Berechne...
+                    </>
+                  ) : (
+                    <>
+                      <TrendingUp className="w-4 h-4" />
+                      Neuberechnen
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Ergebnis der Atrasos-Neuberechnung */}
+            {recalcResult && (
+              <div className={`border rounded-lg p-4 ${
+                recalcResult.success 
+                  ? 'border-green-200 bg-green-50' 
+                  : 'border-red-200 bg-red-50'
+              }`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {recalcResult.success ? (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                  )}
+                  <span className={`font-medium ${
+                    recalcResult.success ? 'text-green-800' : 'text-red-800'
+                  }`}>
+                    {recalcResult.message}
+                  </span>
+                </div>
+                
+                {recalcResult.success && (
+                  <div className="text-sm text-gray-700">
+                    <p>Erfolgreich aktualisiert: {recalcResult.updated_count} von {recalcResult.total_count} Mitarbeitern</p>
+                  </div>
+                )}
+                
+                {recalcResult.errors && recalcResult.errors.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-sm font-medium text-red-700">Fehler:</p>
+                    <ul className="text-sm text-red-600 list-disc list-inside">
+                      {recalcResult.errors.slice(0, 3).map((error: string, index: number) => (
+                        <li key={index}>{error}</li>
+                      ))}
+                      {recalcResult.errors.length > 3 && (
+                        <li>... und {recalcResult.errors.length - 3} weitere Fehler</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </div>

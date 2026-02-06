@@ -22,6 +22,7 @@ class TestDatabaseManagerIntegrationSimple:
         mock_cursor.fetchall.return_value = [
             {'id_empleado': 1, 'nombre': 'Juan', 'apellido': 'Perez', 'ceco': '1001', 'activo': True}
         ]
+        mock_cursor.with_rows = True
         mock_connection.cursor.return_value = mock_cursor
         mock_connection.is_connected.return_value = True
         
@@ -31,7 +32,7 @@ class TestDatabaseManagerIntegrationSimple:
         """Test grundlegender Workflow"""
         mock_connection, mock_cursor = mock_database_setup
         
-        with patch('mysql.connector.connect', return_value=mock_connection):
+        with patch.object(DatabaseManager, '_create_connection', return_value=mock_connection):
             db = DatabaseManager('localhost', 'test_db', 'user', 'pass')
             
             # Verbindung herstellen
@@ -44,6 +45,7 @@ class TestDatabaseManagerIntegrationSimple:
             assert employees[0]['nombre'] == 'Juan'
             
             # Verbindung trennen
+            mock_connection.close.reset_mock()
             db.disconnect()
             mock_connection.close.assert_called_once()
 
@@ -51,7 +53,7 @@ class TestDatabaseManagerIntegrationSimple:
         """Test Mitarbeiter CRUD Workflow"""
         mock_connection, mock_cursor = mock_database_setup
         
-        with patch('mysql.connector.connect', return_value=mock_connection):
+        with patch.object(DatabaseManager, '_create_connection', return_value=mock_connection):
             db = DatabaseManager('localhost', 'test_db', 'user', 'pass')
             db.connect()
             
@@ -80,7 +82,7 @@ class TestDatabaseManagerIntegrationSimple:
         """Test Benutzerverwaltungs-Workflow"""
         mock_connection, mock_cursor = mock_database_setup
         
-        with patch('mysql.connector.connect', return_value=mock_connection):
+        with patch.object(DatabaseManager, '_create_connection', return_value=mock_connection):
             db = DatabaseManager('localhost', 'test_db', 'user', 'pass')
             db.connect()
             
@@ -107,7 +109,7 @@ class TestDatabaseManagerIntegrationSimple:
         """Test Gehaltsverwaltungs-Workflow"""
         mock_connection, mock_cursor = mock_database_setup
         
-        with patch('mysql.connector.connect', return_value=mock_connection):
+        with patch.object(DatabaseManager, '_create_connection', return_value=mock_connection):
             db = DatabaseManager('localhost', 'test_db', 'user', 'pass')
             db.connect()
             
@@ -145,7 +147,7 @@ class TestDatabaseManagerIntegrationSimple:
         """Test Fehlerbehandlung im Workflow"""
         mock_connection, mock_cursor = mock_database_setup
         
-        with patch('mysql.connector.connect', return_value=mock_connection):
+        with patch.object(DatabaseManager, '_create_connection', return_value=mock_connection):
             db = DatabaseManager('localhost', 'test_db', 'user', 'pass')
             db.connect()
             
@@ -168,7 +170,7 @@ class TestDatabaseManagerIntegrationSimple:
         """Test Such-Workflow"""
         mock_connection, mock_cursor = mock_database_setup
         
-        with patch('mysql.connector.connect', return_value=mock_connection):
+        with patch.object(DatabaseManager, '_create_connection', return_value=mock_connection):
             db = DatabaseManager('localhost', 'test_db', 'user', 'pass')
             db.connect()
             
@@ -181,7 +183,7 @@ class TestDatabaseManagerIntegrationSimple:
         """Test vollständige Mitarbeiterinformationen Workflow"""
         mock_connection, mock_cursor = mock_database_setup
         
-        with patch('mysql.connector.connect', return_value=mock_connection):
+        with patch.object(DatabaseManager, '_create_connection', return_value=mock_connection):
             db = DatabaseManager('localhost', 'test_db', 'user', 'pass')
             db.connect()
             
@@ -201,7 +203,7 @@ class TestDatabaseManagerIntegrationSimple:
         """Test Excel-Export Workflow"""
         mock_connection, mock_cursor = mock_database_setup
         
-        with patch('mysql.connector.connect', return_value=mock_connection):
+        with patch.object(DatabaseManager, '_create_connection', return_value=mock_connection):
             db = DatabaseManager('localhost', 'test_db', 'user', 'pass')
             db.connect()
             
@@ -225,7 +227,7 @@ class TestDatabaseManagerIntegrationSimple:
         """Test einfache nebenläufige Operationen"""
         mock_connection, mock_cursor = mock_database_setup
         
-        with patch('mysql.connector.connect', return_value=mock_connection):
+        with patch.object(DatabaseManager, '_create_connection', return_value=mock_connection):
             db = DatabaseManager('localhost', 'test_db', 'user', 'pass')
             db.connect()
             

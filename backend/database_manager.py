@@ -6,6 +6,10 @@ from mysql.connector import Error
 
 
 
+from mysql.connector import pooling
+
+
+
 from typing import Dict, List, Any, Optional
 
 
@@ -23,6 +27,14 @@ import pandas as pd
 
 
 from datetime import datetime
+
+
+
+import json
+
+
+
+import os
 
 
 
@@ -62,6 +74,10 @@ class DatabaseManager:
 
 
 
+        self._pool = None
+
+
+
         self.logger = logging.getLogger(__name__)
 
 
@@ -70,15 +86,28 @@ class DatabaseManager:
 
 
 
-    def connect(self) -> bool:
+
+    def _create_connection(self):
 
 
 
-        try:
+        if self._pool is None:
 
 
 
-            self.connection = mysql.connector.connect(
+            self._pool = pooling.MySQLConnectionPool(
+
+
+
+                pool_name="nomina_pool",
+
+
+
+                pool_size=10,
+
+
+
+                pool_reset_session=True,
 
 
 
@@ -98,11 +127,82 @@ class DatabaseManager:
 
 
 
-                port=self.port
+                port=self.port,
+
+
+
+                connection_timeout=10,
 
 
 
             )
+
+
+
+        return self._pool.get_connection()
+
+
+
+    def _is_transient_connection_error(self, err: Exception) -> bool:
+
+
+
+        if not isinstance(err, Error):
+
+
+
+            return False
+
+
+
+        errno = getattr(err, "errno", None)
+
+
+
+        if errno in (2006, 2013, 2055):
+
+
+
+            return True
+
+
+
+        msg = str(err)
+
+
+
+        return (
+
+
+
+            "Lost connection" in msg
+
+
+
+            or "MySQL Connection not available" in msg
+
+
+
+            or "EOF occurred" in msg
+
+
+
+        )
+
+
+
+
+
+
+    def connect(self) -> bool:
+
+
+
+        try:
+
+
+
+            self.connection = self._create_connection()
 
 
 
@@ -174,69 +274,127 @@ class DatabaseManager:
 
 
 
-        try:
+        last_error: Optional[Error] = None
 
 
 
-            # Prüfe ob Verbindung aktiv ist, andernfalls neu verbinden
-
-            if not self.connection or not self.connection.is_connected():
-
-                self.logger.warning("Datenbankverbindung verloren, versuche neu zu verbinden...")
-
-                if not self.connect():
-
-                    self.logger.error("Neuverbindung zur Datenbank fehlgeschlagen")
-
-                    return []
+        for attempt in range(2):
 
 
 
-            cursor = self.connection.cursor(dictionary=True, buffered=True)
+            connection = None
 
 
 
-            cursor.execute(query, params)
+            cursor = None
 
 
 
-            result = cursor.fetchall()
+            try:
 
 
 
-            cursor.close()
+                connection = self._create_connection()
 
 
 
-            return result
+                cursor = connection.cursor(dictionary=True)
 
 
 
-        except Error as e:
+                cursor.execute(query, params)
 
 
 
-            self.logger.error(f"Fehler bei der Abfrage: {e}")
+                result = cursor.fetchall() if cursor.with_rows else []
 
 
 
-            # Versuche Verbindung wiederherstellen bei Verbindungsfehlern
-
-            if "Connection" in str(e) or "MySQL Connection not available" in str(e):
-
-                self.logger.warning("Versuche Datenbankverbindung wiederherzustellen...")
-
-                self.connect()
+                return result
 
 
 
-            if 'cursor' in locals():
-
-                cursor.close()
+            except Error as e:
 
 
 
-            return []
+                last_error = e
+
+
+
+                if attempt == 0 and self._is_transient_connection_error(e):
+
+
+
+                    self.logger.warning(f"Datenbankverbindung verloren, Retry... ({e})")
+
+
+
+                    continue
+
+
+
+                self.logger.error(f"Fehler bei der Abfrage: {e}")
+
+
+
+                return []
+
+
+
+            finally:
+
+
+
+                if cursor is not None:
+
+
+
+                    try:
+
+
+
+                        cursor.close()
+
+
+
+                    except Exception:
+
+
+
+                        pass
+
+
+
+                if connection is not None:
+
+
+
+                    try:
+
+
+
+                        connection.close()
+
+
+
+                    except Exception:
+
+
+
+                        pass
+
+
+
+        if last_error is not None:
+
+
+
+            self.logger.error(f"Fehler bei der Abfrage: {last_error}")
+
+
+
+        return []
 
 
 
@@ -248,23 +406,275 @@ class DatabaseManager:
 
 
 
+        last_error: Optional[Error] = None
+
+
+
+        for attempt in range(2):
+
+
+
+            connection = None
+
+
+
+            cursor = None
+
+
+
+            try:
+
+
+
+                connection = self._create_connection()
+
+
+
+                cursor = connection.cursor()
+
+
+
+                cursor.execute(query, params)
+
+
+
+                connection.commit()
+
+
+
+                return True
+
+
+
+            except Error as e:
+
+
+
+                last_error = e
+
+
+
+                if attempt == 0 and self._is_transient_connection_error(e):
+
+
+
+                    self.logger.warning(f"Datenbankverbindung verloren, Retry... ({e})")
+
+
+
+                    continue
+
+
+
+                self.logger.error(f"Fehler beim Update: {e}")
+
+
+
+                self.logger.error(f"Query: {query}")
+
+
+
+                self.logger.error(f"Params: {params}")
+
+
+
+                try:
+
+
+
+                    if connection is not None:
+
+
+
+                        connection.rollback()
+
+
+
+                except Exception:
+
+
+
+                    pass
+
+
+
+                return False
+
+
+
+            finally:
+
+
+
+                if cursor is not None:
+
+
+
+                    try:
+
+
+
+                        cursor.close()
+
+
+
+                    except Exception:
+
+
+
+                        pass
+
+
+
+                if connection is not None:
+
+
+
+                    try:
+
+
+
+                        connection.close()
+
+
+
+                    except Exception:
+
+
+
+                        pass
+
+
+
+        if last_error is not None:
+
+
+
+            self.logger.error(f"Fehler beim Update: {last_error}")
+
+
+
+        return False
+
+
+
+    
+
+
+
+    def get_payout_month(self) -> int:
+
+
+
+        """Returns the globally configured payout month (1-12). Defaults to 4 (April)."""
+
+
+
         try:
 
 
 
-            cursor = self.connection.cursor()
+            default_value = 4
 
 
 
-            cursor.execute(query, params)
+            settings_path = os.path.join(os.path.dirname(__file__), "settings.json")
 
 
 
-            self.connection.commit()
+            if not os.path.exists(settings_path):
 
 
 
-            cursor.close()
+                try:
+
+
+
+                    with open(settings_path, "w", encoding="utf-8") as f:
+
+
+
+                        json.dump({"payout_month": default_value}, f, ensure_ascii=False, indent=2)
+
+
+
+                except Exception:
+
+
+
+                    return default_value
+
+
+
+                return default_value
+
+
+
+            with open(settings_path, "r", encoding="utf-8") as f:
+
+
+
+                data = json.load(f) or {}
+
+
+
+            value = int(data.get("payout_month", default_value))
+
+
+
+            if 1 <= value <= 12:
+
+
+
+                return value
+
+
+
+            return default_value
+
+
+
+        except Exception as e:
+
+
+
+            self.logger.error(f"Fehler beim Lesen von payout_month: {e}")
+
+
+
+            return 4
+
+
+
+    def set_payout_month(self, payout_month: int) -> bool:
+
+
+
+        """Sets the globally configured payout month (1-12)."""
+
+
+
+        try:
+
+
+
+            if not isinstance(payout_month, int) or not (1 <= payout_month <= 12):
+
+
+
+                return False
+
+
+
+            settings_path = os.path.join(os.path.dirname(__file__), "settings.json")
+
+
+
+            with open(settings_path, "w", encoding="utf-8") as f:
+
+
+
+                json.dump({"payout_month": payout_month}, f, ensure_ascii=False, indent=2)
 
 
 
@@ -272,31 +682,15 @@ class DatabaseManager:
 
 
 
-        except Error as e:
+        except Exception as e:
 
 
 
-            self.logger.error(f"Fehler beim Update: {e}")
-
-
-
-            self.logger.error(f"Query: {query}")
-
-
-
-            self.logger.error(f"Params: {params}")
-
-
-
-            self.connection.rollback()
+            self.logger.error(f"Fehler beim Setzen von payout_month: {e}")
 
 
 
             return False
-
-
-
-    
 
 
 
@@ -1386,7 +1780,7 @@ class DatabaseManager:
 
 
 
-                VALUES (%s, %s, %s, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                VALUES (%s, %s, %s, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 
 
@@ -1842,15 +2236,16 @@ class DatabaseManager:
             # Nachzahlung für die Monate Januar-März mit der Differenz zwischen alt und neu
 
             old_monthly = current_salary / modalidad
-
-            new_monthly = new_salary / modalidad
-
-            monthly_diff = new_monthly - old_monthly
-
-            atrasos = monthly_diff * 3  # 3 Monate Nachzahlung
-
             
-
+            new_monthly = new_salary / modalidad
+            
+            monthly_diff = new_monthly - old_monthly
+            
+            payout_month = self.get_payout_month()
+            months_before_payout = max(0, payout_month - 1)
+            atrasos = monthly_diff * months_before_payout
+            
+            
             # Füge oder aktualisiere Gehalt für target_year
 
             salary_data = {
@@ -2188,18 +2583,12 @@ class DatabaseManager:
                     
 
                     # Berechne atrasos korrekt für April-Wirksamkeit
-
-                    # Nachzahlung für die Monate Januar-März mit der Differenz zwischen alt und neu
-
                     old_monthly = current_salary / modalidad
-
                     new_monthly = new_salary / modalidad
-
                     monthly_diff = new_monthly - old_monthly
-
-                    atrasos = monthly_diff * 3  # 3 Monate Nachzahlung
-
-                    
+                    payout_month = self.get_payout_month()
+                    months_before_payout = max(0, payout_month - 1)
+                    atrasos = monthly_diff * months_before_payout
 
                     # Füge oder aktualisiere Gehalt für target_year
 
@@ -2357,15 +2746,23 @@ class DatabaseManager:
                 return 0.0
             
             prev_salary = float(prev_year_data[0]['salario_anual_bruto'])
+
+
+
+            payout_month = self.get_payout_month()
+
+
+
+            months_before_payout = max(0, payout_month - 1)
             
             # Berechne atrasos nach Trigger-Logik
             if modalidad == 12:
-                atrasos = (current_salary - prev_salary) / 12 * 3
+                atrasos = (current_salary - prev_salary) / 12 * months_before_payout
             elif modalidad == 14:
-                atrasos = (current_salary - prev_salary) / 14 * 3
+                atrasos = (current_salary - prev_salary) / 14 * months_before_payout
             else:
                 # Standard für unbekannte modalidad
-                atrasos = (current_salary - prev_salary) / 12 * 3
+                atrasos = (current_salary - prev_salary) / 12 * months_before_payout
             
             # Atrasos dürfen nie negativ sein
             return max(0.0, atrasos)
@@ -2542,7 +2939,9 @@ class DatabaseManager:
 
 
 
-                            new_atrasos = (current_salario - prev_salario) / 12 * 3
+                            payout_month = self.get_payout_month()
+                            months_before_payout = max(0, payout_month - 1)
+                            new_atrasos = (current_salario - prev_salario) / 12 * months_before_payout
 
 
 
@@ -2550,7 +2949,9 @@ class DatabaseManager:
 
 
 
-                            new_atrasos = (current_salario - prev_salario) / 14 * 3
+                            payout_month = self.get_payout_month()
+                            months_before_payout = max(0, payout_month - 1)
+                            new_atrasos = (current_salario - prev_salario) / 14 * months_before_payout
 
 
 
@@ -3154,6 +3555,149 @@ class DatabaseManager:
 
 
 
+    def get_active_employee_ids(self) -> List[int]:
+
+
+
+        try:
+
+
+
+            query = "SELECT id_empleado FROM t001_empleados WHERE activo = TRUE ORDER BY id_empleado"
+
+
+            rows = self.execute_query(query)
+
+
+            if not rows:
+
+
+
+                return []
+
+
+            return [int(r['id_empleado']) for r in rows if r.get('id_empleado') is not None]
+
+
+        except Exception as e:
+
+
+            self.logger.error(f"Fehler beim Laden aktiver Mitarbeiter-IDs: {e}")
+
+
+            return []
+
+
+    def apply_yearly_ingresos_and_deducciones_to_all_active(
+        self,
+        year: int,
+        ingresos: Optional[Dict[str, Any]] = None,
+        deducciones: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+
+
+        try:
+
+
+            if ingresos is None and deducciones is None:
+
+
+                return {
+                    "success": False,
+                    "message": "Mindestens ingresos oder deducciones muss gesetzt sein",
+                    "updated_count": 0,
+                    "total_count": 0,
+                    "errors": ["Keine Daten übergeben"],
+                }
+
+
+            employee_ids = self.get_active_employee_ids()
+
+
+            total_count = len(employee_ids)
+
+
+            if total_count == 0:
+
+
+                return {
+                    "success": True,
+                    "message": "Keine aktiven Mitarbeiter gefunden",
+                    "updated_count": 0,
+                    "total_count": 0,
+                    "errors": [],
+                }
+
+
+            updated_count = 0
+
+
+            errors: List[str] = []
+
+
+            for employee_id in employee_ids:
+
+
+                try:
+
+
+                    ok = True
+
+
+                    if ingresos is not None:
+
+
+                        ok = ok and self.update_ingresos(employee_id, year, ingresos)
+
+
+                    if deducciones is not None:
+
+
+                        ok = ok and self.update_deducciones(employee_id, year, deducciones)
+
+
+                    if ok:
+
+
+                        updated_count += 1
+
+
+                    else:
+
+
+                        errors.append(f"Fehler beim Aktualisieren für Mitarbeiter {employee_id}")
+
+
+                except Exception as e:
+
+
+                    errors.append(f"Ausnahme bei Mitarbeiter {employee_id}: {str(e)}")
+
+
+            return {
+                "success": updated_count > 0 and len(errors) == 0,
+                "message": f"Bulk-Update abgeschlossen: {updated_count} von {total_count} Mitarbeitern aktualisiert",
+                "updated_count": updated_count,
+                "total_count": total_count,
+                "errors": errors,
+            }
+
+
+        except Exception as e:
+
+
+            self.logger.error(f"Fehler beim Bulk-Update ingresos/deducciones für Jahr {year}: {e}")
+
+
+            return {
+                "success": False,
+                "message": "Interner Serverfehler beim Bulk-Update",
+                "updated_count": 0,
+                "total_count": 0,
+                "errors": [str(e)],
+            }
+
+
     def _update_monthly_from_yearly(self, employee_id: int, year: int, data: Dict[str, Any], table_type: str) -> None:
 
 
@@ -3454,11 +3998,19 @@ class DatabaseManager:
 
 
 
-        try:
+        last_error: Optional[Error] = None
 
 
 
-            cursor = self.connection.cursor()            
+        for attempt in range(2):
+
+
+
+            connection = None
+
+
+
+            cursor = None
 
 
 
@@ -3466,11 +4018,15 @@ class DatabaseManager:
 
 
 
+                connection = self._create_connection()
+
+
+
+                cursor = connection.cursor()
+
+
+
                 # Zuerst abhängige Daten löschen
-
-
-
-                # 1. Gehälter löschen
 
 
 
@@ -3482,27 +4038,11 @@ class DatabaseManager:
 
 
 
-                
-
-
-
-                # 2. Monatliche Bruttoeinkünfte löschen
-
-
-
                 delete_ingresos_mensuales = "DELETE FROM t003_ingresos_brutos_mensuales WHERE id_empleado = %s"
 
 
 
                 cursor.execute(delete_ingresos_mensuales, (employee_id,))
-
-
-
-                
-
-
-
-                # 3. Monatliche Abzüge löschen
 
 
 
@@ -3514,35 +4054,15 @@ class DatabaseManager:
 
 
 
-                
+                delete_employee_query = "DELETE FROM t001_empleados WHERE id_empleado = %s"
 
 
 
-                # 4. Mitarbeiter löschen
+                cursor.execute(delete_employee_query, (employee_id,))
 
 
 
-                delete_employee = "DELETE FROM t001_empleados WHERE id_empleado = %s"
-
-
-
-                cursor.execute(delete_employee, (employee_id,))
-
-
-
-                
-
-
-
-                # Transaktion bestätigen
-
-
-
-                self.connection.commit()
-
-
-
-                
+                connection.commit()
 
 
 
@@ -3554,7 +4074,51 @@ class DatabaseManager:
 
 
 
-                
+            except Error as e:
+
+
+
+                last_error = e
+
+
+
+                try:
+
+
+
+                    if connection is not None:
+
+
+
+                        connection.rollback()
+
+
+
+                except Exception:
+
+
+
+                    pass
+
+
+
+                if attempt == 0 and self._is_transient_connection_error(e):
+
+
+
+                    self.logger.warning(f"Datenbankverbindung verloren, Retry... ({e})")
+
+
+
+                    continue
+
+
+
+                self.logger.error(f"Fehler beim Löschen des Mitarbeiters {employee_id}: {e}")
+
+
+
+                return False
 
 
 
@@ -3562,19 +4126,31 @@ class DatabaseManager:
 
 
 
-                # Transaktion zurückrollen
+                try:
 
 
 
-                self.connection.rollback()
+                    if connection is not None:
 
 
 
-                raise e
+                        connection.rollback()
 
 
 
-                
+                except Exception:
+
+
+
+                    pass
+
+
+
+                self.logger.error(f"Fehler beim Löschen des Mitarbeiters {employee_id}: {e}")
+
+
+
+                return False
 
 
 
@@ -3582,23 +4158,55 @@ class DatabaseManager:
 
 
 
-                cursor.close()
+                if cursor is not None:
 
 
 
-                
+                    try:
 
 
 
-        except Exception as e:
+                        cursor.close()
 
 
 
-            self.logger.error(f"Fehler beim Löschen des Mitarbeiters {employee_id}: {e}")
+                    except Exception:
 
 
 
-            return False
+                        pass
+
+
+
+                if connection is not None:
+
+
+
+                    try:
+
+
+
+                        connection.close()
+
+
+
+                    except Exception:
+
+
+
+                        pass
+
+
+
+        if last_error is not None:
+
+
+
+            self.logger.error(f"Fehler beim Löschen des Mitarbeiters {employee_id}: {last_error}")
+
+
+
+        return False
 
 
 
@@ -5305,4 +5913,93 @@ class DatabaseManager:
             self.logger.error(f"Fehler bei der Ermittlung fehlender Gehaltsjahre: {e}")
 
             return []
+
+    def recalculate_all_atrasos_for_year(self, year: int) -> Dict[str, Any]:
+        """
+        Berechnet alle Atrasos für alle Mitarbeiter im angegebenen Jahr neu.
+        
+        Args:
+            year: Jahr für das die Atrasos neu berechnet werden sollen
+            
+        Returns:
+            Dict mit Erfolgsmeldung und Statistik
+        """
+        try:
+            # Hole alle Gehälter für das angegebene Jahr
+            salaries_query = """
+            SELECT id_empleado, anio, modalidad, salario_anual_bruto
+            FROM t002_salarios
+            WHERE anio = %s
+            ORDER BY id_empleado
+            """
+            
+            salaries = self.execute_query(salaries_query, (year,))
+            
+            if not salaries:
+                return {
+                    "success": False,
+                    "message": f"Keine Gehälter für Jahr {year} gefunden",
+                    "updated_count": 0,
+                    "errors": []
+                }
+            
+            updated_count = 0
+            errors = []
+            
+            for salary in salaries:
+                try:
+                    employee_id = salary['id_empleado']
+                    modalidad = salary['modalidad']
+                    current_salary = float(salary['salario_anual_bruto'])
+                    
+                    # Berechne neue Atrasos
+                    new_atrasos = self.calculate_atrasos(employee_id, year, modalidad, current_salary)
+                    new_salary_con_atrasos = current_salary / (modalidad if modalidad in [12, 14] else 12) + new_atrasos
+                    
+                    # Update der Datenbank
+                    update_query = """
+                    UPDATE t002_salarios 
+                    SET atrasos = %s, 
+                        salario_mensual_con_atrasos = %s,
+                        fecha_modificacion = CURRENT_TIMESTAMP
+                    WHERE id_empleado = %s AND anio = %s
+                    """
+                    
+                    success = self.execute_update(update_query, (
+                        new_atrasos, 
+                        new_salary_con_atrasos, 
+                        employee_id, 
+                        year
+                    ))
+                    
+                    if success:
+                        updated_count += 1
+                        self.logger.info(f"Atrasos für Mitarbeiter {employee_id} in Jahr {year} neu berechnet: {new_atrasos}")
+                    else:
+                        errors.append(f"Fehler beim Update für Mitarbeiter {employee_id}")
+                        
+                except Exception as e:
+                    error_msg = f"Fehler bei der Neuberechnung für Mitarbeiter {salary['id_empleado']}: {str(e)}"
+                    errors.append(error_msg)
+                    self.logger.error(error_msg)
+            
+            result_message = f"Neuberechnung der Atrasos für {year} abgeschlossen: {updated_count} Mitarbeiter aktualisiert"
+            
+            return {
+                "success": updated_count > 0,
+                "message": result_message,
+                "updated_count": updated_count,
+                "total_count": len(salaries),
+                "errors": errors
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Neuberechnung der Atrasos für Jahr {year}: {e}")
+            return {
+                "success": False,
+                "message": f"Allgemeiner Fehler bei der Neuberechnung: {str(e)}",
+                "updated_count": 0,
+                "total_count": 0,
+                "errors": [str(e)]
+            }
 

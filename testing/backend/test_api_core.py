@@ -206,6 +206,69 @@ class TestFlaskAPICore:
         response = client.get('/employees/999', headers=auth_headers)
         assert response.status_code == 404
 
+
+
+    @patch('flask_api_server.db_manager')
+    def test_get_payout_month_success(self, mock_db_manager, client, auth_headers):
+        """Test GET /settings/payout-month"""
+        mock_db_manager.get_payout_month.return_value = 4
+
+        response = client.get('/settings/payout-month', headers=auth_headers)
+
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data == {"payout_month": 4}
+
+
+
+    @patch('flask_api_server.db_manager')
+    def test_set_payout_month_success(self, mock_db_manager, client, auth_headers):
+        """Test PUT /settings/payout-month"""
+        mock_db_manager.set_payout_month.return_value = True
+
+        response = client.put(
+            '/settings/payout-month',
+            data=json.dumps({"payout_month": 5}),
+            content_type='application/json',
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data["success"] is True
+        assert data["payout_month"] == 5
+
+
+
+    @patch('flask_api_server.db_manager')
+    def test_set_payout_month_validation_error(self, mock_db_manager, client, auth_headers):
+        """Test PUT /settings/payout-month validation"""
+        mock_db_manager.set_payout_month.return_value = True
+
+        response = client.put(
+            '/settings/payout-month',
+            data=json.dumps({"payout_month": 13}),
+            content_type='application/json',
+            headers=auth_headers,
+        )
+        assert response.status_code == 400
+
+        response = client.put(
+            '/settings/payout-month',
+            data=json.dumps({"payout_month": 0}),
+            content_type='application/json',
+            headers=auth_headers,
+        )
+        assert response.status_code == 400
+
+        response = client.put(
+            '/settings/payout-month',
+            data=json.dumps({"payout_month": "5"}),
+            content_type='application/json',
+            headers=auth_headers,
+        )
+        assert response.status_code == 400
+
     @patch('flask_api_server.db_manager')
     def test_create_employee_success(self, mock_db_manager, client, auth_headers):
         """Test neuen Mitarbeiter erstellen erfolgreich"""

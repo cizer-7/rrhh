@@ -119,3 +119,17 @@ tmp/
 *.backup
 backup/
 testing/backup/
+
+# Additional Python
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Additional Node.js
+.npm
+.eslintcache
