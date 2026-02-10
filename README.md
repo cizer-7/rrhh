@@ -4,9 +4,10 @@ Moderne Web-Anwendung für Mitarbeiterverwaltung und Gehaltsabrechnung mit React
 
 ## 🏗️ Architektur
 
-- **Frontend:** React/Next.js mit TypeScript und Tailwind CSS
-- **Backend:** Python Flask mit JWT-Authentifizierung
+- **Frontend:** React/Next.js 14 mit TypeScript und Tailwind CSS
+- **Backend:** Python Flask 3.0 mit JWT-Authentifizierung
 - **Datenbank:** MySQL über bestehenden DatabaseManager
+- **Testing:** Umfassende Test-Suite mit pytest, Jest und Playwright
 
 ## 🚀 Schnellstart
 
@@ -18,13 +19,13 @@ python flask_api_server.py
 ```
 Backend läuft auf: http://localhost:8000
 
-### 3. Backend-Tests (empfohlen)
+### 2. Backend-Tests (empfohlen)
 ```bash
 cd testing
 python run_backend_tests.py
 ```
 
-### 4. Frontend starten
+### 3. Frontend starten
 ```bash
 cd frontend
 npm install
@@ -32,7 +33,7 @@ npm run dev
 ```
 Frontend läuft auf: http://localhost:3000
 
-### 5. Anmeldung
+### 4. Anmeldung
  Kontaktieren Sie Ihren Administrator für Zugangsdaten.
 
 ## 📁 Verzeichnisstruktur
@@ -42,6 +43,7 @@ Mitarbeiter Gehaltsabrechnung/
 ├── backend/                    # Python Flask Backend
 │   ├── flask_api_server.py    # Haupt-API-Server
 │   ├── database_manager.py    # Datenbankverwaltung (bestehende Logik)
+│   ├── database_manager_exports.py # Export-Funktionalitäten
 │   ├── start_backend.py       # Einfaches Start-Script
 │   ├── requirements.txt       # Python Abhängigkeiten
 │   ├── settings.json          # Konfiguration
@@ -50,18 +52,17 @@ Mitarbeiter Gehaltsabrechnung/
 │   ├── src/
 │   │   ├── app/               # Next.js Seiten
 │   │   ├── components/        # React Komponenten
-│   │   ├── lib/api.ts         # API Client
 │   │   └── types/             # TypeScript Typen
 │   ├── package.json           # Node.js Abhängigkeiten
-│   └── .env.local             # API Konfiguration
-├── testing/                   # Tests
-│   ├── README_TESTING.md      # Test-Dokumentation
-│   ├── run_backend_tests.py   # Umfassender Backend Test-Runner
-│   ├── test_api_core.py       # Flask API Tests
+│   └── next-env.d.ts         # Next.js TypeScript Konfiguration
+├── testing/                   # Umfassende Test-Suite
+│   ├── README_TESTING.md      # Detaillierte Test-Dokumentation
+│   ├── run_backend_tests.py   # Haupt Backend Test-Runner
 │   ├── conftest_comprehensive.py # Test-Konfiguration
 │   ├── backend/               # Backend-spezifische Tests
-│   ├── frontend/              # Frontend-Tests
-│   └── e2e/                   # End-to-End Tests
+│   ├── frontend/              # Frontend-Tests (Jest)
+│   └── e2e/                   # End-to-End Tests (Playwright)
+├── data/                      # Datenverzeichnis
 ├── pyproject.toml             # Python Projekt-Konfiguration
 ├── pytest.ini                # pytest Konfiguration
 ├── commands.md                # Nützliche Befehle
@@ -145,21 +146,31 @@ Die Benutzer sind in der `t005_benutzer` Tabelle gespeichert. Für Testzwecke k�
 ## 🛠️ Technologie-Stack
 
 ### Backend
-- **Python 3.14+**
-- **Flask** - Web Framework
-- **Flask-CORS** - CORS Unterstützung
-- **PyJWT** - JWT Token Handling
-- **mysql-connector-python** - Datenbankverbindung
+- **Python 3.11+**
+- **Flask 3.0** - Web Framework
+- **Flask-CORS 4.0** - CORS Unterstützung
+- **PyJWT 2.8** - JWT Token Handling
+- **mysql-connector-python 8.2.0** - Datenbankverbindung
+- **reportlab 4.0.7** - PDF Generierung
+- **openpyxl 3.1.2** - Excel Verarbeitung
 
 ### Frontend
-- **React 18** mit Next.js 14
-- **TypeScript** - Typensicherheit
-- **Tailwind CSS** - Styling
-- **Lucide React** - Icons
-- **Radix UI** - UI Komponenten
+- **React 18** mit Next.js 14.0.4
+- **TypeScript 5** - Typensicherheit
+- **Tailwind CSS 3.3.0** - Styling
+- **Lucide React 0.303.0** - Icons
+- **Radix UI** - UI Komponenten (Dialog, Dropdown, Select, etc.)
+- **xlsx 0.18.5** - Excel Export
+- **bcryptjs 2.4.3** - Passwort-Hashing
+- **jsonwebtoken 9.0.2** - JWT Handling
 
 ### Datenbank
 - **MySQL** - Relationale Datenbank
+
+### Testing
+- **Backend:** pytest mit Coverage, Mocking
+- **Frontend:** Jest mit React Testing Library
+- **E2E:** Playwright für Browser-Automatisierung
 
 ## 📝 Installation & Konfiguration
 
@@ -199,29 +210,58 @@ Diese Web-Anwendung ersetzt die ursprüngliche Python/Tkinter Desktop-Anwendung:
 
 ## 🧪 Testing
 
+Die Anwendung verfügt über eine umfassende Test-Suite mit Unit-, Integrations- und End-to-End Tests.
+
 ### Backend-Tests ausführen
 ```bash
 cd testing
 python run_backend_tests.py
 ```
 
-### Umfassende Tests mit Optionen
+### Backend Test-Optionen
 ```bash
-cd testing
+# Nur Unit-Tests
+python run_backend_tests.py --unit-only
+
+# Nur Integration-Tests  
+python run_backend_tests.py --integration-only
+
+# Schnelle Tests (überspringt langsame Tests)
+python run_backend_tests.py --fast
+
+# Alle Optionen anzeigen
 python run_backend_tests.py --help
 ```
 
+### Frontend-Tests
+```bash
+cd testing/frontend
+npm test
+```
+
+### End-to-End Tests
+```bash
+cd testing/e2e
+npm test
+```
+
 ### Test-Abdeckung
-- **66 Tests** insgesamt
-- **DatabaseManager**: 31 Tests (Core-Funktionalität)
-- **Flask API**: 26 Tests (API-Endpunkte)
-- **Integration**: 9 Tests (komplette Workflows)
+- **66+ Tests** insgesamt
+- **DatabaseManager**: 31+ Tests (Core-Funktionalität)
+- **Flask API**: 26+ Tests (API-Endpunkte)
+- **Integration**: 9+ Tests (komplette Workflows)
+- **Frontend**: React Komponenten Tests
+- **E2E**: Browser-basierte Workflow-Tests
 
 ### Test-Arten
-- ✅ **Unit-Tests** - Einzelne Komponenten
+- ✅ **Unit-Tests** - Einzelne Komponenten isoliert
 - ✅ **Integrationstests** - Komplette Workflows  
-- ✅ **Fehler-Szenarien** - Robustheit
-- ✅ **Performance-Tests** - Geschwindigkeit
+- ✅ **Fehler-Szenarien** - Robustheit und Edge Cases
+- ✅ **Performance-Tests** - Geschwindigkeit und Speicher
+- ✅ **Security-Tests** - JWT, Passwort-Hashing, Authorization
+- ✅ **E2E Tests** - Vollständige Benutzer-Workflows im Browser
+
+📖 **Detaillierte Test-Dokumentation:** Siehe `testing/README_TESTING.md`
 
 ## 🚀 Entwicklung
 
@@ -240,12 +280,28 @@ npm run dev
 ### API Dokumentation
 Die API ist unter http://localhost:8000/health erreichbar.
 
-## 📋 Hinweise
+## 📋 Projekt-Status
+
+### ✅ Abgeschlossen
+- Vollständige Mitarbeiterverwaltung (CRUD)
+- Gehaltsabrechnung mit Jahresabhängigkeit
+- JWT-basierte Authentifizierung
+- Excel-Export Funktionalität
+- Umfassende Test-Suite (66+ Tests)
+- Moderne React/Next.js UI
+- API-Dokumentation
+
+### 🔄 In Arbeit
+- Performance-Optimierungen
+- Erweiterte Reporting-Funktionen
+
+### 📋 Hinweise
 
 - Die Web-Anwendung nutzt die bestehende Python-Logik aus `database_manager.py`
 - Keine doppelte Implementierung - Frontend nutzt ausschließlich die API
 - Die ursprüngliche Desktop-Anwendung kann weiterhin parallel verwendet werden
 - Alle Daten bleiben in der bestehenden MySQL-Datenbank
+- Umfassende Test-Abdeckung mit Unit-, Integrations- und E2E-Tests
 
 ## 🐛 Fehlerbehandlung
 
