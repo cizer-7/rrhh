@@ -1446,9 +1446,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     ) -> bool:
 
         """Exportiert Gehaltsdaten im Excel-Format - nur monatlicher Export wird unterstützt"""
-
-        
-
         return DatabaseManagerExportsMixin.export_nomina_excel(self, year, output_path, month, extra=extra)
     def export_asiento_nomina_excel(self, year: int, month: int, output_path: str) -> bool:
         """Exportiert Gehaltsdaten im Asiento Nomina Excel-Format"""
