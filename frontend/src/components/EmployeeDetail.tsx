@@ -25,7 +25,7 @@ interface EmployeeDetailProps {
 
 export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps) {
 
-  const [activeTab, setActiveTab] = useState<'salary' | 'ingresos' | 'deducciones' | 'stammdaten' | 'gehaltserhoehung'>('salary')
+  const [activeTab, setActiveTab] = useState<'salary' | 'ingresos' | 'deducciones' | 'stammdaten' | 'gehaltserhoehung' | 'bearbeitungslog'>('salary')
 
   const [year, setYear] = useState<number>(new Date().getFullYear())
 
@@ -71,6 +71,9 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
   const [deducciones, setDeducciones] = useState<Deducciones | null>(null)
 
+  const [bearbeitungslogItems, setBearbeitungslogItems] = useState<any[]>([])
+  const [bearbeitungslogLoading, setBearbeitungslogLoading] = useState(false)
+
 
 
   useEffect(() => {
@@ -78,6 +81,11 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     fetchData()
 
   }, [employee.id_empleado, year, month, dataMode])
+
+  useEffect(() => {
+    if (activeTab !== 'bearbeitungslog') return
+    fetchBearbeitungslog()
+  }, [activeTab, employee.id_empleado, year, month, dataMode])
 
 
 
@@ -95,6 +103,23 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       }
     } catch (e) {
       console.error('Error fetching payout month:', e)
+    }
+  }
+
+  const fetchBearbeitungslog = async () => {
+    try {
+      setBearbeitungslogLoading(true)
+      const params: any = { anio: year, limit: 200 }
+      if (dataMode === 'monthly' && month) {
+        params.mes = month
+      }
+      const res = await apiClient.getBearbeitungslog(employee.id_empleado, params)
+      setBearbeitungslogItems(Array.isArray(res?.items) ? res.items : [])
+    } catch (e) {
+      console.error('Error fetching bearbeitungslog:', e)
+      setBearbeitungslogItems([])
+    } finally {
+      setBearbeitungslogLoading(false)
     }
   }
 
@@ -564,9 +589,13 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
   const calculateMonthlySalary = (selectedMonth: number | null) => {
     // Wenn kein Monat ausgewählt, Jahresdurchschnitt verwenden
     if (!selectedMonth) {
-      return typeof salary?.salario_mensual_bruto === 'string' 
+      const baseSalary = typeof salary?.salario_mensual_bruto === 'string' 
         ? parseFloat(salary.salario_mensual_bruto) || 0 
         : (salary?.salario_mensual_bruto || 0)
+      const antiguedad = typeof salary?.antiguedad === 'string' 
+        ? parseFloat(salary.antiguedad) || 0 
+        : (salary?.antiguedad || 0)
+      return baseSalary + antiguedad
     }
     
     const monthsBeforePayout = Math.max(0, payoutMonth - 1)
@@ -581,6 +610,9 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         ? parseFloat(salary.atrasos) || 0 
         : (salary?.atrasos || 0)
       const modalidad = salary?.modalidad || 12
+      const antiguedad = typeof salary?.antiguedad === 'string' 
+        ? parseFloat(salary.antiguedad) || 0 
+        : (salary?.antiguedad || 0)
       
       // Altes Jahresgehalt = aktuelles Jahresgehalt - (atrasos * modalidad / monthsBeforePayout)
       const oldAnnualSalary = monthsBeforePayout > 0
@@ -588,7 +620,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         : currentAnnualSalary
       const oldMonthlySalary = oldAnnualSalary / modalidad
       
-      return oldMonthlySalary
+      return oldMonthlySalary + antiguedad
     }
     
     // Für Monate ab Auszahlungsmonat: neues Gehalt (atrasos nur im Auszahlungsmonat)
@@ -600,12 +632,17 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       ? parseFloat(salary.atrasos) || 0 
       : (salary?.atrasos || 0)
     
+    const antiguedad = typeof salary?.antiguedad === 'string' 
+      ? parseFloat(salary.antiguedad) || 0 
+      : (salary?.antiguedad || 0)
+    
     // Atrasos nur im Auszahlungsmonat dazurechnen
+    let totalSalary = baseMonthlySalary + antiguedad
     if (selectedMonth === payoutMonth) {
-      return baseMonthlySalary + atrasos
+      totalSalary += atrasos
     }
     
-    return baseMonthlySalary
+    return totalSalary
   }
 
   const calculateTotal = () => {
@@ -1006,11 +1043,11 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
         <div className="bg-white rounded-lg shadow-lg">
 
-          <div className="border-b border-gray-200">
+          <div className="border-b border-gray-200 overflow-x-auto">
 
-            <nav className="flex space-x-8 px-6">
+            <nav className="flex space-x-8 px-6 whitespace-nowrap">
 
-              {['salary', 'ingresos', 'deducciones', 'stammdaten', 'gehaltserhoehung'].map((tab) => (
+              {['salary', 'ingresos', 'deducciones', 'bearbeitungslog', 'stammdaten', 'gehaltserhoehung'].map((tab) => (
 
                 <button
 
@@ -1030,7 +1067,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
                 >
 
-                  {tab === 'salary' ? 'Gehalt' : tab === 'ingresos' ? 'Zulagen' : tab === 'deducciones' ? 'Abzüge' : tab === 'gehaltserhoehung' ? 'Gehaltserhöhung' : 'Stammdaten'}
+                  {tab === 'salary' ? 'Gehalt' : tab === 'ingresos' ? 'Zulagen' : tab === 'deducciones' ? 'Abzüge' : tab === 'bearbeitungslog' ? 'Bearbeitungslog' : tab === 'gehaltserhoehung' ? 'Gehaltserhöhung' : 'Stammdaten'}
 
                 </button>
 
@@ -1254,6 +1291,60 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
               </form>
 
+            )}
+
+            {activeTab === 'bearbeitungslog' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium text-gray-900">Bearbeitungslog</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fetchBearbeitungslog()}
+                    disabled={bearbeitungslogLoading}
+                  >
+                    Aktualisieren
+                  </Button>
+                </div>
+
+                {bearbeitungslogLoading ? (
+                  <div className="text-gray-600">Lade Bearbeitungslog...</div>
+                ) : bearbeitungslogItems.length === 0 ? (
+                  <div className="text-gray-600">Keine Einträge vorhanden.</div>
+                ) : (
+                  <div className="overflow-x-auto border border-gray-200 rounded-md">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zeitpunkt</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Benutzer</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktion</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Objekt</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {bearbeitungslogItems.map((item: any) => (
+                          <tr key={item.id_log}>
+                            <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">
+                              {item.fecha ? new Date(item.fecha).toLocaleString('de-DE') : '-'}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-700">
+                              <div className="font-medium">{item.nombre_completo || '-'}</div>
+                              <div className="text-xs text-gray-500">{item.usuario_login || '-'}</div>
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{item.aktion || '-'}</td>
+                            <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{item.objekt || '-'}</td>
+                            <td className="px-4 py-2 text-xs text-gray-600">
+                              <pre className="whitespace-pre-wrap break-words max-w-xl">{item.details ? JSON.stringify(item.details, null, 2) : '-'}</pre>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             )}
 
             {activeTab === 'stammdaten' && (

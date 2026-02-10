@@ -292,6 +292,119 @@ class TestDatabaseManagerCore:
             result = db_manager.export_nomina_excel(2025, 'test.xlsx')
             assert result is False
 
+    def test_export_nomina_excel_forwards_extra_flag(self, db_manager):
+        with patch('database_manager.DatabaseManagerExportsMixin.export_nomina_excel', return_value=True) as mock_export:
+            ok = db_manager.export_nomina_excel(2025, 'test.xlsx', 6, extra=True)
+            assert ok is True
+            mock_export.assert_called_once_with(db_manager, 2025, 'test.xlsx', 6, extra=True)
+
+    def test_export_nomina_excel_extra_creates_three_column_xlsx(self, db_manager):
+        try:
+            from openpyxl import load_workbook
+        except ImportError:
+            pytest.skip('openpyxl nicht verfügbar')
+
+        rows = [
+            {
+                'nombre_completo': 'Test, User',
+                'ceco': '1001',
+                'modalidad': 14,
+                'salario_mensual_bruto': 2000,
+                'atrasos': 0,
+                'antiguedad': 0,
+                'salario_mensual_bruto_prev': 1900,
+                'ticket_restaurant': 0,
+                'cotizacion_especie': 0,
+                'primas': 0,
+                'dietas_cotizables': 0,
+                'horas_extras': 0,
+                'seguro_pensiones': 0,
+                'seguro_accidentes': 0,
+                'dietas_exentas': 0,
+                'formacion': 0,
+                'adelas': 0,
+                'sanitas': 0,
+                'gasolina_arval': 0,
+                'gasolina_ald': 0,
+                'dias_exentos': 0,
+            }
+        ]
+
+        captured_query = {'query': None}
+
+        def fake_execute_query(query, params=None):
+            captured_query['query'] = query
+            return rows
+
+        with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
+            output_path = tmp.name
+
+        try:
+            with patch.object(db_manager, 'execute_query', side_effect=fake_execute_query):
+                ok = db_manager.export_nomina_excel(2025, output_path, 6, extra=True)
+                assert ok is True
+                assert captured_query['query'] is not None
+                assert 's.modalidad = 14' in captured_query['query']
+
+            wb = load_workbook(output_path)
+            ws = wb['Sheet1']
+
+            assert ws.max_column == 3
+            assert ws['A5'].value == 'Etiquetas de fila'
+            assert ws['B5'].value == 'CECO'
+            assert ws['C5'].value == 'SALARIO MES'
+        finally:
+            try:
+                os.remove(output_path)
+            except OSError:
+                pass
+
+    def test_export_monthly_salary_calculation_rules(self, db_manager):
+        payout_month = 4
+        salario_mensual_bruto_prev = 2000
+        salario_mensual_bruto = 2200
+        atrasos = 300
+        antiguedad = 50
+
+        # Monate vor Auszahlungsmonat: Vorjahresgehalt + antiguedad
+        assert (
+            db_manager._calculate_salario_mes_for_export(
+                month=1,
+                payout_month=payout_month,
+                salario_mensual_bruto=salario_mensual_bruto,
+                atrasos=atrasos,
+                salario_mensual_bruto_prev=salario_mensual_bruto_prev,
+                antiguedad=antiguedad,
+            )
+            == salario_mensual_bruto_prev + antiguedad
+        )
+
+        # Auszahlungsmonat: neues Monatsgehalt + atrasos + antiguedad
+        assert (
+            db_manager._calculate_salario_mes_for_export(
+                month=payout_month,
+                payout_month=payout_month,
+                salario_mensual_bruto=salario_mensual_bruto,
+                atrasos=atrasos,
+                salario_mensual_bruto_prev=salario_mensual_bruto_prev,
+                antiguedad=antiguedad,
+            )
+            == salario_mensual_bruto + atrasos + antiguedad
+        )
+
+        # Nach Auszahlungsmonat: neues Monatsgehalt + antiguedad
+        assert (
+            db_manager._calculate_salario_mes_for_export(
+                month=12,
+                payout_month=payout_month,
+                salario_mensual_bruto=salario_mensual_bruto,
+                atrasos=atrasos,
+                salario_mensual_bruto_prev=salario_mensual_bruto_prev,
+                antiguedad=antiguedad,
+            )
+            == salario_mensual_bruto + antiguedad
+        )
+
     def test_search_employees_without_connection(self, db_manager):
         """Test Mitarbeitersuche ohne Verbindung"""
         # Sollte leere Liste zurückgeben bei Verbindungsproblemen

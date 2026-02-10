@@ -7,6 +7,7 @@ import { Search, Plus, Edit, Trash2, Eye, TrendingUp, CheckCircle, AlertCircle }
 import EmployeeForm from './EmployeeForm'
 import EmployeeDetail from './EmployeeDetail'
 import SalaryCopyManager from './SalaryCopyManager'
+import GlobalBearbeitungshistorie from './GlobalBearbeitungshistorie'
 import apiClient from '@/lib/api'
 
 interface EmployeeTableProps {
@@ -20,7 +21,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
-  const [activeTab, setActiveTab] = useState<'employees' | 'increase' | 'salary-copy' | 'overview' | 'settings' | 'bulk-ingresos-deducciones'>('employees')
+  const [activeTab, setActiveTab] = useState<'employees' | 'increase' | 'salary-copy' | 'overview' | 'settings' | 'bulk-ingresos-deducciones' | 'bearbeitungshistorie'>('employees')
   
   // State for salary increase
   const [increaseYear, setIncreaseYear] = useState<string>('')
@@ -494,7 +495,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-6">
           <nav className="flex space-x-8">
-            {['employees', 'increase', 'salary-copy', 'overview', 'settings', 'bulk-ingresos-deducciones'].map((tab) => (
+            {['employees', 'increase', 'salary-copy', 'overview', 'settings', 'bulk-ingresos-deducciones', 'bearbeitungshistorie'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
@@ -504,7 +505,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                {tab === 'employees' ? 'Mitarbeiter' : tab === 'increase' ? 'Erhöhung' : tab === 'salary-copy' ? 'Gehaltskopie' : tab === 'overview' ? 'Gehaltsübersicht' : tab === 'settings' ? 'Settings' : 'Zulagen/Abzüge (Jahr)'}
+                {tab === 'employees' ? 'Mitarbeiter' : tab === 'increase' ? 'Erhöhung' : tab === 'salary-copy' ? 'Gehaltskopie' : tab === 'overview' ? 'Gehaltsübersicht' : tab === 'settings' ? 'Settings' : tab === 'bulk-ingresos-deducciones' ? 'Zulagen/Abzüge (Jahr)' : 'Bearbeitungshistorie'}
               </button>
             ))}
           </nav>
@@ -1114,6 +1115,19 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'bearbeitungshistorie' && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Bearbeitungshistorie</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Zeigt alle Bearbeitungsvorgänge chronologisch geordnet an.
+              </p>
+            </div>
+
+            <GlobalBearbeitungshistorie employees={employees} />
           </div>
         )}
       </div>

@@ -22,6 +22,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
   const [currentMonth, setCurrentMonth] = useState<number | null>(null)
   const [exportType, setExportType] = useState<'yearly' | 'monthly'>('yearly')
   const [exportFormat, setExportFormat] = useState<'nomina_total' | 'asiento_nomina'>('nomina_total')
+  const [exportExtra, setExportExtra] = useState(false)
   
   const router = useRouter()
 
@@ -75,9 +76,11 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
         // Asiento Nomina API Endpunkt
         url = `http://localhost:8000/export/asiento_nomina/${currentYear}/${currentMonth}`
       } else {
+        const isExtraEligible = exportType === 'monthly' && (currentMonth === 6 || currentMonth === 12)
+        const extraQuery = exportExtra && isExtraEligible ? '?extra=1' : ''
         // Nomina Total API Endpunkt
         url = exportType === 'monthly' && currentMonth 
-          ? `http://localhost:8000/export/excel/${currentYear}/${currentMonth}`
+          ? `http://localhost:8000/export/excel/${currentYear}/${currentMonth}${extraQuery}`
           : `http://localhost:8000/export/excel/${currentYear}`
       }
       
@@ -101,11 +104,17 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
       
       let filename: string
       if (exportFormat === 'asiento_nomina') {
-        filename = `asiento_nomina_${currentYear}_${currentMonth}.xlsx`
+        filename = `ASIENTO_NOMINA_${currentYear}_${currentMonth}.xlsx`
       } else {
-        filename = exportType === 'monthly' && currentMonth 
-          ? `gehaltsabrechnung_${currentYear}_${currentMonth}.xlsx`
-          : `gehaltsabrechnung_${currentYear}.xlsx`
+        if (exportType === 'monthly' && currentMonth) {
+          const isExtraEligible = currentMonth === 6 || currentMonth === 12
+          const isExtra = exportExtra && isExtraEligible
+          filename = isExtra
+            ? `NOMINA_TOTAL_EXTRA_${currentYear}_${currentMonth}.xlsx`
+            : `NOMINA_TOTAL_${currentYear}_${currentMonth}.xlsx`
+        } else {
+          filename = `gehaltsabrechnung_${currentYear}.xlsx`
+        }
       }
       
       a.download = filename
@@ -138,6 +147,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
               value={exportFormat} 
               onChange={(e) => {
                 setExportFormat(e.target.value as 'nomina_total' | 'asiento_nomina')
+                setExportExtra(false)
                 // Asiento Nomina erfordert monatlichen Export
                 if (e.target.value === 'asiento_nomina') {
                   setExportType('monthly')
@@ -157,6 +167,9 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
                 value={exportType} 
                 onChange={(e) => {
                   setExportType(e.target.value as 'yearly' | 'monthly')
+                  if (e.target.value === 'yearly') {
+                    setExportExtra(false)
+                  }
                   if (e.target.value === 'yearly') {
                     setCurrentMonth(null)
                   }
@@ -181,7 +194,13 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
             {(exportFormat === 'asiento_nomina' || exportType === 'monthly') && (
               <select 
                 value={currentMonth || ''} 
-                onChange={(e) => setCurrentMonth(e.target.value ? parseInt(e.target.value) : null)}
+                onChange={(e) => {
+                  const nextMonth = e.target.value ? parseInt(e.target.value) : null
+                  setCurrentMonth(nextMonth)
+                  if (nextMonth !== 6 && nextMonth !== 12) {
+                    setExportExtra(false)
+                  }
+                }}
                 className="px-3 py-2 border border-gray-300 rounded-md"
               >
                 <option value="">Monat wählen...</option>
@@ -204,6 +223,17 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
                   </option>
                 ))}
               </select>
+            )}
+
+            {exportFormat === 'nomina_total' && exportType === 'monthly' && (currentMonth === 6 || currentMonth === 12) && (
+              <label className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md bg-white">
+                <input
+                  type="checkbox"
+                  checked={exportExtra}
+                  onChange={(e) => setExportExtra(e.target.checked)}
+                />
+                Extra
+              </label>
             )}
             
             <Button 

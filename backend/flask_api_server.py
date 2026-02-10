@@ -193,6 +193,23 @@ def create_employee(current_user):
         if new_id <= 0:
             return jsonify({"error": "Fehler beim Erstellen des Mitarbeiters"}), 400
         
+        # Log creation with new details format
+        try:
+            change_details = db_manager.create_change_details(
+                old_data=None,
+                new_data=employee
+            )
+            
+            db_manager.insert_bearbeitungslog(
+                usuario_login=current_user,
+                aktion="create",
+                objekt="employee",
+                id_empleado=new_id,
+                details=change_details,
+            )
+        except Exception as e:
+            logger.error(f"Fehler beim Loggen der Mitarbeiter-Erstellung: {e}")
+        
         # Mitarbeiter mit neuer ID abrufen
         employees = db_manager.get_all_employees()
         for emp in employees:
@@ -215,9 +232,28 @@ def update_employee(current_user, employee_id):
         if not employee_data:
             return jsonify({"error": "Keine Daten zum Aktualisieren angegeben"}), 400
         
+        # Get old data before update
+        old_employee = db_manager.get_employee(employee_id)
+        if not old_employee:
+            return jsonify({"error": "Mitarbeiter nicht gefunden"}), 404
+        
         success = db_manager.update_employee(employee_id, 't001_empleados', employee_data)
         if not success:
             return jsonify({"error": "Fehler beim Aktualisieren des Mitarbeiters"}), 400
+
+        # Create change details with old/new values
+        change_details = db_manager.create_change_details(
+            old_data=old_employee,
+            new_data=employee_data
+        )
+
+        db_manager.insert_bearbeitungslog(
+            usuario_login=current_user,
+            aktion="update",
+            objekt="employee",
+            id_empleado=employee_id,
+            details=change_details,
+        )
         
         return jsonify({"message": "Mitarbeiter erfolgreich aktualisiert"})
     except Exception as e:
@@ -259,6 +295,23 @@ def add_salary(current_user, employee_id):
         success = db_manager.add_salary(employee_id, salary)
         if not success:
             return jsonify({"error": "Fehler beim Hinzufügen des Gehalts"}), 400
+
+        try:
+            change_details = db_manager.create_change_details(
+                old_data=None,
+                new_data=salary
+            )
+            
+            db_manager.insert_bearbeitungslog(
+                usuario_login=current_user,
+                aktion="create",
+                objekt="salary",
+                id_empleado=employee_id,
+                anio=salary.get('anio'),
+                details=change_details,
+            )
+        except Exception:
+            pass
         
         return jsonify({"message": "Gehalt erfolgreich hinzugefügt"})
     except Exception as e:
@@ -271,9 +324,50 @@ def update_salary(current_user, employee_id, year):
     """Gehalt für Mitarbeiter aktualisieren"""
     try:
         salary = request.get_json()
+        
+        # Get old salary data before update
+        old_salary = db_manager.get_salary(employee_id, year)
+        
+        # Check if this is actually a create (no existing record)
+        is_create = old_salary is None
+        
         success = db_manager.update_salary(employee_id, year, salary)
         if not success:
             return jsonify({"error": "Fehler beim Aktualisieren des Gehalts"}), 400
+
+        try:
+            # Get the new salary data for comparison
+            new_salary = db_manager.get_salary(employee_id, year)
+            
+            # Create change details
+            if is_create:
+                # This was actually a create operation
+                change_details = db_manager.create_change_details(
+                    old_data=None,
+                    new_data=salary
+                )
+                action = "create"
+            else:
+                # This was an update operation - use the actual database data
+                change_details = db_manager.create_change_details(
+                    old_data=old_salary,
+                    new_data=new_salary
+                )
+                action = "update"
+                
+                # Debug: log what we're comparing
+                logger.info(f"Salary update comparison - old: {old_salary}, new: {new_salary}, details: {change_details}")
+
+            db_manager.insert_bearbeitungslog(
+                usuario_login=current_user,
+                aktion=action,
+                objekt="salary",
+                id_empleado=employee_id,
+                anio=year,
+                details=change_details,
+            )
+        except Exception:
+            pass
         
         return jsonify({"message": "Gehalt erfolgreich aktualisiert"})
     except Exception as e:
@@ -304,6 +398,18 @@ def update_ingresos(current_user, employee_id, year):
         success = db_manager.update_ingresos(employee_id, year, ingresos)
         if not success:
             return jsonify({"error": "Fehler beim Aktualisieren der Bruttoeinkünfte"}), 400
+
+        try:
+            db_manager.insert_bearbeitungslog(
+                usuario_login=current_user,
+                aktion="update",
+                objekt="ingresos",
+                id_empleado=employee_id,
+                anio=year,
+                details=ingresos,
+            )
+        except Exception:
+            pass
         
         return jsonify({"message": "Bruttoeinkünfte erfolgreich aktualisiert"})
     except Exception as e:
@@ -320,6 +426,18 @@ def update_deducciones(current_user, employee_id, year):
         success = db_manager.update_deducciones(employee_id, year, deducciones)
         if not success:
             return jsonify({"error": "Fehler beim Aktualisieren der Abzüge"}), 400
+
+        try:
+            db_manager.insert_bearbeitungslog(
+                usuario_login=current_user,
+                aktion="update",
+                objekt="deducciones",
+                id_empleado=employee_id,
+                anio=year,
+                details=deducciones,
+            )
+        except Exception:
+            pass
         
         return jsonify({"message": "Abzüge erfolgreich aktualisiert"})
     except Exception as e:
@@ -333,18 +451,23 @@ def update_deducciones(current_user, employee_id, year):
 def export_excel(current_user, year, month=None):
     """Excel-Export für Gehaltsdaten - jährlich oder monatlich"""
     try:
+        extra_raw = request.args.get('extra', '').strip().lower()
+        extra = extra_raw in {'1', 'true', 'yes', 'on'}
+
         # Temporäre Datei erstellen
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         if month:
-            filename = f"gehaltsabrechnung_{year}_{month}_{timestamp}.xlsx"
+            download_filename = f"NOMINA_TOTAL_EXTRA_{year}_{month}.xlsx" if extra else f"NOMINA_TOTAL_{year}_{month}.xlsx"
+            temp_filename = f"nomina_total_{year}_{month}_{timestamp}.xlsx"
         else:
-            filename = f"gehaltsabrechnung_{year}_{timestamp}.xlsx"
-        filepath = f"C:/temp/{filename}"
+            download_filename = f"gehaltsabrechnung_{year}.xlsx"
+            temp_filename = f"gehaltsabrechnung_{year}_{timestamp}.xlsx"
+        filepath = f"C:/temp/{temp_filename}"
         
         # Temp-Verzeichnis erstellen falls nicht vorhanden
         os.makedirs("C:/temp", exist_ok=True)
         
-        success = db_manager.export_nomina_excel(year, filepath, month)
+        success = db_manager.export_nomina_excel(year, filepath, month, extra=extra)
         if not success:
             return jsonify({"error": "Fehler beim Excel-Export"}), 400
         
@@ -352,7 +475,7 @@ def export_excel(current_user, year, month=None):
         return send_file(
             filepath,
             as_attachment=True,
-            download_name=filename,
+            download_name=download_filename,
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     except Exception as e:
@@ -367,8 +490,9 @@ def export_asiento_nomina(current_user, year, month):
     try:
         # Temporäre Datei erstellen
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        filename = f"asiento_nomina_{year}_{month}_{timestamp}.xlsx"
-        filepath = f"C:/temp/{filename}"
+        download_filename = f"ASIENTO_NOMINA_{year}_{month}.xlsx"
+        temp_filename = f"asiento_nomina_{year}_{month}_{timestamp}.xlsx"
+        filepath = f"C:/temp/{temp_filename}"
         
         # Temp-Verzeichnis erstellen falls nicht vorhanden
         os.makedirs("C:/temp", exist_ok=True)
@@ -381,7 +505,7 @@ def export_asiento_nomina(current_user, year, month):
         return send_file(
             filepath,
             as_attachment=True,
-            download_name=filename,
+            download_name=download_filename,
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     except Exception as e:
@@ -398,6 +522,19 @@ def update_ingresos_mensuales(current_user, employee_id, year, month):
         success = db_manager.update_ingresos_mensuales(employee_id, year, month, ingresos)
         if not success:
             return jsonify({"error": "Fehler beim Aktualisieren der monatlichen Bruttoeinkünfte"}), 400
+
+        try:
+            db_manager.insert_bearbeitungslog(
+                usuario_login=current_user,
+                aktion="update",
+                objekt="ingresos_mensuales",
+                id_empleado=employee_id,
+                anio=year,
+                mes=month,
+                details=ingresos,
+            )
+        except Exception:
+            pass
         
         return jsonify({"message": "Monatliche Bruttoeinkünfte erfolgreich aktualisiert"})
     except Exception as e:
@@ -414,10 +551,63 @@ def update_deducciones_mensuales(current_user, employee_id, year, month):
         success = db_manager.update_deducciones_mensuales(employee_id, year, month, deducciones)
         if not success:
             return jsonify({"error": "Fehler beim Aktualisieren der monatlichen Abzüge"}), 400
+
+        try:
+            db_manager.insert_bearbeitungslog(
+                usuario_login=current_user,
+                aktion="update",
+                objekt="deducciones_mensuales",
+                id_empleado=employee_id,
+                anio=year,
+                mes=month,
+                details=deducciones,
+            )
+        except Exception:
+            pass
         
         return jsonify({"message": "Monatliche Abzüge erfolgreich aktualisiert"})
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren der monatlichen Abzüge für Mitarbeiter {employee_id}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+
+
+@app.route('/employees/<int:employee_id>/bearbeitungslog', methods=['GET'])
+@token_required
+def get_bearbeitungslog(current_user, employee_id):
+    """Bearbeitungslog für einen Mitarbeiter abrufen"""
+    try:
+        anio = request.args.get('anio', default=None, type=int)
+        mes = request.args.get('mes', default=None, type=int)
+        limit = request.args.get('limit', default=200, type=int)
+
+        rows = db_manager.get_bearbeitungslog(employee_id, anio=anio, mes=mes, limit=limit)
+        return jsonify({"items": rows})
+
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen bearbeitungslog für Mitarbeiter {employee_id}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+@app.route('/bearbeitungslog', methods=['GET'])
+@token_required
+def get_global_bearbeitungslog(current_user):
+    """Globale Bearbeitungslog abrufen"""
+    try:
+        id_empleado = request.args.get('id_empleado', default=None, type=int)
+        anio = request.args.get('anio', default=None, type=int)
+        mes = request.args.get('mes', default=None, type=int)
+        limit = request.args.get('limit', default=200, type=int)
+
+        rows = db_manager.get_global_bearbeitungslog(
+            id_empleado=id_empleado, 
+            anio=anio, 
+            mes=mes, 
+            limit=limit
+        )
+        return jsonify({"items": rows})
+
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen global bearbeitungslog: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
 
 # Health Check
