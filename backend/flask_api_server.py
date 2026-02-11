@@ -388,6 +388,99 @@ def delete_salary(current_user, employee_id, year):
         logger.error(f"Fehler beim Löschen des Gehalts für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
 
+
+
+@app.route('/employees/<int:employee_id>/fte', methods=['GET'])
+@token_required
+def get_employee_fte(current_user, employee_id):
+    try:
+        rows = db_manager.get_employee_fte(employee_id)
+        return jsonify({"items": rows})
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen FTE für Mitarbeiter {employee_id}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+
+
+@app.route('/employees/<int:employee_id>/fte', methods=['PUT'])
+@token_required
+def upsert_employee_fte(current_user, employee_id):
+    try:
+        payload = request.get_json() or {}
+        year = payload.get('anio')
+        month = payload.get('mes')
+        porcentaje = payload.get('porcentaje')
+
+        if year is None or month is None or porcentaje is None:
+            return jsonify({"error": "anio, mes und porcentaje sind erforderlich"}), 400
+
+        old_rows = db_manager.get_employee_fte(employee_id)
+        old_value = None
+        for r in old_rows:
+            if int(r.get('anio')) == int(year) and int(r.get('mes')) == int(month):
+                old_value = r
+                break
+
+        success = db_manager.upsert_employee_fte(employee_id, int(year), int(month), float(porcentaje))
+        if not success:
+            return jsonify({"error": "Fehler beim Speichern der Stundenreduzierung"}), 400
+
+        try:
+            new_value = {"anio": int(year), "mes": int(month), "porcentaje": float(porcentaje)}
+            change_details = db_manager.create_change_details(old_data=old_value, new_data=new_value)
+            db_manager.insert_bearbeitungslog(
+                usuario_login=current_user,
+                aktion="update" if old_value else "create",
+                objekt="fte",
+                id_empleado=employee_id,
+                anio=int(year),
+                mes=int(month),
+                details=change_details,
+            )
+        except Exception:
+            pass
+
+        return jsonify({"message": "Stundenreduzierung gespeichert"})
+    except Exception as e:
+        logger.error(f"Fehler beim Speichern FTE für Mitarbeiter {employee_id}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+
+
+@app.route('/employees/<int:employee_id>/fte/<int:year>/<int:month>', methods=['DELETE'])
+@token_required
+def delete_employee_fte(current_user, employee_id, year, month):
+    try:
+        old_rows = db_manager.get_employee_fte(employee_id)
+        old_value = None
+        for r in old_rows:
+            if int(r.get('anio')) == int(year) and int(r.get('mes')) == int(month):
+                old_value = r
+                break
+
+        success = db_manager.delete_employee_fte(employee_id, year, month)
+        if not success:
+            return jsonify({"error": "Fehler beim Löschen der Stundenreduzierung"}), 400
+
+        try:
+            change_details = db_manager.create_change_details(old_data=old_value, new_data=None)
+            db_manager.insert_bearbeitungslog(
+                usuario_login=current_user,
+                aktion="delete",
+                objekt="fte",
+                id_empleado=employee_id,
+                anio=int(year),
+                mes=int(month),
+                details=change_details,
+            )
+        except Exception:
+            pass
+
+        return jsonify({"message": "Stundenreduzierung gelöscht"})
+    except Exception as e:
+        logger.error(f"Fehler beim Löschen FTE für Mitarbeiter {employee_id}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
 # Einkünfte Endpunkte
 @app.route('/employees/<int:employee_id>/ingresos/<int:year>', methods=['PUT'])
 @token_required

@@ -487,14 +487,92 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         ORDER BY anio DESC, mes ASC
         """
         deducciones_mensuales_results = self.execute_query(deducciones_mensuales_query, (employee_id,))
+
+        fte_query = """
+        SELECT anio, mes, porcentaje, fecha_modificacion
+        FROM t008_empleado_fte
+        WHERE id_empleado = %s
+        ORDER BY anio DESC, mes DESC
+        """
+        fte_results = self.execute_query(fte_query, (employee_id,))
         return {
             'employee': employee,
             'salaries': salaries,
             'ingresos': ingresos_results,
             'deducciones': deducciones_results,
             'ingresos_mensuales': ingresos_mensuales_results,
-            'deducciones_mensuales': deducciones_mensuales_results
+            'deducciones_mensuales': deducciones_mensuales_results,
+            'fte': fte_results,
         }
+
+    def get_employee_fte(self, employee_id: int) -> List[Dict[str, Any]]:
+        try:
+            query = """
+            SELECT anio, mes, porcentaje, fecha_modificacion
+            FROM t008_empleado_fte
+            WHERE id_empleado = %s
+            ORDER BY anio DESC, mes DESC
+            """
+            return self.execute_query(query, (employee_id,))
+        except Exception as e:
+            self.logger.error(f"Fehler beim Abrufen FTE für Mitarbeiter {employee_id}: {e}")
+            return []
+
+    def upsert_employee_fte(self, employee_id: int, year: int, month: int, porcentaje: float) -> bool:
+        try:
+            year = int(year)
+            month = int(month)
+            porcentaje = float(porcentaje)
+            if year < 2000 or year > 2100:
+                return False
+            if month < 1 or month > 12:
+                return False
+            if porcentaje < 0 or porcentaje > 100:
+                return False
+
+            query = """
+            INSERT INTO t008_empleado_fte (id_empleado, anio, mes, porcentaje)
+            VALUES (%s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                porcentaje = VALUES(porcentaje)
+            """
+            return self.execute_update(query, (employee_id, year, month, porcentaje))
+        except Exception as e:
+            self.logger.error(f"Fehler beim Upsert FTE für Mitarbeiter {employee_id}: {e}")
+            return False
+
+    def delete_employee_fte(self, employee_id: int, year: int, month: int) -> bool:
+        try:
+            year = int(year)
+            month = int(month)
+            query = """
+            DELETE FROM t008_empleado_fte
+            WHERE id_empleado = %s AND anio = %s AND mes = %s
+            """
+            return self.execute_update(query, (employee_id, year, month))
+        except Exception as e:
+            self.logger.error(f"Fehler beim Löschen FTE für Mitarbeiter {employee_id}: {e}")
+            return False
+
+    def get_employee_fte_effective_percent(self, employee_id: int, year: int, month: int) -> float:
+        try:
+            year = int(year)
+            month = int(month)
+            query = """
+            SELECT porcentaje
+            FROM t008_empleado_fte
+            WHERE id_empleado = %s
+              AND (anio < %s OR (anio = %s AND mes <= %s))
+            ORDER BY anio DESC, mes DESC
+            LIMIT 1
+            """
+            rows = self.execute_query(query, (employee_id, year, year, month))
+            if rows and rows[0].get('porcentaje') is not None:
+                return float(rows[0]['porcentaje'])
+            return 100.0
+        except Exception as e:
+            self.logger.error(f"Fehler beim Lesen effective FTE für Mitarbeiter {employee_id}: {e}")
+            return 100.0
     def update_employee(self, employee_id: int, table: str, data: Dict[str, Any]) -> bool:
         if table == 't001_empleados':
             # Nur updatable Felder erlauben
@@ -541,7 +619,11 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 calculated_atrasos = self.calculate_atrasos(employee_id, year, modalidad, current_salary)
                 # Füge atrasos und salario_mensual_con_atrasos zum Update hinzu
                 update_fields.extend(["atrasos = %s", "salario_mensual_con_atrasos = %s"])
-                update_values.extend([calculated_atrasos, (current_salary / modalidad) + calculated_atrasos])
+                # Wenn keine Atrasos (kein Vorjahresgehalt), dann salario_mensual_con_atrasos = salario_mensual_bruto
+                if calculated_atrasos > 0:
+                    update_values.extend([calculated_atrasos, (current_salary / modalidad) + calculated_atrasos])
+                else:
+                    update_values.extend([0.0, current_salary / modalidad])
                 # Berechne salario_mensual_bruto
                 update_fields.append("salario_mensual_bruto = %s")
                 update_values.append(current_salary / modalidad)
@@ -568,11 +650,12 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 calculated_atrasos = self.calculate_atrasos(employee_id, year, modalidad, current_salary)
                 # Füge berechnete Felder hinzu
                 insert_fields.extend(['salario_mensual_bruto', 'atrasos', 'salario_mensual_con_atrasos'])
-                insert_values.extend([
-                    current_salary / modalidad,
-                    calculated_atrasos,
-                    (current_salary / modalidad) + calculated_atrasos
-                ])
+                monthly_salary = current_salary / modalidad
+                # Wenn keine Atrasos (kein Vorjahresgehalt), dann salario_mensual_con_atrasos = salario_mensual_bruto
+                if calculated_atrasos > 0:
+                    insert_values.extend([monthly_salary, calculated_atrasos, monthly_salary + calculated_atrasos])
+                else:
+                    insert_values.extend([monthly_salary, 0.0, monthly_salary])
             placeholders = ', '.join(['%s'] * len(insert_fields))
             query = f"""
             INSERT INTO t002_salarios ({', '.join(insert_fields)}) 
@@ -696,6 +779,11 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             salario_anual = salary_data.get('salario_anual_bruto', 0)
             modalidad = salary_data.get('modalidad', 12)
             salario_mensual = salario_anual / modalidad
+            # Wenn keine Atrasos (kein Vorjahresgehalt), dann salario_mensual_con_atrasos = salario_mensual
+            if calculated_atrasos > 0:
+                salario_con_atrasos = salario_mensual + calculated_atrasos
+            else:
+                salario_con_atrasos = salario_mensual
             params = (
                 employee_id,
                 year,
@@ -704,7 +792,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 salario_anual,
                 salario_mensual,
                 calculated_atrasos,
-                salario_mensual + calculated_atrasos
+                salario_con_atrasos
             )
             result = self.execute_update(insert_query, params)
             # Wenn erfolgreich, prüfe ob Folgejahre existieren und aktualisiere ihre atrasos
@@ -1026,6 +1114,9 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 # Kein Vorjahresgehalt vorhanden (neuer Mitarbeiter)
                 return 0.0
             prev_salary = float(prev_year_data[0]['salario_anual_bruto'])
+            if prev_salary <= 0:
+                # Vorjahresgehalt ist 0 oder weniger (wie kein Gehalt)
+                return 0.0
             payout_month = self.get_payout_month()
             months_before_payout = max(0, payout_month - 1)
             # Berechne atrasos nach Trigger-Logik
@@ -1075,7 +1166,8 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     prev_salario = prev_year_data[0]['salario_anual_bruto']
                     # Berechne atrasos: Nur für das erste Jahr nach der Gehaltserhöhung, wenn sich das Gehalt wirklich geändert hat
                     # Wenn das aktuelle Gehalt gleich dem Gehalt des base_year ist, gibt es keine neue Gehaltserhöhung
-                    if current_year == base_year + 1 and current_salario != prev_salario:
+                    # Wenn Vorjahresgehalt 0 ist, werden keine atrasos berechnet (wie kein Gehalt)
+                    if current_year == base_year + 1 and current_salario != prev_salario and float(prev_salario) > 0:
                         # Erste Gehaltserhöhung - berechne atrasos für Januar-März
                         if modalidad == 12:
                             payout_month = self.get_payout_month()

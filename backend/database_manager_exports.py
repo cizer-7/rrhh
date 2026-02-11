@@ -12,20 +12,51 @@ class DatabaseManagerExportsMixin:
         atrasos: float,
         salario_mensual_bruto_prev: float,
         antiguedad: float,
+        fte_porcentaje: float = 100.0,
     ) -> float:
         salario_mensual_bruto = float(salario_mensual_bruto or 0)
         atrasos = float(atrasos or 0)
         salario_mensual_bruto_prev = float(salario_mensual_bruto_prev or 0)
         antiguedad = float(antiguedad or 0)
+        fte_porcentaje = float(fte_porcentaje or 100.0)
 
-        base = salario_mensual_bruto
         months_before_payout = max(0, int(payout_month) - 1)
-        if months_before_payout > 0 and 1 <= int(month) <= months_before_payout:
-            base = salario_mensual_bruto_prev or salario_mensual_bruto
-        elif int(month) == int(payout_month):
-            base = salario_mensual_bruto + atrasos
+        fte_factor = fte_porcentaje / 100.0
 
-        return base + antiguedad
+        if months_before_payout > 0 and 1 <= int(month) <= months_before_payout:
+            # Vorjahresgehalt, nur Basis mit FTE, antiguedad voll
+            # Wenn Vorjahresgehalt 0 oder nicht vorhanden, verwendet aktuelles Gehalt
+            prev_salary = float(salario_mensual_bruto_prev or 0)
+            if prev_salary <= 0:
+                # Kein Vorjahresgehalt - verwendet aktuelles Gehalt
+                return (salario_mensual_bruto + antiguedad) * fte_factor
+            else:
+                return (prev_salary + antiguedad) * fte_factor
+        elif int(month) == int(payout_month):
+            # Neues Gehalt (reduzierte Basis) + monatsscharfe Atrasos + antiguedad
+            base_salary = (salario_mensual_bruto + antiguedad) * fte_factor
+            # Atrasos = Summe (new - old) * fte(k) für k=1..months_before_payout
+            # Nur berechnen wenn Vorjahresgehalt > 0
+            prev_salary = float(salario_mensual_bruto_prev or 0)
+            if prev_salary > 0 and months_before_payout > 0:
+                diff = salario_mensual_bruto - prev_salary
+                atrasos_total = 0.0
+                # Simulate month-specific FTE like frontend:
+                # January: 100% (no FTE reduction yet)
+                # February/March: current FTE (50%)
+                for k in range(1, months_before_payout + 1):
+                    if k == 1:  # January
+                        month_fte = 1.0
+                    else:  # February, March
+                        month_fte = fte_factor
+                    atrasos_total += diff * month_fte
+                return base_salary + atrasos_total
+            else:
+                # Keine Atrasos wenn kein Vorjahresgehalt
+                return base_salary
+        else:
+            # Normale Monate ab payoutMonth+1: neues Gehalt mit FTE, antiguedad voll
+            return (salario_mensual_bruto + antiguedad) * fte_factor
 
     def export_nomina_excel(
         self,
@@ -52,6 +83,14 @@ class DatabaseManagerExportsMixin:
                 COALESCE(s.atrasos, 0) as atrasos,
                 COALESCE(s.antiguedad, 0) as antiguedad,
                 COALESCE(sp.salario_mensual_bruto, 0) as salario_mensual_bruto_prev,
+                COALESCE((
+                    SELECT f.porcentaje
+                    FROM t008_empleado_fte f
+                    WHERE f.id_empleado = e.id_empleado
+                      AND (f.anio < %s OR (f.anio = %s AND f.mes <= %s))
+                    ORDER BY f.anio DESC, f.mes DESC
+                    LIMIT 1
+                ), 100) as fte_porcentaje,
                 COALESCE(i.ticket_restaurant, 0) as ticket_restaurant,
                 COALESCE(d.cotizacion_especie, 0) as cotizacion_especie,
                 COALESCE(i.primas, 0) as primas,
@@ -76,7 +115,7 @@ class DatabaseManagerExportsMixin:
             ORDER BY e.apellido, e.nombre
             """
 
-            data = self.execute_query(query, (year, year - 1, year, month, year, month))
+            data = self.execute_query(query, (year, year, month, year, year - 1, year, month, year, month))
 
             if not data:
                 self.logger.warning(f"Keine Daten für Jahr {year} gefunden")
@@ -87,6 +126,7 @@ class DatabaseManagerExportsMixin:
             # Convert all numeric columns to float to avoid decimal/float type issues
             numeric_columns = [
                 'salario_mensual_bruto', 'atrasos', 'antiguedad', 'salario_mensual_bruto_prev',
+                'fte_porcentaje',
                 'ticket_restaurant', 'cotizacion_especie', 'primas', 'dietas_cotizables',
                 'horas_extras', 'seguro_pensiones', 'seguro_accidentes', 'dietas_exentas',
                 'formacion', 'adelas', 'sanitas', 'gasolina_arval', 'gasolina_ald', 'dias_exentos'
@@ -105,6 +145,7 @@ class DatabaseManagerExportsMixin:
                     atrasos=r.get('atrasos', 0),
                     salario_mensual_bruto_prev=r.get('salario_mensual_bruto_prev', 0),
                     antiguedad=r.get('antiguedad', 0),
+                    fte_porcentaje=r.get('fte_porcentaje', 100),
                 ),
                 axis=1,
             )
@@ -277,6 +318,14 @@ class DatabaseManagerExportsMixin:
                 COALESCE(s.atrasos, 0) as atrasos,
                 COALESCE(s.antiguedad, 0) as antiguedad,
                 COALESCE(sp.salario_mensual_bruto, 0) as salario_mensual_bruto_prev,
+                COALESCE((
+                    SELECT f.porcentaje
+                    FROM t008_empleado_fte f
+                    WHERE f.id_empleado = e.id_empleado
+                      AND (f.anio < %s OR (f.anio = %s AND f.mes <= %s))
+                    ORDER BY f.anio DESC, f.mes DESC
+                    LIMIT 1
+                ), 100) as fte_porcentaje,
                 COALESCE(i.ticket_restaurant, 0) as ticket_restaurant,
                 COALESCE(d.cotizacion_especie, 0) as cotizacion_especie,
                 COALESCE(i.primas, 0) as primas,
@@ -300,7 +349,7 @@ class DatabaseManagerExportsMixin:
             ORDER BY e.apellido, e.nombre
             """
 
-            data = self.execute_query(query, (year, year - 1, year, month, year, month))
+            data = self.execute_query(query, (year, year, month, year, year - 1, year, month, year, month))
 
             if not data:
                 self.logger.warning(f"Keine Daten für Jahr {year}, Monat {month} gefunden")
@@ -311,6 +360,7 @@ class DatabaseManagerExportsMixin:
             # Convert all numeric columns to float to avoid decimal/float type issues
             numeric_columns = [
                 'salario_mensual_bruto', 'atrasos', 'antiguedad', 'salario_mensual_bruto_prev',
+                'fte_porcentaje',
                 'ticket_restaurant', 'cotizacion_especie', 'primas', 'dietas_cotizables',
                 'horas_extras', 'seguro_pensiones', 'seguro_accidentes', 'dietas_exentas',
                 'formacion', 'adelas', 'sanitas', 'gasolina_arval', 'gasolina_ald', 'dias_exentos'
@@ -329,6 +379,7 @@ class DatabaseManagerExportsMixin:
                     atrasos=r.get('atrasos', 0),
                     salario_mensual_bruto_prev=r.get('salario_mensual_bruto_prev', 0),
                     antiguedad=r.get('antiguedad', 0),
+                    fte_porcentaje=r.get('fte_porcentaje', 100),
                 ),
                 axis=1,
             )

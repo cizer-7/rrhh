@@ -18,6 +18,20 @@ export interface Employee {
 
 
 
+export interface EmployeeFte {
+
+  anio: number;
+
+  mes: number;
+
+  porcentaje: number;
+
+  fecha_modificacion?: string;
+
+}
+
+
+
 export interface Salary {
 
   id_empleado: number;
@@ -121,6 +135,8 @@ export interface EmployeeCompleteInfo {
   ingresos: Ingresos[];
 
   deducciones: Deducciones[];
+
+  fte?: EmployeeFte[];
 
 }
 

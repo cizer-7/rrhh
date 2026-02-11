@@ -70,11 +70,16 @@ BEGIN
 
     -- Compute atrasos
     IF has_previous_year THEN
-        IF NEW.modalidad = 12 THEN
-            SET NEW.atrasos = (NEW.salario_anual_bruto - salario_anual_prev) / 12 * 3;
-        ELSEIF NEW.modalidad = 14 THEN
-            SET NEW.atrasos = (NEW.salario_anual_bruto - salario_anual_prev) / 14 * 3;
+        IF salario_anual_prev > 0 THEN
+            IF NEW.modalidad = 12 THEN
+                SET NEW.atrasos = (NEW.salario_anual_bruto - salario_anual_prev) / 12 * 3;
+            ELSEIF NEW.modalidad = 14 THEN
+                SET NEW.atrasos = (NEW.salario_anual_bruto - salario_anual_prev) / 14 * 3;
+            ELSE
+                SET NEW.atrasos = 0;
+            END IF;
         ELSE
+            -- Previous year salary is 0 or less, treat as no salary
             SET NEW.atrasos = 0;
         END IF;
     ELSE
@@ -121,11 +126,16 @@ BEGIN
 
     -- Compute atrasos
     IF has_previous_year THEN
-        IF NEW.modalidad = 12 THEN
-            SET NEW.atrasos = (NEW.salario_anual_bruto - salario_anual_prev) / 12 * 3;
-        ELSEIF NEW.modalidad = 14 THEN
-            SET NEW.atrasos = (NEW.salario_anual_bruto - salario_anual_prev) / 14 * 3;
+        IF salario_anual_prev > 0 THEN
+            IF NEW.modalidad = 12 THEN
+                SET NEW.atrasos = (NEW.salario_anual_bruto - salario_anual_prev) / 12 * 3;
+            ELSEIF NEW.modalidad = 14 THEN
+                SET NEW.atrasos = (NEW.salario_anual_bruto - salario_anual_prev) / 14 * 3;
+            ELSE
+                SET NEW.atrasos = 0;
+            END IF;
         ELSE
+            -- Previous year salary is 0 or less, treat as no salary
             SET NEW.atrasos = 0;
         END IF;
     ELSE
@@ -233,4 +243,16 @@ CREATE TABLE IF NOT EXISTS t007_bearbeitungslog (
     INDEX idx_t007_usuario_fecha (usuario_login, fecha),
     FOREIGN KEY (id_empleado) REFERENCES t001_empleados(id_empleado) ON DELETE SET NULL,
     FOREIGN KEY (usuario_login) REFERENCES t005_benutzer(nombre_usuario)
+ );
+
+ CREATE TABLE IF NOT EXISTS t008_empleado_fte (
+     id_empleado INT NOT NULL,
+     anio INT NOT NULL,
+     mes INT NOT NULL,
+     porcentaje DECIMAL(5,2) NOT NULL,
+     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+     PRIMARY KEY (id_empleado, anio, mes),
+     INDEX idx_t008_empleado_fecha (id_empleado, anio, mes),
+     FOREIGN KEY (id_empleado) REFERENCES t001_empleados(id_empleado) ON DELETE CASCADE
  );
