@@ -4,7 +4,7 @@ from mysql.connector import pooling
 from typing import Dict, List, Any, Optional
 import logging
 import hashlib
-from database_manager_exports import DatabaseManagerExportsMixin
+from database_exports import DatabaseManagerExportsMixin
 from datetime import datetime
 import json
 import os
@@ -338,7 +338,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         """Returns the globally configured payout month (1-12). Defaults to 4 (April)."""
         try:
             default_value = 4
-            settings_path = os.path.join(os.path.dirname(__file__), "settings.json")
+            settings_path = os.path.join(os.path.dirname(__file__), "config", "settings.json")
             if not os.path.exists(settings_path):
                 try:
                     with open(settings_path, "w", encoding="utf-8") as f:
@@ -360,7 +360,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         try:
             if not isinstance(payout_month, int) or not (1 <= payout_month <= 12):
                 return False
-            settings_path = os.path.join(os.path.dirname(__file__), "settings.json")
+            settings_path = os.path.join(os.path.dirname(__file__), "config", "settings.json")
             with open(settings_path, "w", encoding="utf-8") as f:
                 json.dump({"payout_month": payout_month}, f, ensure_ascii=False, indent=2)
             return True

@@ -10,7 +10,7 @@ import os
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
 sys.path.insert(0, backend_path)
 
-from flask_api_server import app, create_access_token, verify_token, SECRET_KEY, ALGORITHM
+from app import app, create_access_token, verify_token, SECRET_KEY, ALGORITHM
 from database_manager import DatabaseManager
 
 class TestEdgeCasesAndErrorHandling:
@@ -68,7 +68,7 @@ class TestEdgeCasesAndErrorHandling:
             response = client.get('/employees', headers=headers)
             assert response.status_code == 401
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_database_connection_error(self, mock_db_manager, client, auth_headers):
         """Test Datenbankverbindungsfehler"""
         mock_db_manager.get_all_employees.side_effect = Exception("Database connection lost")
@@ -78,7 +78,7 @@ class TestEdgeCasesAndErrorHandling:
         # Sollte 500 Internal Server Error geben
         assert response.status_code in [500, 400]
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_login_with_database_error(self, mock_db_manager, client):
         """Test Login bei Datenbankfehler"""
         mock_db_manager.verify_user.side_effect = Exception("Database error")
@@ -109,7 +109,7 @@ class TestEdgeCasesAndErrorHandling:
             # Sollte 400 Bad Request oder 500 Internal Server Error geben
             assert response.status_code in [400, 500]
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_employee_not_found_various_endpoints(self, mock_db_manager, client, auth_headers):
         """Test Mitarbeiter nicht gefunden bei verschiedenen Endpunkten"""
         mock_db_manager.get_employee_complete_info.return_value = {}
@@ -131,7 +131,7 @@ class TestEdgeCasesAndErrorHandling:
         response = client.delete('/employees/999', headers=auth_headers)
         assert response.status_code == 400
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_invalid_employee_ids(self, mock_db_manager, client, auth_headers):
         """Test ungültige Mitarbeiter-IDs"""
         invalid_ids = [
@@ -146,7 +146,7 @@ class TestEdgeCasesAndErrorHandling:
             # Sollte entweder 404 (nicht gefunden), 400 (bad request) oder 500 sein
             assert response.status_code in [404, 400, 500]
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_invalid_years_and_months(self, mock_db_manager, client, auth_headers):
         """Test ungültige Jahre und Monate"""
         mock_db_manager.update_salary.return_value = True
@@ -179,7 +179,7 @@ class TestEdgeCasesAndErrorHandling:
             # Flask kann diese Routen als gültig behandeln, also prüfen wir auf 200 oder 404
             assert response.status_code in [200, 404, 500]
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_empty_search_results(self, mock_db_manager, client, auth_headers):
         """Test leere Suchergebnisse"""
         mock_db_manager.search_employees.return_value = []
@@ -190,7 +190,7 @@ class TestEdgeCasesAndErrorHandling:
         data = json.loads(response.data)
         assert data == []
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_sql_injection_attempts(self, mock_db_manager, client, auth_headers):
         """Test SQL Injection Versuche"""
         # Mock sollte normal funktionieren
@@ -211,7 +211,7 @@ class TestEdgeCasesAndErrorHandling:
             assert response.status_code == 200
             mock_db_manager.search_employees.assert_called_with(search_term)
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_large_payload_handling(self, mock_db_manager, client, auth_headers):
         """Test Verarbeitung großer Payloads"""
         mock_db_manager.add_employee.return_value = 1

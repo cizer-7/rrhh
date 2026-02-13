@@ -90,7 +90,7 @@ Validiert einen Reset-Token.
 
 ## Email-Konfiguration
 
-Die Email-Funktion muss konfiguriert werden. Erstellen Sie eine `.env` Datei im Backend-Verzeichnis:
+Die Email-Funktion muss konfiguriert werden. Erstellen Sie eine `.env` Datei im Backend-Config-Verzeichnis:
 
 ```bash
 # Email-Konfiguration
@@ -140,7 +140,7 @@ Erstellen Sie die `.env` Datei wie oben beschrieben.
 ### 4. Backend starten
 
 ```bash
-python flask_api_server.py
+python app.py
 ```
 
 ### 5. Frontend starten

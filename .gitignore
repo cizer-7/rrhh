@@ -133,3 +133,6 @@ venv.bak/
 # Additional Node.js
 .npm
 .eslintcache
+
+# Database user credentials (sensitive)
+backend/sql_statements/03_data/01_insert_benutzer.sql

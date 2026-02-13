@@ -17,13 +17,14 @@
 ### Alle Tests ausführen
 ```bash
 # Backend-Tests
-python testing/backend/run_backend_tests.py
+python testing/backend/test_backend.py
 
 # Frontend-Tests
-cd testing/frontend && npm test
+cd testing/frontend
 
 # E2E-Tests
-cd testing/e2e && npm test
+cd testing/e2e
+npx playwright test tests-final.spec.js --project=chromium --reporter=list
 ```
 
 ### Schnelle Tests (Entwicklung)

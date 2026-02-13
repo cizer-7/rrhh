@@ -10,7 +10,7 @@ import os
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
 sys.path.insert(0, backend_path)
 
-from flask_api_server import app, create_access_token, verify_token, SECRET_KEY, ALGORITHM
+from app import app, create_access_token, verify_token, SECRET_KEY, ALGORITHM
 
 class TestFlaskAPIMissingEndpoints:
     """Tests für fehlende API-Endpunkte"""
@@ -30,7 +30,7 @@ class TestFlaskAPIMissingEndpoints:
         token = create_access_token({"sub": "testuser"})
         return {'Authorization': f'Bearer {token}'}
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_get_employees_with_salaries_success(self, mock_db_manager, client, auth_headers):
         """Test GET /employees/with-salaries erfolgreich"""
         employees_with_salaries = [
@@ -56,7 +56,7 @@ class TestFlaskAPIMissingEndpoints:
         response = client.get('/employees/with-salaries')
         assert response.status_code == 401
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_update_salary_success(self, mock_db_manager, client, auth_headers):
         """Test PUT /employees/{id}/salaries/{year} erfolgreich"""
         mock_db_manager.update_salary.return_value = True
@@ -71,7 +71,7 @@ class TestFlaskAPIMissingEndpoints:
         data = json.loads(response.data)
         assert 'message' in data
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_update_salary_failure(self, mock_db_manager, client, auth_headers):
         """Test PUT /employees/{id}/salaries/{year} fehlgeschlagen"""
         mock_db_manager.update_salary.return_value = False
@@ -84,7 +84,7 @@ class TestFlaskAPIMissingEndpoints:
         
         assert response.status_code == 400
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_delete_salary_success(self, mock_db_manager, client, auth_headers):
         """Test DELETE /employees/{id}/salaries/{year} erfolgreich"""
         mock_db_manager.delete_salary.return_value = True
@@ -95,7 +95,7 @@ class TestFlaskAPIMissingEndpoints:
         data = json.loads(response.data)
         assert 'message' in data
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_delete_salary_failure(self, mock_db_manager, client, auth_headers):
         """Test DELETE /employees/{id}/salaries/{year} fehlgeschlagen"""
         mock_db_manager.delete_salary.return_value = False
@@ -104,7 +104,7 @@ class TestFlaskAPIMissingEndpoints:
         
         assert response.status_code == 400
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_update_ingresos_success(self, mock_db_manager, client, auth_headers):
         """Test PUT /employees/{id}/ingresos/{year} erfolgreich"""
         mock_db_manager.update_ingresos.return_value = True
@@ -119,7 +119,7 @@ class TestFlaskAPIMissingEndpoints:
         data = json.loads(response.data)
         assert 'message' in data
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_update_deducciones_success(self, mock_db_manager, client, auth_headers):
         """Test PUT /employees/{id}/deducciones/{year} erfolgreich"""
         mock_db_manager.update_deducciones.return_value = True
@@ -134,7 +134,7 @@ class TestFlaskAPIMissingEndpoints:
         data = json.loads(response.data)
         assert 'message' in data
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_update_ingresos_mensuales_success(self, mock_db_manager, client, auth_headers):
         """Test PUT /employees/{id}/ingresos/{year}/{month} erfolgreich"""
         mock_db_manager.update_ingresos_mensuales.return_value = True
@@ -149,7 +149,7 @@ class TestFlaskAPIMissingEndpoints:
         data = json.loads(response.data)
         assert 'message' in data
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_update_deducciones_mensuales_success(self, mock_db_manager, client, auth_headers):
         """Test PUT /employees/{id}/deducciones/{year}/{month} erfolgreich"""
         mock_db_manager.update_deducciones_mensuales.return_value = True
@@ -164,29 +164,29 @@ class TestFlaskAPIMissingEndpoints:
         data = json.loads(response.data)
         assert 'message' in data
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_export_excel_monthly_success(self, mock_db_manager, client, auth_headers):
         """Test GET /export/excel/{year}/{month} erfolgreich"""
         mock_db_manager.export_nomina_excel.return_value = True
         
-        with patch('flask_api_server.send_file', return_value="mock_file_response"):
+        with patch('app.send_file', return_value="mock_file_response"):
             with patch('os.makedirs'):
                 response = client.get('/export/excel/2025/6', headers=auth_headers)
         
         assert response.status_code == 200
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_export_asiento_nomina_success(self, mock_db_manager, client, auth_headers):
         """Test GET /export/asiento_nomina/{year}/{month} erfolgreich"""
         mock_db_manager.export_asiento_nomina_excel.return_value = True
         
-        with patch('flask_api_server.send_file', return_value="mock_file_response"):
+        with patch('app.send_file', return_value="mock_file_response"):
             with patch('os.makedirs'):
                 response = client.get('/export/asiento_nomina/2025/6', headers=auth_headers)
         
         assert response.status_code == 200
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_recalculate_atrasos_success(self, mock_db_manager, client, auth_headers):
         """Test POST /settings/recalculate-atrasos erfolgreich"""
         mock_db_manager.recalculate_all_atrasos_for_year.return_value = {
@@ -204,7 +204,7 @@ class TestFlaskAPIMissingEndpoints:
         data = json.loads(response.data)
         assert data['success'] is True
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_apply_ingresos_deducciones_success(self, mock_db_manager, client, auth_headers):
         """Test POST /settings/apply-ingresos-deducciones erfolgreich"""
         mock_db_manager.apply_yearly_ingresos_and_deducciones_to_all_active.return_value = {
@@ -226,7 +226,7 @@ class TestFlaskAPIMissingEndpoints:
         data = json.loads(response.data)
         assert data['success'] is True
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_copy_salaries_to_year_success(self, mock_db_manager, client, auth_headers):
         """Test POST /salaries/copy-to-year/{year} erfolgreich"""
         mock_db_manager.copy_salaries_to_new_year.return_value = {

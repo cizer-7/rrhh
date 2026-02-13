@@ -172,7 +172,7 @@ def run_coverage_analysis():
     backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
     env = os.environ.copy()
     env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
-    cmd = f'python -m pytest test_api_core.py --cov=../backend/flask_api_server --cov-report=term-missing'
+    cmd = f'python -m pytest test_api_core.py --cov=../backend/app --cov-report=term-missing'
     success2, stdout2, stderr2 = run_command(cmd, env=env)
     
     print(stdout2)

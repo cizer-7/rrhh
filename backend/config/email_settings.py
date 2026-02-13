@@ -3,7 +3,7 @@ Email-Konfiguration für Passwort-Reset-Funktionalität
 """
 
 import os
-from email_service import EmailService
+from .email_handler import EmailService
 
 # Email-Konfiguration - kann über Umgebungsvariablen konfiguriert werden
 EMAIL_CONFIG = {

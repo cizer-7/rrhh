@@ -24,7 +24,7 @@ def main():
     print("🔧 Health Check: http://localhost:8000/health")
     
     try:
-        from flask_api_server import app
+        from app import app
         app.run(
             host="0.0.0.0",
             port=8000,

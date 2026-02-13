@@ -10,7 +10,7 @@ import os
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
 sys.path.insert(0, backend_path)
 
-from flask_api_server import app, create_access_token, verify_token, SECRET_KEY, ALGORITHM
+from app import app, create_access_token, verify_token, SECRET_KEY, ALGORITHM
 
 class TestFlaskAPICore:
     """Kern-Tests für Flask API - fokussiert auf wesentliche Funktionalität"""
@@ -92,7 +92,7 @@ class TestFlaskAPICore:
         assert data['status'] == 'healthy'
         assert 'timestamp' in data
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_login_success(self, mock_db_manager, client):
         """Test erfolgreicher Login"""
         user_data = {
@@ -120,7 +120,7 @@ class TestFlaskAPICore:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         assert payload["sub"] == "testuser"
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_login_missing_credentials(self, mock_db_manager, client):
         """Test Login mit fehlenden Credentials"""
         # Fehlender Username
@@ -141,7 +141,7 @@ class TestFlaskAPICore:
                               content_type='application/json')
         assert response.status_code == 400
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_login_invalid_credentials(self, mock_db_manager, client):
         """Test Login mit ungültigen Credentials"""
         mock_db_manager.verify_user.return_value = None
@@ -155,7 +155,7 @@ class TestFlaskAPICore:
         data = json.loads(response.data)
         assert 'error' in data
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_get_all_employees_success(self, mock_db_manager, client, auth_headers):
         """Test alle Mitarbeiter abrufen erfolgreich"""
         employees = [
@@ -181,7 +181,7 @@ class TestFlaskAPICore:
         response = client.get('/employees', headers=headers)
         assert response.status_code == 401
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_get_employee_success(self, mock_db_manager, client, auth_headers):
         """Test Mitarbeiter abrufen erfolgreich"""
         employee_info = {
@@ -198,7 +198,7 @@ class TestFlaskAPICore:
         data = json.loads(response.data)
         assert data == employee_info
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_get_employee_not_found(self, mock_db_manager, client, auth_headers):
         """Test Mitarbeiter nicht gefunden"""
         mock_db_manager.get_employee_complete_info.return_value = {}
@@ -208,7 +208,7 @@ class TestFlaskAPICore:
 
 
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_get_payout_month_success(self, mock_db_manager, client, auth_headers):
         """Test GET /settings/payout-month"""
         mock_db_manager.get_payout_month.return_value = 4
@@ -221,7 +221,7 @@ class TestFlaskAPICore:
 
 
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_set_payout_month_success(self, mock_db_manager, client, auth_headers):
         """Test PUT /settings/payout-month"""
         mock_db_manager.set_payout_month.return_value = True
@@ -240,7 +240,7 @@ class TestFlaskAPICore:
 
 
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_set_payout_month_validation_error(self, mock_db_manager, client, auth_headers):
         """Test PUT /settings/payout-month validation"""
         mock_db_manager.set_payout_month.return_value = True
@@ -269,7 +269,7 @@ class TestFlaskAPICore:
         )
         assert response.status_code == 400
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_create_employee_success(self, mock_db_manager, client, auth_headers):
         """Test neuen Mitarbeiter erstellen erfolgreich"""
         new_employee = {'id_empleado': 3, 'nombre': 'Test', 'apellido': 'User', 'ceco': '1003', 'activo': True}
@@ -286,7 +286,7 @@ class TestFlaskAPICore:
         data = json.loads(response.data)
         assert data == new_employee
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_create_employee_failure(self, mock_db_manager, client, auth_headers):
         """Test neuen Mitarbeiter erstellen fehlgeschlagen"""
         mock_db_manager.add_employee.return_value = -1
@@ -299,7 +299,7 @@ class TestFlaskAPICore:
         
         assert response.status_code == 400
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_update_employee_success(self, mock_db_manager, client, auth_headers):
         """Test Mitarbeiter aktualisieren erfolgreich"""
         mock_db_manager.update_employee.return_value = True
@@ -314,7 +314,7 @@ class TestFlaskAPICore:
         data = json.loads(response.data)
         assert 'message' in data
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_update_employee_failure(self, mock_db_manager, client, auth_headers):
         """Test Mitarbeiter aktualisieren fehlgeschlagen"""
         mock_db_manager.update_employee.return_value = False
@@ -327,7 +327,7 @@ class TestFlaskAPICore:
         
         assert response.status_code == 400
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_delete_employee_success(self, mock_db_manager, client, auth_headers):
         """Test Mitarbeiter löschen erfolgreich"""
         mock_db_manager.delete_employee.return_value = True
@@ -338,7 +338,7 @@ class TestFlaskAPICore:
         data = json.loads(response.data)
         assert 'message' in data
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_delete_employee_failure(self, mock_db_manager, client, auth_headers):
         """Test Mitarbeiter löschen fehlgeschlagen"""
         mock_db_manager.delete_employee.return_value = False
@@ -347,7 +347,7 @@ class TestFlaskAPICore:
         
         assert response.status_code == 400
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_search_employees_success(self, mock_db_manager, client, auth_headers):
         """Test Mitarbeitersuche erfolgreich"""
         employees = [
@@ -361,7 +361,7 @@ class TestFlaskAPICore:
         data = json.loads(response.data)
         assert data == employees
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_add_salary_success(self, mock_db_manager, client, auth_headers):
         """Test Gehalt hinzufügen erfolgreich"""
         mock_db_manager.add_salary.return_value = True
@@ -376,18 +376,18 @@ class TestFlaskAPICore:
         data = json.loads(response.data)
         assert 'message' in data
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_export_excel_success(self, mock_db_manager, client, auth_headers):
         """Test Excel-Export erfolgreich"""
         mock_db_manager.export_nomina_excel.return_value = True
         
-        with patch('flask_api_server.send_file', return_value="mock_file_response"):
+        with patch('app.send_file', return_value="mock_file_response"):
             with patch('os.makedirs'):
                 response = client.get('/export/excel/2025', headers=auth_headers)
         
         assert response.status_code == 200
 
-    @patch('flask_api_server.db_manager')
+    @patch('app.db_manager')
     def test_export_excel_failure(self, mock_db_manager, client, auth_headers):
         """Test Excel-Export fehlgeschlagen"""
         mock_db_manager.export_nomina_excel.return_value = False

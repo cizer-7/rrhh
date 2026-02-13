@@ -11,7 +11,7 @@ import jwt
 import json
 import os
 from database_manager import DatabaseManager
-from email_config import email_service
+from config.email_settings import email_service
 
 # Logging konfigurieren
 logging.basicConfig(level=logging.INFO)
