@@ -15,7 +15,7 @@ from pathlib import Path
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
 sys.path.insert(0, backend_path)
 
-def run_command(cmd, cwd=None, capture_output=True, env=None):
+def run_command(cmd, cwd=None, capture_output=False, env=None):
     """Führt einen Befehl aus und gibt das Ergebnis zurück"""
     try:
         result = subprocess.run(
@@ -101,12 +101,8 @@ def run_unit_tests():
         backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
         env = os.environ.copy()
         env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
-        cmd = f'python -m pytest {test_file} -v --tb=short'
+        cmd = f'python -m pytest {test_file} -v --disable-warnings'
         success, stdout, stderr = run_command(cmd, env=env)
-        
-        print(stdout)
-        if stderr:
-            print("STDERR:", stderr)
         
         if not success:
             all_passed = False
@@ -123,12 +119,8 @@ def run_integration_tests():
     backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
     env = os.environ.copy()
     env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
-    cmd = f'python -m pytest test_integration_simple.py -v --tb=short'
+    cmd = f'python -m pytest test_integration_simple.py -v --disable-warnings'
     success, stdout, stderr = run_command(cmd, env=env)
-    
-    print(stdout)
-    if stderr:
-        print("STDERR:", stderr)
     
     if success:
         print("✅ Integration-Tests bestanden")
@@ -144,12 +136,8 @@ def run_performance_tests():
     backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
     env = os.environ.copy()
     env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
-    cmd = f'python -m pytest test_backend_core.py::TestDatabaseManagerCore::test_performance_hash_password -v --tb=short'
+    cmd = f'python -m pytest test_backend_core.py::TestDatabaseManagerCore::test_performance_hash_password -v --disable-warnings'
     success, stdout, stderr = run_command(cmd, env=env)
-    
-    print(stdout)
-    if stderr:
-        print("STDERR:", stderr)
     
     if success:
         print("✅ Performance-Tests bestanden")
@@ -217,12 +205,8 @@ def run_security_tests():
         backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
         env = os.environ.copy()
         env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
-        cmd = f'python -m pytest {test} -v --tb=short'
+        cmd = f'python -m pytest {test} -v --disable-warnings'
         success, stdout, stderr = run_command(cmd, env=env)
-        
-        print(stdout)
-        if stderr:
-            print("STDERR:", stderr)
         
         if not success:
             all_passed = False
@@ -239,12 +223,8 @@ def run_error_scenario_tests():
     backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
     env = os.environ.copy()
     env['PYTHONPATH'] = backend_path + ';' + env.get('PYTHONPATH', '')
-    cmd = f'python -m pytest test_backend_core.py::TestDatabaseManagerCore::test_error_recovery -v --tb=short'
+    cmd = f'python -m pytest test_backend_core.py::TestDatabaseManagerCore::test_error_recovery -v --disable-warnings'
     success, stdout, stderr = run_command(cmd, env=env)
-    
-    print(stdout)
-    if stderr:
-        print("STDERR:", stderr)
     
     if success:
         print("✅ Fehler-Szenario Tests bestanden")
