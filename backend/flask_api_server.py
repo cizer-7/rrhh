@@ -11,6 +11,7 @@ import jwt
 import json
 import os
 from database_manager import DatabaseManager
+from email_config import email_service
 
 # Logging konfigurieren
 logging.basicConfig(level=logging.INFO)
@@ -130,6 +131,113 @@ def login():
         logger.error(f"Login Fehler: {e}")
         import traceback
         traceback.print_exc()
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+# Passwort-Reset Endpunkte
+@app.route('/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    """Passwort-Reset-Anfrage"""
+    try:
+        data = request.get_json()
+        username = data.get("username")
+        
+        if not username:
+            return jsonify({"error": "Benutzername erforderlich"}), 400
+        
+        # Prüfen ob Benutzer existiert
+        email = db_manager.get_user_email(username)
+        if not email:
+            # Sicherheit: Nicht verraten, ob Benutzer existiert
+            return jsonify({"message": "Wenn der Benutzer existiert, wurde eine Reset-Email gesendet"}), 200
+        
+        # Token generieren
+        token = email_service.generate_reset_token()
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=24)  # 24 Stunden statt 1 Stunde
+        
+        logger.info(f"Token generiert für {username}: {token}")
+        logger.info(f"Token expires at: {expires_at}")
+        
+        # Token in Datenbank speichern
+        success = db_manager.create_password_reset_token(username, email, token, expires_at)
+        logger.info(f"Token in DB gespeichert: {success}")
+        
+        if not success:
+            return jsonify({"error": "Fehler beim Erstellen des Reset-Tokens"}), 500
+        
+        # Email senden
+        email_sent = email_service.send_password_reset_email(email, username, token, os.getenv('FRONTEND_URL', 'http://localhost:3000'))
+        logger.info(f"Email gesendet: {email_sent}")
+        
+        if not email_sent:
+            # Token trotzdem speichern, aber Fehler melden
+            logger.error("Email-Versand fehlgeschlagen, aber Token wurde gespeichert")
+            # return jsonify({"error": "Fehler beim Senden der Reset-Email"}), 500
+        
+        logger.info(f"Passwort-Reset-Token erstellt für Benutzer: {username}")
+        return jsonify({"message": "Wenn der Benutzer existiert, wurde eine Reset-Email gesendet"}), 200
+        
+    except Exception as e:
+        logger.error(f"Fehler bei der Passwort-Reset-Anfrage: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+@app.route('/auth/reset-password', methods=['POST'])
+def reset_password():
+    """Passwort-Reset-Bestätigung"""
+    try:
+        data = request.get_json()
+        token = data.get("token")
+        new_password = data.get("new_password")
+        
+        if not token or not new_password:
+            return jsonify({"error": "Token und neues Passwort erforderlich"}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({"error": "Passwort muss mindestens 6 Zeichen lang sein"}), 400
+        
+        # Token validieren
+        token_data = db_manager.validate_password_reset_token(token)
+        if not token_data:
+            return jsonify({"error": "Ungültiger oder abgelaufener Token"}), 400
+        
+        username = token_data['nombre_usuario']
+        
+        # Passwort aktualisieren
+        success = db_manager.update_password(username, new_password)
+        if not success:
+            return jsonify({"error": "Fehler beim Aktualisieren des Passworts"}), 500
+        
+        logger.info(f"Passwort erfolgreich zurückgesetzt für Benutzer: {username}")
+        return jsonify({"message": "Passwort erfolgreich aktualisiert"}), 200
+        
+    except Exception as e:
+        logger.error(f"Fehler beim Passwort-Reset: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+@app.route('/auth/validate-reset-token', methods=['POST'])
+def validate_reset_token():
+    """Validiert einen Passwort-Reset-Token"""
+    try:
+        data = request.get_json()
+        token = data.get("token")
+        
+        logger.info(f"Token-Validierung angefordert: {token}")
+        
+        if not token:
+            return jsonify({"error": "Token erforderlich"}), 400
+        
+        token_data = db_manager.validate_password_reset_token(token)
+        logger.info(f"Token-Validierung Ergebnis: {token_data}")
+        
+        if not token_data:
+            return jsonify({"error": "Ungültiger oder abgelaufener Token"}), 400
+        
+        return jsonify({
+            "valid": True,
+            "username": token_data['nombre_usuario']
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Fehler bei der Token-Validierung: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
 
 # Mitarbeiter Endpunkte

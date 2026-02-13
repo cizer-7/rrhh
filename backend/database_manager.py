@@ -1542,6 +1542,121 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def export_asiento_nomina_excel(self, year: int, month: int, output_path: str) -> bool:
         """Exportiert Gehaltsdaten im Asiento Nomina Excel-Format"""
         return DatabaseManagerExportsMixin.export_asiento_nomina_excel(self, year, month, output_path)
+    
+    def get_user_email(self, username: str) -> Optional[str]:
+        """Holt die Email-Adresse eines Benutzers (angenommen als nombre_usuario)"""
+        try:
+            query = "SELECT nombre_usuario FROM t005_benutzer WHERE nombre_usuario = %s AND activo = TRUE"
+            users = self.execute_query(query, (username,))
+            if users:
+                # Da nombre_usuario als Email verwendet wird, geben wir diesen zurück
+                return users[0]['nombre_usuario']
+            return None
+        except Exception as e:
+            self.logger.error(f"Fehler beim Holen der Benutzer-Email: {e}")
+            return None
+    
+    def create_password_reset_token(self, username: str, email: str, token: str, expires_at: datetime) -> bool:
+        """Erstellt einen Passwort-Reset-Token"""
+        try:
+            # Alte Tokens für diesen Benutzer löschen
+            self.delete_password_reset_tokens(username)
+            
+            query = """
+            INSERT INTO t009_password_reset_tokens (nombre_usuario, token, email, expires_at)
+            VALUES (%s, %s, %s, %s)
+            """
+            return self.execute_update(query, (username, token, email, expires_at))
+        except Exception as e:
+            self.logger.error(f"Fehler beim Erstellen des Passwort-Reset-Tokens: {e}")
+            return False
+    
+    def delete_password_reset_tokens(self, username: str) -> bool:
+        """Löscht alle Passwort-Reset-Tokens für einen Benutzer"""
+        try:
+            query = "DELETE FROM t009_password_reset_tokens WHERE nombre_usuario = %s"
+            return self.execute_update(query, (username,))
+        except Exception as e:
+            self.logger.error(f"Fehler beim Löschen der Passwort-Reset-Tokens: {e}")
+            return False
+    
+    def validate_password_reset_token(self, token: str) -> Optional[Dict[str, Any]]:
+        """Validiert einen Passwort-Reset-Token"""
+        try:
+            query = """
+            SELECT nombre_usuario, email, expires_at, used
+            FROM t009_password_reset_tokens 
+            WHERE token = %s AND used = FALSE
+            """
+            self.logger.info(f"Validiere Token: {token}")
+            tokens = self.execute_query(query, (token,))
+            self.logger.info(f"Gefundene Tokens: {tokens}")
+            
+            if tokens:
+                token_data = tokens[0]
+                self.logger.info(f"Token gefunden: {token_data}")
+                
+                # Beide Zeiten auf UTC bringen
+                from datetime import datetime, timezone
+                now_utc = datetime.now(timezone.utc)
+                expires_at = token_data['expires_at']
+                
+                # Wenn expires_at keine Zeitzone hat, als UTC behandeln
+                if expires_at.tzinfo is None:
+                    expires_at = expires_at.replace(tzinfo=timezone.utc)
+                
+                self.logger.info(f"Aktuelle Zeit UTC: {now_utc}")
+                self.logger.info(f"Token expires_at: {expires_at}")
+                self.logger.info(f"Vergleich: {expires_at} > {now_utc} = {expires_at > now_utc}")
+                
+                if expires_at > now_utc:
+                    self.logger.info(f"Token gültig für: {token_data['nombre_usuario']}")
+                    return token_data
+                else:
+                    self.logger.info(f"Token abgelaufen. Expires: {expires_at}, Now: {now_utc}")
+                    return None
+            else:
+                self.logger.info("Kein gültiger Token gefunden")
+                return None
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Validierung des Passwort-Reset-Tokens: {e}")
+            return None
+    
+    def update_password(self, username: str, new_password: str) -> bool:
+        """Aktualisiert das Passwort eines Benutzers"""
+        try:
+            password_hash = self.hash_password(new_password)
+            query = """
+            UPDATE t005_benutzer 
+            SET hash_contraseña = %s, fecha_modificacion = CURRENT_TIMESTAMP
+            WHERE nombre_usuario = %s
+            """
+            success = self.execute_update(query, (password_hash, username))
+            if success:
+                # Token als verwendet markieren
+                self.mark_token_as_used(username)
+            return success
+        except Exception as e:
+            self.logger.error(f"Fehler beim Aktualisieren des Passworts: {e}")
+            return False
+    
+    def mark_token_as_used(self, username: str) -> bool:
+        """Markiert alle Tokens eines Benutzers als verwendet"""
+        try:
+            query = "UPDATE t009_password_reset_tokens SET used = TRUE WHERE nombre_usuario = %s"
+            return self.execute_update(query, (username,))
+        except Exception as e:
+            self.logger.error(f"Fehler beim Markieren des Tokens als verwendet: {e}")
+            return False
+    
+    def cleanup_expired_tokens(self) -> bool:
+        """Löscht abgelaufene Tokens"""
+        try:
+            query = "DELETE FROM t009_password_reset_tokens WHERE expires_at <= NOW()"
+            return self.execute_update(query)
+        except Exception as e:
+            self.logger.error(f"Fehler beim Aufräumen abgelaufener Tokens: {e}")
+            return False
     def update_ingresos_mensuales(self, employee_id: int, year: int, month: int, data: Dict[str, Any]) -> bool:
         """Aktualisiert monatliche Bruttoeinkünfte für einen spezifischen Monat"""
         try:

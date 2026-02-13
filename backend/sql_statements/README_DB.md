@@ -1,8 +1,19 @@
-# SQL Statements - Gehaltsabrechnungssystem
+# 🗄️ Datenbank-Dokumentation - Gehaltsabrechnungssystem
 
-Dieses Verzeichnis enthält alle SQL-Skripte für die Einrichtung und Initialisierung der Datenbank des Gehaltsabrechnungssystems.
+Dieses Dokument beschreibt die vollständige Datenbankstruktur und SQL-Skripte für das Gehaltsabrechnungssystem.
 
-## Dateien und Ausführungsreihenfolge
+## 📋 Inhaltsverzeichnis
+
+1. [📁 Dateien und Ausführungsreihenfolge](#-dateien-und-ausführungsreihenfolge)
+2. [⚡ Ausführung](#-ausführung)
+3. [📝 Wichtige Hinweise](#-wichtige-hinweise)
+4. [🔧 Grundfunktionen](#-grundfunktionen)
+5. [📅 Monatliche Tabellen](#-monatliche-tabellen)
+6. [👤 Test-Benutzer](#-test-benutzer)
+
+---
+
+## 📁 Dateien und Ausführungsreihenfolge
 
 ### 1. `01_schema.sql`
 **Beschreibung:** Erstellt das vollständige Datenbankschema mit allen Tabellen.
@@ -31,7 +42,7 @@ Dieses Verzeichnis enthält alle SQL-Skripte für die Einrichtung und Initialisi
 
 
 
-## Ausführung
+## ⚡ Ausführung
 
 Die Skripte müssen in der angegebenen Reihenfolge ausgeführt werden:
 
@@ -44,20 +55,20 @@ Die Skripte müssen in der angegebenen Reihenfolge ausgeführt werden:
 4. `04_insert_salaries.sql` - Gehaltsdaten
 5. `05_insert_income.sql` - Bruttoeinkommensdaten
 
-## Wichtige Hinweise
+## 📝 Wichtige Hinweise
 
-### Grundfunktionen
+### 🔧 Grundfunktionen
 - Die Trigger berechnen automatisch monatliche Gehälter und Atrasos
 - Atrasos werden basierend auf dem Vorjahresgehalt berechnet
 - Bei neuen Mitarbeitern ohne Vorgängerdaten wird Atrasos auf 0 gesetzt
 
-### Monatliche Tabellen (erweiterte Funktionalität)
+### 📅 Monatliche Tabellen (erweiterte Funktionalität)
 - Die monatlichen Tabellen ermöglichen individuelle Bearbeitung von Zuschlägen und Abzügen pro Monat
 - Neue Mitarbeiter erhalten automatisch 12 monatliche Datensätze für das aktuelle Jahr
 - Die Migration kopiert bestehende Jahresdaten in monatliche Datensätze
 - Die ursprünglichen Jahresdaten bleiben aus Kompatibilitätsgründen erhalten
 
-### Test-Benutzer
+### 👤 Test-Benutzer
 - Für E2E-Tests steht ein Test-Benutzer zur Verfügung:
   - Benutzername: `test`
   - Passwort: `test`
