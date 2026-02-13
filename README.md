@@ -1,328 +1,147 @@
-# Mitarbeiter Gehaltsabrechnung - Web Anwendung
+# 📚 Benutzerhandbuch - Digitalisierung Gehaltsabrechnung
 
-Moderne Web-Anwendung für Mitarbeiterverwaltung und Gehaltsabrechnung mit React/Next.js Frontend und Python Flask Backend.
+Willkommen zur umfassenden Dokumentation des digitalisierten Gehaltsabrechnungssystems. Dieses Handbuch enthält alle Informationen für die effektive Nutzung und Verwaltung der Anwendung.
 
-## 🏗️ Architektur
+## 📖 Dokumentationsübersicht
 
-- **Frontend:** React/Next.js 14 mit TypeScript und Tailwind CSS
-- **Backend:** Python Flask 3.0 mit JWT-Authentifizierung
-- **Datenbank:** MySQL über bestehenden DatabaseManager
-- **Testing:** Umfassende Test-Suite mit pytest, Jest und Playwright
+### 🎯 [Systemübersicht](01_Übersicht.md)
+**Für:** Alle Benutzer, Administratoren, Entwickler
+- Projektbeschreibung und Ziele
+- Systemarchitektur und Technologien
+- Migration von der Desktop-Anwendung
+- Systemstatus und zukünftige Entwicklungen
+
+### 🗄️ [Datenbank-Dokumentation](02_Datenbank.md)
+**Für:** Administratoren, Entwickler, Datenbankadministratoren
+- Vollständige Datenbankstruktur
+- Installation und Setup
+- Trigger und Automatisierung
+- Passwort-Reset-Funktionalität
+- Test-Benutzer und Wartung
+
+### 🧪 [Testing-Handbuch](03_Testing.md)
+**Für:** Entwickler, QA-Tester, Administratoren
+- Schnellstart für alle Testarten
+- Detaillierte Test-Struktur
+- Coverage und Berichte
+- Fehlerbehandlung und Debugging
+- Anleitung zum Schreiben von Tests
+
+### 📖 [Benutzerhandbuch](04_Benutzerhandbuch.md)
+**Für:** Endbenutzer, Personalabteilung, Administratoren
+- Erste Schritte und Anmeldung
+- Mitarbeiterverwaltung
+- Gehaltsabrechnung und Reporting
+- Systemeinstellungen
+- Häufige Fragen und Support
+
+---
 
 ## 🚀 Schnellstart
 
-### 1. Backend starten
-```bash
-cd backend
-pip install -r requirements.txt
-python flask_api_server.py
-```
-Backend läuft auf: http://localhost:8000
+### Für Endbenutzer
+1. **Lesen:** [Benutzerhandbuch](04_Benutzerhandbuch.md) → "Erste Schritte"
+2. **Anmelden:** Mit Ihren Zugangsdaten am System anmelden
+3. **Erkunden:** Die Benutzeroberfläche und grundlegenden Funktionen testen
 
-### 2. Backend-Tests (empfohlen)
-```bash
-cd testing
-python run_backend_tests.py
-```
+### Für Administratoren
+1. **Systemsetup:** [Datenbank-Dokumentation](02_Datenbank.md) → "Installation & Setup"
+2. **Konfiguration:** Benutzer und Rollen einrichten
+3. **Testing:** [Testing-Handbuch](03_Testing.md) → "Schnellstart"
 
-### 3. Frontend starten
-```bash
-cd frontend
-npm install
-npm run dev
-```
-Frontend läuft auf: http://localhost:3000
+### Für Entwickler
+1. **Architektur verstehen:** [Systemübersicht](01_Übersicht.md) → "Systemarchitektur"
+2. **Datenbankstruktur:** [Datenbank-Dokumentation](02_Datenbank.md) → "Datenbankstruktur"
+3. **Testing:** [Testing-Handbuch](03_Testing.md) → "Test-Arten"
 
-### 4. Anmeldung
- Kontaktieren Sie Ihren Administrator für Zugangsdaten.
+---
 
-## 📁 Verzeichnisstruktur
+## 📋 Zielgruppen
 
-```
-Mitarbeiter Gehaltsabrechnung/
-├── backend/                    # Python Flask Backend
-│   ├── flask_api_server.py    # Haupt-API-Server
-│   ├── database_manager.py    # Datenbankverwaltung (bestehende Logik)
-│   ├── database_manager_exports.py # Export-Funktionalitäten
-│   ├── start_backend.py       # Einfaches Start-Script
-│   ├── requirements.txt       # Python Abhängigkeiten
-│   ├── settings.json          # Konfiguration
-│   └── sql_statements/        # SQL Statements
-├── frontend/                   # React/Next.js Frontend
-│   ├── src/
-│   │   ├── app/               # Next.js Seiten
-│   │   ├── components/        # React Komponenten
-│   │   └── types/             # TypeScript Typen
-│   ├── package.json           # Node.js Abhängigkeiten
-│   └── next-env.d.ts         # Next.js TypeScript Konfiguration
-├── testing/                   # Umfassende Test-Suite
-│   ├── README_TESTING.md      # Detaillierte Test-Dokumentation
-│   ├── run_backend_tests.py   # Haupt Backend Test-Runner
-│   ├── conftest_comprehensive.py # Test-Konfiguration
-│   ├── backend/               # Backend-spezifische Tests
-│   ├── frontend/              # Frontend-Tests (Jest)
-│   └── e2e/                   # End-to-End Tests (Playwright)
-├── data/                      # Datenverzeichnis
-├── pyproject.toml             # Python Projekt-Konfiguration
-├── pytest.ini                # pytest Konfiguration
-├── commands.md                # Nützliche Befehle
-└── README.md                  # Diese Datei
-```
+### 👤 Endbenutzer
+- **Personalabteilung:** Mitarbeiterverwaltung, Gehaltsabrechnung
+- **Abteilungsleiter:** Zugriff auf Mitarbeiterdaten ihrer Abteilung
+- **Management:** Reporting und Statistiken
 
-## 🎯 Funktionen
+### 🔧 Administratoren
+- **IT-Administration:** Systemwartung, Benutzer管理
+- **Datenbankadministratoren:** Datenbankpflege, Backup
+- **Systemintegratoren:** Schnittstellen und Integrationen
 
-### ✅ Authentifizierung & Sicherheit
-- JWT-Token basierte Authentifizierung
-- Sichere Benutzeranmeldung
-- Geschützte API-Endpunkte
+### 💻 Entwickler
+- **Frontend-Entwickler:** React/Next.js Komponenten
+- **Backend-Entwickler:** Flask API, Datenbanklogik
+- **QA-Tester:** Testautomatisierung, Qualitätssicherung
 
-### ✅ Mitarbeiterverwaltung (CRUD)
-- Alle Mitarbeiter anzeigen
-- Mitarbeiter suchen und filtern
-- Neue Mitarbeiter anlegen
-- Mitarbeiterdaten bearbeiten
-- Mitarbeiter löschen
+---
 
-### ✅ Gehaltsverwaltung
-- Jahresabhängige Gehälter verwalten
-- Gehaltsmodalitäten (12/14 Monate)
-- Antigüedad-Zulagen
-- Gehälter importieren/exportieren
+## 🎯 Dokumentationsziele
 
-### ✅ Einkünfte & Abzüge
-- Bruttoeinkünfte (Ticket Restaurant, Primas, etc.)
-- Abzüge (Sozialversicherung, etc.)
-- Jahresabhängige Verwaltung
+### Vollständigkeit
+- **Alle Funktionen:** Jede Systemfunktion ist dokumentiert
+- **Alle Rollen:** Spezifische Anleitungen für jede Benutzerrolle
+- **Alle Prozesse:** Von der Installation bis zur täglichen Nutzung
 
-### ✅ Export & Reporting
-- Excel-Export für Gehaltsdaten
-- Mitarbeiterlisten exportieren
-- Jahresübersichten
+### Verständlichkeit
+- **Klare Sprache:** Einfache, verständliche Formulierungen
+- **Strukturierte Inhalte:** Logische Gliederung und Querverweise
+- **Praktische Beispiele:** Konkrete Anwendungsfälle und Beispiele
 
-### ✅ Moderne UI
-- Responsive Design mit Tailwind CSS
-- Intuitive Benutzeroberfläche
-- Echtzeit-Suche
-- Statusanzeigen und Validierung
+### Aktualität
+- **Regelmäßige Updates:** Dokumentation wird mit Systemänderungen aktualisiert
+- **Versionierung:** Klare Kennzeichnung der Dokumentationsversion
+- **Feedback:** Möglichkeiten zur Verbesserung der Dokumentation
 
-## 🌐 API Endpunkte
+---
 
-### Authentifizierung
-- `POST /auth/login` - Benutzeranmeldung
+## 📞 Support & Feedback
 
-### Mitarbeiter
-- `GET /employees` - Alle Mitarbeiter abrufen
-- `GET /employees/{id}` - Mitarbeiterdetails
-- `POST /employees` - Mitarbeiter erstellen
-- `PUT /employees/{id}` - Mitarbeiter aktualisieren
-- `DELETE /employees/{id}` - Mitarbeiter löschen
-- `GET /employees/search/{term}` - Mitarbeiter suchen
+### Technischer Support
+Bei technischen Problemen oder Fragen:
+- **Systemadministrator:** [E-Mail/Telefon]
+- **IT-Helpdesk:** [E-Mail/Telefon]
+- **Dokumentationsfeedback:** [E-Mail/Feedback-Formular]
 
-### Gehälter & Daten
-- `POST /employees/{id}/salaries` - Gehalt hinzufügen
-- `PUT /employees/{id}/salaries/{year}` - Gehalt aktualisieren
-- `DELETE /employees/{id}/salaries/{year}` - Gehalt löschen
-- `PUT /employees/{id}/ingresos/{year}` - Bruttoeinkünfte
-- `PUT /employees/{id}/deducciones/{year}` - Abzüge
+### Dokumentationsfeedback
+Wir freuen uns über Ihr Feedback zur Dokumentation:
+- **Verständlichkeit:** Sind die Anleitungen klar verständlich?
+- **Vollständigkeit:** Fehlen wichtige Informationen?
+- **Verbesserungen:** Welche Inhalte wären hilfreich?
 
-### Export
-- `GET /export/excel/{year}` - Excel Export
+---
 
-### System
-- `GET /health` - Health Check
+## 🔄 Aktualisierungen
 
-## 🔐 Benutzerdaten
+### Versionshistorie
+- **v1.0:** Erste vollständige Dokumentation
+- **v1.1:** Überarbeitete Struktur und erweiterte Inhalte
+- **Aktuelle Version:** Diese Dokumentation
 
-Die Benutzer sind in der `t005_benutzer` Tabelle gespeichert. Für Testzwecke können Benutzer direkt in der Datenbank angelegt werden.
+### Zukünftige Erweiterungen
+- **Video-Tutorials:** Schritt-für-Schritt Videoanleitungen
+- **API-Dokumentation:** Detaillierte API-Referenz
+- **Best-Practices:** Empfehlungen für optimales Systemnutzung
 
-## 📊 Datenbankstruktur
+---
 
-- `t001_empleados` - Mitarbeiterstammdaten
-- `t002_salarios` - Gehaltsinformationen (jahresabhängig)
-- `t003_ingresos_brutos` - Bruttoeinkünfte (jahresabhängig)
-- `t004_deducciones` - Abzüge (jahresabhängig)
-- `t005_benutzer` - Benutzer für die Anmeldung
+## 📚 Zusätzliche Ressourcen
 
-## 🛠️ Technologie-Stack
+### Projektdateien
+- **Haupt-README:** `../README.md` - Projektübersicht und Schnellstart
+- **Testing-Dokumentation:** `../testing/README_TESTING.md` - Detaillierte Test-Dokumentation
+- **Datenbank-Skripte:** `../backend/sql_statements/README_DB.md` - Datenbank-Setup
 
-### Backend
-- **Python 3.11+**
-- **Flask 3.0** - Web Framework
-- **Flask-CORS 4.0** - CORS Unterstützung
-- **PyJWT 2.8** - JWT Token Handling
-- **mysql-connector-python 8.2.0** - Datenbankverbindung
-- **reportlab 4.0.7** - PDF Generierung
-- **openpyxl 3.1.2** - Excel Verarbeitung
+### Externe Ressourcen
+- **React-Dokumentation:** https://react.dev/
+- **Flask-Dokumentation:** https://flask.palletsprojects.com/
+- **MySQL-Dokumentation:** https://dev.mysql.com/doc/
 
-### Frontend
-- **React 18** mit Next.js 14.0.4
-- **TypeScript 5** - Typensicherheit
-- **Tailwind CSS 3.3.0** - Styling
-- **Lucide React 0.303.0** - Icons
-- **Radix UI** - UI Komponenten (Dialog, Dropdown, Select, etc.)
-- **xlsx 0.18.5** - Excel Export
-- **bcryptjs 2.4.3** - Passwort-Hashing
-- **jsonwebtoken 9.0.2** - JWT Handling
+---
 
-### Datenbank
-- **MySQL** - Relationale Datenbank
+**Letzte Aktualisierung:** Februar 2026  
+**Version:** 1.1  
+**Maintainer:** Systemadministration
 
-### Testing
-- **Backend:** pytest mit Coverage, Mocking
-- **Frontend:** Jest mit React Testing Library
-- **E2E:** Playwright für Browser-Automatisierung
+---
 
-## 📝 Installation & Konfiguration
-
-### Backend Dependencies
-```bash
-cd backend
-pip install -r requirements.txt
-```
-
-### Frontend Dependencies
-```bash
-cd frontend
-npm install
-```
-
-### Datenbankkonfiguration
-Die Datenbankverbindung ist in `backend/flask_api_server.py` konfiguriert:
-
-```python
-db_manager = DatabaseManager(
-    host='localhost',
-    database='nomina',
-    user='root',
-    password='Niklas-10',  # Anpassen
-    port=3307
-)
-```
-
-## 🔄 Migration von Desktop-Anwendung
-
-Diese Web-Anwendung ersetzt die ursprüngliche Python/Tkinter Desktop-Anwendung:
-
-- ✅ **Vollständige Funktionsübernahme** - Alle Features der Desktop-App
-- ✅ **Keine doppelte Logik** - Nutzt bestehenden `database_manager.py`
-- ✅ **Moderne Architektur** - Web-basiert und zukunftssicher
-- ✅ **Parallelbetrieb möglich** - Desktop-App kann weiterhin verwendet werden
-
-## 🧪 Testing
-
-Die Anwendung verfügt über eine umfassende Test-Suite mit Unit-, Integrations- und End-to-End Tests.
-
-### Backend-Tests ausführen
-```bash
-cd testing
-python run_backend_tests.py
-```
-
-### Backend Test-Optionen
-```bash
-# Nur Unit-Tests
-python run_backend_tests.py --unit-only
-
-# Nur Integration-Tests  
-python run_backend_tests.py --integration-only
-
-# Schnelle Tests (überspringt langsame Tests)
-python run_backend_tests.py --fast
-
-# Alle Optionen anzeigen
-python run_backend_tests.py --help
-```
-
-### Frontend-Tests
-```bash
-cd testing/frontend
-npm test
-```
-
-### End-to-End Tests
-```bash
-cd testing/e2e
-npm test
-```
-
-### Test-Abdeckung
-- **66+ Tests** insgesamt
-- **DatabaseManager**: 31+ Tests (Core-Funktionalität)
-- **Flask API**: 26+ Tests (API-Endpunkte)
-- **Integration**: 9+ Tests (komplette Workflows)
-- **Frontend**: React Komponenten Tests
-- **E2E**: Browser-basierte Workflow-Tests
-
-### Test-Arten
-- ✅ **Unit-Tests** - Einzelne Komponenten isoliert
-- ✅ **Integrationstests** - Komplette Workflows  
-- ✅ **Fehler-Szenarien** - Robustheit und Edge Cases
-- ✅ **Performance-Tests** - Geschwindigkeit und Speicher
-- ✅ **Security-Tests** - JWT, Passwort-Hashing, Authorization
-- ✅ **E2E Tests** - Vollständige Benutzer-Workflows im Browser
-
-📖 **Detaillierte Test-Dokumentation:** Siehe `testing/README_TESTING.md`
-
-## 🚀 Entwicklung
-
-### Backend starten (Debug-Modus)
-```bash
-cd backend
-python flask_api_server.py
-```
-
-### Frontend starten (Entwicklung)
-```bash
-cd frontend
-npm run dev
-```
-
-### API Dokumentation
-Die API ist unter http://localhost:8000/health erreichbar.
-
-## 📋 Projekt-Status
-
-### ✅ Abgeschlossen
-- Vollständige Mitarbeiterverwaltung (CRUD)
-- Gehaltsabrechnung mit Jahresabhängigkeit
-- JWT-basierte Authentifizierung
-- Excel-Export Funktionalität
-- Umfassende Test-Suite (66+ Tests)
-- Moderne React/Next.js UI
-- API-Dokumentation
-
-### 🔄 In Arbeit
-- Performance-Optimierungen
-- Erweiterte Reporting-Funktionen
-
-### 📋 Hinweise
-
-- Die Web-Anwendung nutzt die bestehende Python-Logik aus `database_manager.py`
-- Keine doppelte Implementierung - Frontend nutzt ausschließlich die API
-- Die ursprüngliche Desktop-Anwendung kann weiterhin parallel verwendet werden
-- Alle Daten bleiben in der bestehenden MySQL-Datenbank
-- Umfassende Test-Abdeckung mit Unit-, Integrations- und E2E-Tests
-
-## 🐛 Fehlerbehandlung
-
-### Häufige Probleme
-
-1. **Datenbankverbindung fehlgeschlagen**
-   - Prüfen ob MySQL Server läuft
-   - Zugangsdaten in `flask_api_server.py` überprüfen
-
-2. **Frontend kann nicht auf API zugreifen**
-   - Backend muss auf http://localhost:8000 laufen
-   - CORS ist bereits konfiguriert
-
-3. **Login funktioniert nicht**
-   - Benutzer in `t005_benutzer` Tabelle prüfen
-   - Passwort-Hash muss SHA-256 sein
-   - Kontaktieren Sie Administrator für gültige Zugangsdaten
-
-## 📞 Support
-
-Bei Problemen oder Fragen:
-1. Backend-Logs prüfen (Console-Ausgabe)
-2. Frontend-Developer Tools im Browser verwenden
-3. Datenbankverbindung testen
+*Beginnen Sie mit der [Systemübersicht](01_Übersicht.md) für einen umfassenden Einstieg in das System.*

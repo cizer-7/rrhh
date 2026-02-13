@@ -17,6 +17,7 @@ export default function Login({ onLogin }: LoginProps) {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,6 +29,26 @@ export default function Login({ onLogin }: LoginProps) {
       onLogin(response.user, response.access_token)
     } catch (err: any) {
       setError(err.message || 'Anmeldung fehlgeschlagen')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleForgotPassword = async () => {
+    if (!username.trim()) {
+      setError('Bitte geben Sie zuerst Ihren Benutzernamen ein')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+
+    try {
+      await apiClient.forgotPassword(username)
+      setError('')
+      alert('Wenn der Benutzer existiert, wurde eine Reset-Email gesendet')
+    } catch (err: any) {
+      setError(err.message || 'Fehler beim Senden der Reset-Email')
     } finally {
       setLoading(false)
     }
@@ -74,6 +95,17 @@ export default function Login({ onLogin }: LoginProps) {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Anmelden...' : 'Anmelden'}
             </Button>
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="link"
+                onClick={handleForgotPassword}
+                disabled={loading}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Passwort vergessen?
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
