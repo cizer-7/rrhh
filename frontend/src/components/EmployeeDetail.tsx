@@ -6,7 +6,7 @@
 
 
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 
 
@@ -163,6 +163,15 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
   const [bearbeitungslogLoading, setBearbeitungslogLoading] = useState(false)
 
 
+  const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false)
+
+
+  const [unsavedChangesSaving, setUnsavedChangesSaving] = useState(false)
+
+
+  const [lastSavedSnapshot, setLastSavedSnapshot] = useState<any>(null)
+
+
 
 
 
@@ -223,6 +232,450 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       console.error('Error fetching payout month:', e)
 
     }
+
+  }
+
+
+  const normalizeSnapshotObject = (obj: any, excludeKeys: string[] = []) => {
+
+
+    if (!obj || typeof obj !== 'object') return obj
+
+
+    const out: any = {}
+
+
+    for (const [k, v] of Object.entries(obj)) {
+
+
+      if (excludeKeys.includes(k)) continue
+
+
+      if (v === undefined) continue
+
+
+      if (typeof v === 'number') {
+
+
+        out[k] = Number.isFinite(v) ? v : 0
+
+
+      } else if (typeof v === 'string') {
+
+
+        const n = Number(v)
+
+
+        out[k] = Number.isFinite(n) && v.trim() !== '' ? n : v
+
+
+      } else {
+
+
+        out[k] = v
+
+
+      }
+
+
+    }
+
+
+    return out
+
+
+  }
+
+
+  const currentSnapshot = useMemo(() => {
+
+
+    return {
+
+
+      salary: normalizeSnapshotObject(salary, ['id_empleado', 'anio', 'fecha_creacion', 'fecha_modificacion', 'salario_mensual_bruto', 'salario_mensual_con_atrasos']),
+
+
+      ingresos: normalizeSnapshotObject(ingresos, ['id_empleado', 'anio', 'mes', 'fecha_creacion', 'fecha_modificacion']),
+
+
+      deducciones: normalizeSnapshotObject(deducciones, ['id_empleado', 'anio', 'mes', 'fecha_creacion', 'fecha_modificacion']),
+
+
+      employeeFormData: normalizeSnapshotObject(employeeFormData),
+
+
+      fteReduction: (fteReduction || '').trim()
+
+
+    }
+
+
+  }, [salary, ingresos, deducciones, employeeFormData, fteReduction])
+
+
+  const formatValueForDiff = (v: any) => {
+
+
+    if (v === null || v === undefined) return '-'
+
+
+    if (typeof v === 'boolean') return v ? 'Ja' : 'Nein'
+
+
+    if (typeof v === 'number') {
+
+
+      return v.toLocaleString('de-DE', { maximumFractionDigits: 2 })
+
+
+    }
+
+
+    return String(v)
+
+
+  }
+
+
+  const getUnsavedChanges = () => {
+
+
+    const base = lastSavedSnapshot
+
+
+    if (!base) return [] as Array<{ section: string; field: string; from: any; to: any }>
+
+
+    const diffs: Array<{ section: string; field: string; from: any; to: any }> = []
+
+
+    const compareObjects = (section: string, a: any, b: any) => {
+
+
+      const keys = new Set<string>([...Object.keys(a || {}), ...Object.keys(b || {})])
+
+
+      for (const k of keys) {
+
+
+        const av = (a || {})[k]
+
+
+        const bv = (b || {})[k]
+
+
+        const aNum = typeof av === 'number' ? av : Number(av)
+
+
+        const bNum = typeof bv === 'number' ? bv : Number(bv)
+
+
+        const bothNumeric = Number.isFinite(aNum) && Number.isFinite(bNum)
+
+
+        const changed = bothNumeric ? aNum !== bNum : String(av ?? '') !== String(bv ?? '')
+
+
+        if (changed) {
+
+
+          diffs.push({ section, field: k, from: av, to: bv })
+
+
+        }
+
+
+      }
+
+
+    }
+
+
+    compareObjects('Gehalt', normalizeSnapshotObject(base.salary, ['id_empleado', 'anio', 'fecha_creacion', 'fecha_modificacion', 'salario_mensual_bruto', 'salario_mensual_con_atrasos']), currentSnapshot.salary)
+
+
+    compareObjects('Zulagen', normalizeSnapshotObject(base.ingresos, ['id_empleado', 'anio', 'mes', 'fecha_creacion', 'fecha_modificacion']), currentSnapshot.ingresos)
+
+
+    compareObjects('Abzüge', normalizeSnapshotObject(base.deducciones, ['id_empleado', 'anio', 'mes', 'fecha_creacion', 'fecha_modificacion']), currentSnapshot.deducciones)
+
+
+    compareObjects('Stammdaten', normalizeSnapshotObject(base.employeeFormData), currentSnapshot.employeeFormData)
+
+
+    if ((base.fteReduction || '') !== currentSnapshot.fteReduction) {
+
+
+      diffs.push({ section: 'Stundenreduzierung', field: 'reduktion', from: base.fteReduction || '', to: currentSnapshot.fteReduction })
+
+
+    }
+
+
+    return diffs
+
+
+  }
+
+
+  const handleBackClick = () => {
+
+
+    const diffs = getUnsavedChanges()
+
+
+    if (diffs.length === 0) {
+
+
+      onBack()
+
+
+      return
+
+
+    }
+
+
+    setShowUnsavedChangesModal(true)
+
+
+  }
+
+
+  const saveAllUnsavedChanges = async () => {
+
+
+    const diffs = getUnsavedChanges()
+
+
+    if (diffs.length === 0) {
+
+
+      setShowUnsavedChangesModal(false)
+
+
+      onBack()
+
+
+      return
+
+
+    }
+
+
+    try {
+
+
+      setUnsavedChangesSaving(true)
+
+
+      const hasSalary = diffs.some((d) => d.section === 'Gehalt')
+
+
+      const hasIngresos = diffs.some((d) => d.section === 'Zulagen')
+
+
+      const hasDeducciones = diffs.some((d) => d.section === 'Abzüge')
+
+
+      const hasStammdaten = diffs.some((d) => d.section === 'Stammdaten')
+
+
+      if (hasSalary && salary) {
+
+
+        const token = localStorage.getItem('token')
+
+
+        const headers = {
+
+
+          'Content-Type': 'application/json',
+
+
+          'Authorization': `Bearer ${token}`
+
+
+        }
+
+
+        const checkResponse = await fetch(`http://localhost:8000/employees/${employee.id_empleado}`, { headers })
+
+
+        const employeeData = await checkResponse.json()
+
+
+        const existingSalary = employeeData.salaries?.find((s: any) => s.anio === year)
+
+
+        const url = existingSalary
+
+
+          ? `http://localhost:8000/employees/${employee.id_empleado}/salaries/${year}`
+
+
+          : `http://localhost:8000/employees/${employee.id_empleado}/salaries`
+
+
+        const method = existingSalary ? 'PUT' : 'POST'
+
+
+        await fetch(url, { method, headers, body: JSON.stringify({ ...salary, anio: year }) })
+
+
+      }
+
+
+      if (hasIngresos && ingresos) {
+
+
+        const token = localStorage.getItem('token')
+
+
+        const headers = {
+
+
+          'Content-Type': 'application/json',
+
+
+          'Authorization': `Bearer ${token}`
+
+
+        }
+
+
+        const url = (dataMode === 'monthly' && month)
+
+
+          ? `http://localhost:8000/employees/${employee.id_empleado}/ingresos/${year}/${month}`
+
+
+          : `http://localhost:8000/employees/${employee.id_empleado}/ingresos/${year}`
+
+
+        await fetch(url, {
+
+
+          method: 'PUT',
+
+
+          headers,
+
+
+          body: JSON.stringify({ ...ingresos, anio: year, ...(dataMode === 'monthly' && month ? { mes: month } : {}) })
+
+
+        })
+
+
+      }
+
+
+      if (hasDeducciones && deducciones) {
+
+
+        const token = localStorage.getItem('token')
+
+
+        const headers = {
+
+
+          'Content-Type': 'application/json',
+
+
+          'Authorization': `Bearer ${token}`
+
+
+        }
+
+
+        const url = (dataMode === 'monthly' && month)
+
+
+          ? `http://localhost:8000/employees/${employee.id_empleado}/deducciones/${year}/${month}`
+
+
+          : `http://localhost:8000/employees/${employee.id_empleado}/deducciones/${year}`
+
+
+        await fetch(url, {
+
+
+          method: 'PUT',
+
+
+          headers,
+
+
+          body: JSON.stringify({ ...deducciones, anio: year, ...(dataMode === 'monthly' && month ? { mes: month } : {}) })
+
+
+        })
+
+
+      }
+
+
+      if (hasStammdaten) {
+
+
+        const token = localStorage.getItem('token')
+
+
+        const headers = {
+
+
+          'Content-Type': 'application/json',
+
+
+          'Authorization': `Bearer ${token}`
+
+
+        }
+
+
+        await fetch(`http://localhost:8000/employees/${employee.id_empleado}`, {
+
+
+          method: 'PUT',
+
+
+          headers,
+
+
+          body: JSON.stringify(employeeFormData)
+
+
+        })
+
+
+      }
+
+
+      await fetchData()
+
+
+      setShowUnsavedChangesModal(false)
+
+
+      onBack()
+
+
+    } catch (e) {
+
+
+      console.error('Error saving unsaved changes:', e)
+
+
+    } finally {
+
+
+      setUnsavedChangesSaving(false)
+
+
+    }
+
 
   }
 
@@ -332,7 +785,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
 
 
-  const fetchBearbeitungslog = async () => {
+  async function fetchBearbeitungslog() {
 
     try {
 
@@ -390,7 +843,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
 
 
-  const fetchData = async () => {
+  async function fetchData() {
 
 
 
@@ -438,15 +891,19 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
 
 
-      const response = await fetch(`http://localhost:8000/employees/${employee.id_empleado}?_t=${Date.now()}`, {
+      const response = await fetch(
 
 
 
-        headers
+        `http://localhost:8000/employees/${employee.id_empleado}?_t=${Date.now()}`,
 
 
 
-      })
+        { headers }
+
+
+
+      )
 
 
 
@@ -572,7 +1029,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
 
 
-      setSalary(salaryData || {
+      const nextSalary = salaryData || {
 
 
 
@@ -596,15 +1053,18 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
 
 
-      })
+      }
 
+
+
+      setSalary(nextSalary)
 
 
       setSalaries(Array.isArray(data.salaries) ? data.salaries : [])
 
 
 
-      setIngresos(ingresosData || {
+      const nextIngresos = ingresosData || {
 
 
 
@@ -648,11 +1108,15 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
 
 
-      })
+      }
 
 
 
-      setDeducciones(deduccionesData || {
+      setIngresos(nextIngresos)
+
+
+
+      const nextDeducciones = deduccionesData || {
 
 
 
@@ -688,11 +1152,51 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
 
 
-      })
+      }
+
+
+
+      setDeducciones(nextDeducciones)
 
 
 
       setFteItems(Array.isArray(data.fte) ? data.fte : [])
+
+
+      setLastSavedSnapshot({
+
+
+        salary: nextSalary,
+
+
+        ingresos: nextIngresos,
+
+
+        deducciones: nextDeducciones,
+
+
+        employeeFormData: {
+
+
+          nombre: data?.nombre ?? employee.nombre ?? '',
+
+
+          apellido: data?.apellido ?? employee.apellido ?? '',
+
+
+          ceco: data?.ceco ?? employee.ceco ?? '',
+
+
+          activo: data?.activo ?? employee.activo ?? true
+
+
+        },
+
+
+        fteReduction: ''
+
+
+      })
 
 
 
@@ -1164,6 +1668,18 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
         employee.activo = employeeFormData.activo
 
+
+        setLastSavedSnapshot((prev: any) => ({
+
+
+          ...(prev || {}),
+
+
+          employeeFormData: { ...employeeFormData }
+
+
+        }))
+
       } else {
 
         const errorText = await response.text()
@@ -1596,6 +2112,204 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
 
 
+      {showUnsavedChangesModal && (
+
+
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+
+
+          <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl">
+
+
+            <div className="border-b border-gray-200 px-6 py-4">
+
+
+              <div className="text-lg font-semibold text-gray-900">Ungespeicherte Änderungen</div>
+
+
+              <div className="mt-1 text-sm text-gray-600">Du hast Änderungen, die noch nicht gespeichert wurden.</div>
+
+
+            </div>
+
+
+            <div className="px-6 py-4">
+
+
+              <div className="max-h-72 overflow-y-auto rounded-md border border-gray-200">
+
+
+                {getUnsavedChanges().length === 0 ? (
+
+
+                  <div className="px-4 py-3 text-sm text-gray-600">Keine Änderungen gefunden.</div>
+
+
+                ) : (
+
+
+                  <table className="min-w-full divide-y divide-gray-200">
+
+
+                    <thead className="bg-gray-50">
+
+
+                      <tr>
+
+
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bereich</th>
+
+
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feld</th>
+
+
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alt</th>
+
+
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Neu</th>
+
+
+                      </tr>
+
+
+                    </thead>
+
+
+                    <tbody className="divide-y divide-gray-200 bg-white">
+
+
+                      {getUnsavedChanges().map((d, idx) => (
+
+
+                        <tr key={idx}>
+
+
+                          <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{d.section}</td>
+
+
+                          <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{d.field.replace(/_/g, ' ')}</td>
+
+
+                          <td className="px-4 py-2 text-sm text-gray-600">{formatValueForDiff(d.from)}</td>
+
+
+                          <td className="px-4 py-2 text-sm text-gray-900">{formatValueForDiff(d.to)}</td>
+
+
+                        </tr>
+
+
+                      ))}
+
+
+                    </tbody>
+
+
+                  </table>
+
+
+                )}
+
+
+              </div>
+
+
+            </div>
+
+
+            <div className="flex items-center justify-end gap-2 border-t border-gray-200 px-6 py-4">
+
+
+              <Button
+
+
+                type="button"
+
+
+                variant="outline"
+
+
+                onClick={() => setShowUnsavedChangesModal(false)}
+
+
+                disabled={unsavedChangesSaving}
+
+
+              >
+
+
+                Schließen
+
+
+              </Button>
+
+
+              <Button
+
+
+                type="button"
+
+
+                variant="outline"
+
+
+                onClick={() => {
+
+
+                  setShowUnsavedChangesModal(false)
+
+
+                  onBack()
+
+
+                }}
+
+
+                disabled={unsavedChangesSaving}
+
+
+              >
+
+
+                Nicht speichern
+
+
+              </Button>
+
+
+              <Button
+
+
+                type="button"
+
+
+                onClick={saveAllUnsavedChanges}
+
+
+                disabled={unsavedChangesSaving}
+
+
+              >
+
+
+                {unsavedChangesSaving ? 'Speichern...' : 'Speichern'}
+
+
+              </Button>
+
+
+            </div>
+
+
+          </div>
+
+
+        </div>
+
+
+      )}
+
+
 
       <div className="max-w-6xl mx-auto">
 
@@ -1609,7 +2323,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
 
 
-            <Button variant="outline" onClick={onBack}>
+            <Button variant="outline" onClick={handleBackClick}>
 
 
 
