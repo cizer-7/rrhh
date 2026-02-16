@@ -9,6 +9,7 @@ from datetime import datetime
 import json
 import os
 from decimal import Decimal
+from openpyxl.worksheet.worksheet import Worksheet
 
 class DatabaseManager(DatabaseManagerExportsMixin):
     def __init__(self, host: str, database: str, user: str, password: str, port: int = 3307):
@@ -1757,6 +1758,236 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Aktualisieren der monatlichen Abzüge: {e}")
             return False
+
+
+
+    def _parse_employee_name_cell(self, raw_value: Any) -> Optional[Dict[str, str]]:
+        try:
+            if raw_value is None:
+                return None
+            text = str(raw_value).strip()
+            if not text:
+                return None
+            # Expected: "APELLIDO, NOMBRE" (user mentioned NACHNAME, VORNAME)
+            parts = [p.strip() for p in text.split(',')]
+            if len(parts) < 2:
+                return None
+            apellido = parts[0]
+            nombre = ','.join(parts[1:]).strip()
+            if not apellido or not nombre:
+                return None
+            return {"apellido": apellido, "nombre": nombre}
+        except Exception:
+            return None
+
+    def _to_decimal_number(self, raw_value: Any) -> float:
+        if raw_value is None:
+            return 0.0
+        if isinstance(raw_value, (int, float)):
+            try:
+                return float(raw_value)
+            except Exception:
+                return 0.0
+        try:
+            s = str(raw_value).strip()
+            if not s:
+                return 0.0
+            s = s.replace('.', '').replace(',', '.') if s.count(',') == 1 and s.count('.') >= 1 else s
+            s = s.replace(',', '.')
+            return float(s)
+        except Exception:
+            return 0.0
+
+    def _find_employee_id_by_name(self, apellido: str, nombre: str) -> Optional[int]:
+        try:
+            query = """
+            SELECT id_empleado
+            FROM t001_empleados
+            WHERE LOWER(TRIM(apellido)) = LOWER(TRIM(%s))
+              AND LOWER(TRIM(nombre)) = LOWER(TRIM(%s))
+            LIMIT 1
+            """
+            rows = self.execute_query(query, (apellido, nombre))
+            if rows:
+                return int(rows[0]["id_empleado"])
+            return None
+        except Exception as e:
+            self.logger.error(f"Fehler beim Suchen empleado_id für {apellido}, {nombre}: {e}")
+            return None
+
+    def import_horas_dietas_worksheet(
+        self,
+        worksheet: Worksheet,
+        year: int,
+        month: int,
+        usuario_login: str,
+        source_filename: str,
+    ) -> Dict[str, Any]:
+        """Importiert Horas + Dietas Daten in t003_ingresos_brutos_mensuales (monatlich)."""
+        errors: List[str] = []
+        row_results: List[Dict[str, Any]] = []
+        processed_count = 0
+        updated_count = 0
+        inserted_count = 0
+        skipped_count = 0
+
+        if worksheet is None:
+            return {"success": False, "message": "worksheet fehlt"}
+
+        try:
+            # Preload employee lookup map to avoid many DB queries
+            employees = self.execute_query("SELECT id_empleado, nombre, apellido FROM t001_empleados") or []
+            employee_map: Dict[str, int] = {}
+            for e in employees:
+                key = f"{str(e.get('apellido','')).strip().lower()}|{str(e.get('nombre','')).strip().lower()}"
+                if key and e.get('id_empleado') is not None:
+                    employee_map[key] = int(e['id_empleado'])
+
+            def get_employee_id(apellido: str, nombre: str) -> Optional[int]:
+                key = f"{apellido.strip().lower()}|{nombre.strip().lower()}"
+                if key in employee_map:
+                    return employee_map[key]
+                # fallback DB query (in case of late insert)
+                emp_id = self._find_employee_id_by_name(apellido, nombre)
+                if emp_id is not None:
+                    employee_map[key] = emp_id
+                return emp_id
+
+            # Iterate rows, data starts usually at row 2
+            max_row = worksheet.max_row or 0
+            for row_idx in range(2, max_row + 1):
+                try:
+                    name_cell = worksheet[f"A{row_idx}"].value
+                    parsed = self._parse_employee_name_cell(name_cell)
+                    if not parsed:
+                        # empty row - skip silently
+                        skipped_count += 1
+                        continue
+
+                    apellido = parsed['apellido']
+                    nombre = parsed['nombre']
+                    employee_id = get_employee_id(apellido, nombre)
+                    if employee_id is None:
+                        msg = f"Zeile {row_idx}: Mitarbeiter nicht gefunden: {apellido}, {nombre}"
+                        errors.append(msg)
+                        row_results.append({
+                            "row": row_idx,
+                            "employee": f"{apellido}, {nombre}",
+                            "success": False,
+                            "error": "employee_not_found",
+                        })
+                        continue
+
+                    horas_extras = self._to_decimal_number(worksheet[f"F{row_idx}"].value)
+                    primas_g = self._to_decimal_number(worksheet[f"G{row_idx}"].value)
+                    primas_h = self._to_decimal_number(worksheet[f"H{row_idx}"].value)
+                    primas = primas_g + primas_h
+                    dias_exentos = self._to_decimal_number(worksheet[f"I{row_idx}"].value)
+                    dietas_cotizables = self._to_decimal_number(worksheet[f"J{row_idx}"].value)
+                    dietas_exentas = self._to_decimal_number(worksheet[f"K{row_idx}"].value)
+
+                    payload = {
+                        "horas_extras": horas_extras,
+                        "primas": primas,
+                        "dias_exentos": dias_exentos,
+                        "dietas_cotizables": dietas_cotizables,
+                        "dietas_exentas": dietas_exentas,
+                    }
+
+                    # Determine insert vs update
+                    check_query = """
+                    SELECT id_empleado
+                    FROM t003_ingresos_brutos_mensuales
+                    WHERE id_empleado = %s AND anio = %s AND mes = %s
+                    """
+                    exists = self.execute_query(check_query, (employee_id, year, month))
+                    old_data = None
+                    if exists:
+                        old_rows = self.execute_query(
+                            """
+                            SELECT ticket_restaurant, primas, dietas_cotizables, horas_extras, dias_exentos, dietas_exentas,
+                                   seguro_pensiones, lavado_coche, formacion, tickets
+                            FROM t003_ingresos_brutos_mensuales
+                            WHERE id_empleado = %s AND anio = %s AND mes = %s
+                            """,
+                            (employee_id, year, month),
+                        )
+                        old_data = old_rows[0] if old_rows else None
+
+                    success = self.update_ingresos_mensuales(employee_id, year, month, payload)
+                    if not success:
+                        msg = f"Zeile {row_idx}: Fehler beim Speichern für empleado_id={employee_id}"
+                        errors.append(msg)
+                        row_results.append({
+                            "row": row_idx,
+                            "employee": f"{apellido}, {nombre}",
+                            "employee_id": employee_id,
+                            "success": False,
+                            "error": "db_write_failed",
+                        })
+                        continue
+
+                    processed_count += 1
+                    if exists:
+                        updated_count += 1
+                    else:
+                        inserted_count += 1
+
+                    try:
+                        # Bearbeitungslog: use diff when possible
+                        new_data = payload
+                        details = None
+                        try:
+                            details = self.create_change_details(old_data=old_data, new_data=new_data)
+                        except Exception:
+                            details = {
+                                "source": "import_horas_dietas",
+                                "filename": source_filename,
+                                "row": row_idx,
+                                "data": new_data,
+                            }
+
+                        self.insert_bearbeitungslog(
+                            usuario_login=usuario_login,
+                            aktion="import",
+                            objekt="ingresos_mensuales",
+                            id_empleado=employee_id,
+                            anio=year,
+                            mes=month,
+                            details=details,
+                        )
+                    except Exception:
+                        pass
+
+                    row_results.append({
+                        "row": row_idx,
+                        "employee": f"{apellido}, {nombre}",
+                        "employee_id": employee_id,
+                        "success": True,
+                        "data": payload,
+                    })
+                except Exception as e:
+                    msg = f"Zeile {row_idx}: Unerwarteter Fehler: {e}"
+                    errors.append(msg)
+                    row_results.append({"row": row_idx, "success": False, "error": "unexpected"})
+
+            success_overall = processed_count > 0 and len(errors) == 0
+            return {
+                "success": success_overall,
+                "year": year,
+                "month": month,
+                "processed_count": processed_count,
+                "inserted_count": inserted_count,
+                "updated_count": updated_count,
+                "skipped_count": skipped_count,
+                "error_count": len(errors),
+                "errors": errors,
+                "rows": row_results,
+                "message": f"Import abgeschlossen: {processed_count} verarbeitet ({inserted_count} neu, {updated_count} aktualisiert), {len(errors)} Fehler.",
+            }
+        except Exception as e:
+            self.logger.error(f"Fehler beim Import Horas+Dietas Worksheet: {e}")
+            return {"success": False, "message": f"Import fehlgeschlagen: {str(e)}"}
     def copy_salaries_to_new_year(self, target_year: int) -> Dict[str, Any]:
         """Kopiert Gehälter aller aktiven Mitarbeiter vom Vorjahr ins Zieljahr"""
         try:

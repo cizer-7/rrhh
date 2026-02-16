@@ -10,6 +10,8 @@ from datetime import datetime, timedelta, timezone
 import jwt
 import json
 import os
+import io
+from openpyxl import load_workbook
 from database_manager import DatabaseManager
 from config.email_settings import email_service
 
@@ -711,6 +713,56 @@ def export_asiento_nomina(current_user, year, month):
         )
     except Exception as e:
         logger.error(f"Fehler beim Asiento Nomina Export für Jahr {year}, Monat {month}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+
+
+# Import Endpunkte
+@app.route('/imports/horas-dietas', methods=['POST'])
+@token_required
+def import_horas_dietas(current_user):
+    try:
+        year_raw = request.form.get('year', '').strip()
+        month_raw = request.form.get('month', '').strip()
+        if not year_raw or not month_raw:
+            return jsonify({"error": "year und month sind erforderlich"}), 400
+
+        try:
+            year = int(year_raw)
+            month = int(month_raw)
+        except Exception:
+            return jsonify({"error": "year und month müssen Ganzzahlen sein"}), 400
+
+        if month < 1 or month > 12:
+            return jsonify({"error": "month muss zwischen 1 und 12 liegen"}), 400
+
+        if 'file' not in request.files:
+            return jsonify({"error": "file ist erforderlich"}), 400
+        file = request.files['file']
+        if not file or not file.filename:
+            return jsonify({"error": "Ungültige Datei"}), 400
+
+        try:
+            content = file.read()
+            wb = load_workbook(filename=io.BytesIO(content), data_only=True)
+            ws = wb.active
+        except Exception as e:
+            logger.error(f"Fehler beim Lesen der Excel-Datei: {e}")
+            return jsonify({"error": "Excel-Datei konnte nicht gelesen werden"}), 400
+
+        result = db_manager.import_horas_dietas_worksheet(
+            worksheet=ws,
+            year=year,
+            month=month,
+            usuario_login=current_user,
+            source_filename=file.filename,
+        )
+
+        status_code = 200 if result.get('success') else 400
+        return jsonify(result), status_code
+
+    except Exception as e:
+        logger.error(f"Fehler beim Import Horas+Dietas: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
 
 # Monatliche Einkünfte Endpunkte

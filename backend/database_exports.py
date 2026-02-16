@@ -213,64 +213,72 @@ class DatabaseManagerExportsMixin:
             df['seguro_medico'] = df['adelas'] + df['sanitas']
 
             columns = [
-                'nombre_completo',
-                'ceco',
-                'salario_mes',
-                'ticket_restaurant',
-                'cotizacion_especie',
-                'primas',
-                'dietas_cotizables',
-                'horas_extras',
-                'seguro_pensiones',
-                'seguro_accidentes',
-                'dietas_exentas',
-                'formacion',
-                'adelas',
-                'sanitas',
-                'gasolina_arval',
-                'gasolina_ald',
-                'dias_exentos',
-                'total',
-                'anticipos',
-                'total_especie',
-                'base_imponible',
-                'seguro_medico',
+                'nombre_completo',          # A = Mitarbeiter
+                'ceco',                     # B = CECO
+                'salario_mes',              # C = SALARIO MES
+                'ticket_restaurant',        # D = TICKET RESTAURANT
+                'cotizacion_especie',       # E = COTIZACION ESPECIE
+                'primas',                   # F = PRIMAS
+                'dietas_cotizables',        # G = DIETAS COTIZABLES
+                'horas_extras',             # H = HORAS EXTRAS
+                'seguro_pensiones',         # I = SEGURO PENSIONES
+                'seguro_accidentes',        # J = SEGURO ACCIDENTES
+                'dietas_exentas',           # K = DIETAS EXENTAS
+                'total',                    # L = TOTAL
+                'formacion',                # M = FORMACION
+                'adelas',                   # N = ADESLAS
+                'sanitas',                  # O = SANITAS
+                'gasolina_arval',           # P = GASOLINA ARVAL
+                'gasolina_ald',             # Q = GASOLINA ALD
+                'anticipos',                # R = ANTICIPOS
+                'total_especie',            # S = TOTAL ESPECIE
+                'dias_exentos',             # T = DIAS EXENTOS
+                'base_imponible',           # U = BASE IMPONIBLE
+                'dietas_cotizables',        # V = DIETAS COTIZABLES (Kopie von G)
+                'dietas_exentas',           # W = DIETAS EXENTAS (Kopie von K)
+                'ticket_restaurant',        # X = TICKETS (Kopie von D)
+                'total_especie',            # Y = RET. ESPECIE (Kopie von S)
+                'seguro_medico',            # Z = SEGURO MEDICO
             ]
 
             df = df[columns]
 
             with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
-                empty_df = pd.DataFrame([[None] * 22] * 3)
+                empty_df = pd.DataFrame([[None] * 25] * 3)
                 empty_df.to_excel(writer, sheet_name='Sheet1', index=False, header=False)
 
-                header_row = pd.DataFrame([[None] * 22])
+                header_row = pd.DataFrame([[None] * 25])
                 header_row.iloc[0, 0] = 'Suma de IMPORTE'
                 header_row.iloc[0, 1] = 'Etiquetas de columna'
                 header_row.to_excel(writer, sheet_name='Sheet1', index=False, header=False, startrow=3)
 
                 column_names = [
-                    'Etiquetas de fila',
-                    'CECO',
-                    'SALARIO MES',
-                    'TICKET RESTAURANT',
-                    'COTIZACIÓN ESPECIE',
-                    'PRIMAS',
-                    'DIETAS COTIZABLES',
-                    'HORAS EXTRAS',
-                    'SEGURO PENSIONES',
-                    'SEGURO ACCIDENTES',
-                    'DIETAS EXENTAS',
-                    'FORMACION',
-                    'ADESLAS',
-                    'SANITAS',
-                    'GASOLINA ARVAL',
-                    'GASOLINA ALD',
-                    'DÍAS EXENTOS',
-                    'TOTAL',
-                    'ANTICIPOS',
-                    'TOTAL ESPECIE',
-                    'BASE IMPONIBLE',
-                    'SEGURO MÉDICO',
+                    'Etiquetas de fila',          # A
+                    'CECO',                       # B
+                    'SALARIO MES',                # C
+                    'TICKET RESTAURANT',          # D
+                    'COTIZACIÓN ESPECIE',         # E
+                    'PRIMAS',                     # F
+                    'DIETAS COTIZABLES',          # G
+                    'HORAS EXTRAS',               # H
+                    'SEGURO PENSIONES',           # I
+                    'SEGURO ACCIDENTES',          # J
+                    'DIETAS EXENTAS',             # K
+                    'TOTAL',                      # L
+                    'FORMACION',                  # M
+                    'ADESLAS',                    # N
+                    'SANITAS',                    # O
+                    'GASOLINA ARVAL',             # P
+                    'GASOLINA ALD',               # Q
+                    'ANTICIPOS',                  # R
+                    'TOTAL ESPECIE',              # S
+                    'DÍAS EXENTOS',               # T
+                    'BASE IMPONIBLE',             # U
+                    'DIETAS COTIZABLES',          # V (Kopie)
+                    'DIETAS EXENTAS',             # W (Kopie)
+                    'TICKETS',                    # X (Kopie)
+                    'RET. ESPECIE',               # Y (Kopie)
+                    'SEGURO MÉDICO',              # Z
                 ]
 
                 columns_df = pd.DataFrame([column_names])
@@ -285,9 +293,9 @@ class DatabaseManagerExportsMixin:
                 last_row = len(df) + 7
                 worksheet = writer.sheets['Sheet1']
 
-                for col_idx in range(2, 22):
+                for col_idx in range(2, 26):
                     col_letter = chr(65 + col_idx)
-                    if col_letter <= 'V':
+                    if col_letter <= 'Z':
                         if col_idx - 1 < len(column_names):
                             col_name = column_names[col_idx - 1]
                             if col_name not in ['Etiquetas de fila', 'CECO']:

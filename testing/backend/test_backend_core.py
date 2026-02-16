@@ -839,7 +839,7 @@ class TestDatabaseManagerCore:
     def test_get_payout_month_without_connection(self, db_manager):
         """Test get_payout_month ohne Verbindung"""
         result = db_manager.get_payout_month()
-        assert result == 8  # Actual default value
+        assert result == 4  # Default value from settings
 
     def test_get_payout_month_success(self, db_manager):
         """Test erfolgreiche get_payout_month Abfrage"""
@@ -853,7 +853,7 @@ class TestDatabaseManagerCore:
         """Test get_payout_month mit ungültigem Wert"""
         with patch.object(db_manager, 'execute_query', return_value=[{'valor': 15}]):
             result = db_manager.get_payout_month()
-            assert result == 8  # Default value
+            assert result == 4  # Default value from settings
 
     def test_set_payout_month_without_connection(self, db_manager):
         """Test set_payout_month ohne Verbindung"""
