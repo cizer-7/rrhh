@@ -409,6 +409,20 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     'antiguedad': row['antiguedad']
                 })
         return list(employees.values())
+    def get_employee(self, employee_id: int) -> Optional[Dict]:
+        """Hole einen Mitarbeiter anhand seiner ID"""
+        try:
+            query = """
+            SELECT id_empleado, nombre, apellido, ceco, activo 
+            FROM t001_empleados 
+            WHERE id_empleado = %s
+            """
+            employees = self.execute_query(query, (employee_id,))
+            return employees[0] if employees else None
+        except Exception as e:
+            self.logger.error(f"Fehler beim Abrufen des Mitarbeiters {employee_id}: {e}")
+            return None
+
     def get_employee_complete_info(self, employee_id: int) -> Dict:
         # Mitarbeiterstammdaten
         employee_query = """
