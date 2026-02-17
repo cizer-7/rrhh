@@ -10,7 +10,6 @@ import json
 import os
 from decimal import Decimal
 from openpyxl.worksheet.worksheet import Worksheet
-
 class DatabaseManager(DatabaseManagerExportsMixin):
     def __init__(self, host: str, database: str, user: str, password: str, port: int = 3307):
         self.host = host
@@ -21,10 +20,8 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         self.connection = None
         self._pool = None
         self.logger = logging.getLogger(__name__)
-
     def _ensure_employee_hire_date_column(self) -> None:
         """Ensures t001_empleados has fecha_alta column (hire date).
-
         This is a lightweight migration to keep existing installations working.
         """
         try:
@@ -43,14 +40,12 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             cnt = int(rows[0].get('cnt', 0)) if rows else 0
             if cnt > 0:
                 return
-
             alter_query = "ALTER TABLE t001_empleados ADD COLUMN fecha_alta DATE NULL"
             cursor = self.connection.cursor()
             cursor.execute(alter_query)
             cursor.close()
         except Exception as e:
             self.logger.error(f"Fehler beim Sicherstellen von fecha_alta Spalte: {e}")
-
     def insert_bearbeitungslog(
         self,
         usuario_login: str,
@@ -64,14 +59,12 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         try:
             if not usuario_login or not aktion:
                 return False
-
             details_json = None
             if details is not None:
                 try:
                     details_json = json.dumps(details, ensure_ascii=False)
                 except Exception:
                     details_json = None
-
             query = """
             INSERT INTO t007_bearbeitungslog (usuario_login, id_empleado, anio, mes, aktion, objekt, details)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -91,7 +84,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Schreiben in t007_bearbeitungslog: {e}")
             return False
-
     def get_bearbeitungslog(
         self,
         id_empleado: int,
@@ -102,14 +94,12 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         try:
             if id_empleado is None:
                 return []
-
             limit_value = 200
             try:
                 if isinstance(limit, int):
                     limit_value = max(1, min(limit, 1000))
             except Exception:
                 limit_value = 200
-
             query = """
             SELECT
                 l.id_log,
@@ -127,18 +117,14 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             WHERE l.id_empleado = %s
             """
             params: List[Any] = [id_empleado]
-
             if anio is not None:
                 query += " AND l.anio = %s"
                 params.append(anio)
-
             if mes is not None:
                 query += " AND l.mes = %s"
                 params.append(mes)
-
             query += " ORDER BY l.fecha DESC, l.id_log DESC LIMIT %s"
             params.append(limit_value)
-
             rows = self.execute_query(query, tuple(params))
             for r in rows:
                 if isinstance(r.get('details'), str):
@@ -150,7 +136,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Lesen von t007_bearbeitungslog: {e}")
             return []
-
     def get_global_bearbeitungslog(
         self,
         id_empleado: int = None,
@@ -165,7 +150,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     limit_value = max(1, min(limit, 1000))
             except Exception:
                 limit_value = 200
-
             query = """
             SELECT
                 l.id_log,
@@ -186,22 +170,17 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             WHERE 1=1
             """
             params: List[Any] = []
-
             if id_empleado is not None:
                 query += " AND l.id_empleado = %s"
                 params.append(id_empleado)
-
             if anio is not None:
                 query += " AND l.anio = %s"
                 params.append(anio)
-
             if mes is not None:
                 query += " AND l.mes = %s"
                 params.append(mes)
-
             query += " ORDER BY l.fecha DESC, l.id_log DESC LIMIT %s"
             params.append(limit_value)
-
             rows = self.execute_query(query, tuple(params))
             for r in rows:
                 if isinstance(r.get('details'), str):
@@ -213,7 +192,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Lesen von global t007_bearbeitungslog: {e}")
             return []
-
     def create_change_details(self, old_data: dict = None, new_data: dict = None, changed_fields: list = None) -> dict:
         """Erstellt Details mit Vorher/Nachher Werten für geänderte Felder"""
         details = {}
@@ -253,6 +231,17 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     }
         
         return details
+    def _normalize_employee_category(self, value: Any) -> Optional[str]:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            v = value.strip()
+            return v or None
+        v = str(value).strip()
+        return v or None
+    def _is_valid_employee_category(self, value: Any) -> bool:
+        v = self._normalize_employee_category(value)
+        return v is None or v in {"Techniker", "Office"}
     def _create_connection(self):
         if self._pool is None:
             self._pool = pooling.MySQLConnectionPool(
@@ -400,7 +389,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             return False
     def get_all_employees(self) -> List[Dict]:
         query = """
-        SELECT id_empleado, nombre, apellido, ceco, activo, fecha_alta
+        SELECT id_empleado, nombre, apellido, ceco, kategorie, activo, fecha_alta
         FROM t001_empleados 
         ORDER BY apellido, nombre
         """
@@ -408,7 +397,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def get_all_employees_with_salaries(self) -> List[Dict]:
         """Hole alle Mitarbeiter mit ihren Gehaltsdaten"""
         query = """
-        SELECT e.id_empleado, e.nombre, e.apellido, e.ceco, e.activo, e.fecha_alta,
+        SELECT e.id_empleado, e.nombre, e.apellido, e.ceco, e.kategorie, e.activo, e.fecha_alta,
                s.anio, s.salario_anual_bruto, s.salario_mensual_bruto, 
                s.modalidad, s.atrasos, s.antiguedad
         FROM t001_empleados e
@@ -426,6 +415,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     'nombre': row['nombre'],
                     'apellido': row['apellido'],
                     'ceco': row['ceco'],
+                    'kategorie': row['kategorie'],
                     'activo': row['activo'],
                     'fecha_alta': row.get('fecha_alta'),
                     'salaries': []
@@ -445,7 +435,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         """Hole einen Mitarbeiter anhand seiner ID"""
         try:
             query = """
-            SELECT id_empleado, nombre, apellido, ceco, activo, fecha_alta
+            SELECT id_empleado, nombre, apellido, ceco, kategorie, activo, fecha_alta
             FROM t001_empleados 
             WHERE id_empleado = %s
             """
@@ -454,11 +444,10 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Abrufen des Mitarbeiters {employee_id}: {e}")
             return None
-
     def get_employee_complete_info(self, employee_id: int) -> Dict:
         # Mitarbeiterstammdaten
         employee_query = """
-        SELECT id_empleado, nombre, apellido, ceco, activo, fecha_alta
+        SELECT id_empleado, nombre, apellido, ceco, kategorie, activo, fecha_alta
         FROM t001_empleados 
         WHERE id_empleado = %s
         """
@@ -533,7 +522,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         ORDER BY anio DESC, mes ASC
         """
         deducciones_mensuales_results = self.execute_query(deducciones_mensuales_query, (employee_id,))
-
         fte_query = """
         SELECT anio, mes, porcentaje, fecha_modificacion
         FROM t008_empleado_fte
@@ -550,7 +538,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             'deducciones_mensuales': deducciones_mensuales_results,
             'fte': fte_results,
         }
-
     def get_employee_fte(self, employee_id: int) -> List[Dict[str, Any]]:
         try:
             query = """
@@ -563,7 +550,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Abrufen FTE für Mitarbeiter {employee_id}: {e}")
             return []
-
     def upsert_employee_fte(self, employee_id: int, year: int, month: int, porcentaje: float) -> bool:
         try:
             year = int(year)
@@ -575,7 +561,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 return False
             if porcentaje < 0 or porcentaje > 100:
                 return False
-
             query = """
             INSERT INTO t008_empleado_fte (id_empleado, anio, mes, porcentaje)
             VALUES (%s, %s, %s, %s)
@@ -586,7 +571,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Upsert FTE für Mitarbeiter {employee_id}: {e}")
             return False
-
     def delete_employee_fte(self, employee_id: int, year: int, month: int) -> bool:
         try:
             year = int(year)
@@ -599,7 +583,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Löschen FTE für Mitarbeiter {employee_id}: {e}")
             return False
-
     def get_employee_fte_effective_percent(self, employee_id: int, year: int, month: int) -> float:
         try:
             year = int(year)
@@ -622,11 +605,15 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def update_employee(self, employee_id: int, table: str, data: Dict[str, Any]) -> bool:
         if table == 't001_empleados':
             # Nur updatable Felder erlauben
-            allowed_fields = ['nombre', 'apellido', 'ceco', 'activo', 'fecha_alta']
+            allowed_fields = ['nombre', 'apellido', 'ceco', 'kategorie', 'activo', 'fecha_alta']
             update_fields = []
             update_values = []
             for field, value in data.items():
                 if field in allowed_fields:
+                    if field == 'kategorie' and not self._is_valid_employee_category(value):
+                        continue
+                    if field == 'kategorie':
+                        value = self._normalize_employee_category(value)
                     update_fields.append(f"{field} = %s")
                     update_values.append(value)
             if not update_fields:
@@ -731,15 +718,18 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             result = self.execute_query(max_id_query)
             new_id = result[0]['max_id'] + 1 if result else 1
             # Mitarbeiter einfügen
+            if not self._is_valid_employee_category(employee_data.get('kategorie')):
+                return -1
             insert_query = """
-            INSERT INTO t001_empleados (id_empleado, nombre, apellido, ceco, activo, fecha_alta)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO t001_empleados (id_empleado, nombre, apellido, ceco, kategorie, activo, fecha_alta)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
             params = (
                 new_id,
                 employee_data.get('nombre', ''),
                 employee_data.get('apellido', ''),
                 employee_data.get('ceco', ''),
+                self._normalize_employee_category(employee_data.get('kategorie')),
                 employee_data.get('activo', True),
                 employee_data.get('fecha_alta')
             )
@@ -849,7 +839,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Hinzufügen des Gehalts: {e}")
             return False
-
     def get_salary(self, employee_id: int, year: int) -> Dict[str, Any] | None:
         """Holt Gehaltsdaten für einen Mitarbeiter und Jahr"""
         try:
@@ -1365,11 +1354,32 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Laden aktiver Mitarbeiter-IDs: {e}")
             return []
+    def get_active_employee_ids_filtered(self, kategorie: Optional[str] = None) -> List[int]:
+        try:
+            category_norm = self._normalize_employee_category(kategorie)
+            if category_norm is not None and not self._is_valid_employee_category(category_norm):
+                return []
+            if category_norm is None:
+                return self.get_active_employee_ids()
+            query = """
+            SELECT id_empleado
+            FROM t001_empleados
+            WHERE activo = TRUE AND kategorie = %s
+            ORDER BY id_empleado
+            """
+            rows = self.execute_query(query, (category_norm,))
+            if not rows:
+                return []
+            return [int(r['id_empleado']) for r in rows if r.get('id_empleado') is not None]
+        except Exception as e:
+            self.logger.error(f"Fehler beim Laden aktiver Mitarbeiter-IDs (gefiltert): {e}")
+            return []
     def apply_yearly_ingresos_and_deducciones_to_all_active(
         self,
         year: int,
         ingresos: Optional[Dict[str, Any]] = None,
         deducciones: Optional[Dict[str, Any]] = None,
+        kategorie: Optional[str] = None,
     ) -> Dict[str, Any]:
         try:
             if ingresos is None and deducciones is None:
@@ -1380,7 +1390,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     "total_count": 0,
                     "errors": ["Keine Daten übergeben"],
                 }
-            employee_ids = self.get_active_employee_ids()
+            employee_ids = self.get_active_employee_ids_filtered(kategorie=kategorie)
             total_count = len(employee_ids)
             if total_count == 0:
                 return {
@@ -1583,7 +1593,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         month: int = None,
         extra: bool = False,
     ) -> bool:
-
         """Exportiert Gehaltsdaten im Excel-Format - nur monatlicher Export wird unterstützt"""
         return DatabaseManagerExportsMixin.export_nomina_excel(self, year, output_path, month, extra=extra)
     def export_asiento_nomina_excel(self, year: int, month: int, output_path: str) -> bool:
@@ -1790,9 +1799,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Aktualisieren der monatlichen Abzüge: {e}")
             return False
-
-
-
     def _parse_employee_name_cell(self, raw_value: Any) -> Optional[Dict[str, str]]:
         try:
             if raw_value is None:
@@ -1811,7 +1817,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             return {"apellido": apellido, "nombre": nombre}
         except Exception:
             return None
-
     def _to_decimal_number(self, raw_value: Any) -> float:
         if raw_value is None:
             return 0.0
@@ -1829,7 +1834,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             return float(s)
         except Exception:
             return 0.0
-
     def _find_employee_id_by_name(self, apellido: str, nombre: str) -> Optional[int]:
         try:
             query = """
@@ -1846,7 +1850,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Suchen empleado_id für {apellido}, {nombre}: {e}")
             return None
-
     def import_horas_dietas_worksheet(
         self,
         worksheet: Worksheet,
@@ -1862,10 +1865,8 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         updated_count = 0
         inserted_count = 0
         skipped_count = 0
-
         if worksheet is None:
             return {"success": False, "message": "worksheet fehlt"}
-
         try:
             # Preload employee lookup map to avoid many DB queries
             employees = self.execute_query("SELECT id_empleado, nombre, apellido FROM t001_empleados") or []
@@ -1874,7 +1875,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 key = f"{str(e.get('apellido','')).strip().lower()}|{str(e.get('nombre','')).strip().lower()}"
                 if key and e.get('id_empleado') is not None:
                     employee_map[key] = int(e['id_empleado'])
-
             def get_employee_id(apellido: str, nombre: str) -> Optional[int]:
                 key = f"{apellido.strip().lower()}|{nombre.strip().lower()}"
                 if key in employee_map:
@@ -1884,7 +1884,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 if emp_id is not None:
                     employee_map[key] = emp_id
                 return emp_id
-
             # Iterate rows, data starts usually at row 2
             max_row = worksheet.max_row or 0
             for row_idx in range(2, max_row + 1):
@@ -1895,7 +1894,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                         # empty row - skip silently
                         skipped_count += 1
                         continue
-
                     apellido = parsed['apellido']
                     nombre = parsed['nombre']
                     employee_id = get_employee_id(apellido, nombre)
@@ -1909,7 +1907,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                             "error": "employee_not_found",
                         })
                         continue
-
                     horas_extras = self._to_decimal_number(worksheet[f"F{row_idx}"].value)
                     primas_g = self._to_decimal_number(worksheet[f"G{row_idx}"].value)
                     primas_h = self._to_decimal_number(worksheet[f"H{row_idx}"].value)
@@ -1917,7 +1914,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     dias_exentos = self._to_decimal_number(worksheet[f"I{row_idx}"].value)
                     dietas_cotizables = self._to_decimal_number(worksheet[f"J{row_idx}"].value)
                     dietas_exentas = self._to_decimal_number(worksheet[f"K{row_idx}"].value)
-
                     payload = {
                         "horas_extras": horas_extras,
                         "primas": primas,
@@ -1925,7 +1921,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                         "dietas_cotizables": dietas_cotizables,
                         "dietas_exentas": dietas_exentas,
                     }
-
                     # Determine insert vs update
                     check_query = """
                     SELECT id_empleado
@@ -1945,7 +1940,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                             (employee_id, year, month),
                         )
                         old_data = old_rows[0] if old_rows else None
-
                     success = self.update_ingresos_mensuales(employee_id, year, month, payload)
                     if not success:
                         msg = f"Zeile {row_idx}: Fehler beim Speichern für empleado_id={employee_id}"
@@ -1958,13 +1952,11 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                             "error": "db_write_failed",
                         })
                         continue
-
                     processed_count += 1
                     if exists:
                         updated_count += 1
                     else:
                         inserted_count += 1
-
                     try:
                         # Bearbeitungslog: use diff when possible
                         new_data = payload
@@ -1978,7 +1970,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                                 "row": row_idx,
                                 "data": new_data,
                             }
-
                         self.insert_bearbeitungslog(
                             usuario_login=usuario_login,
                             aktion="import",
@@ -1990,7 +1981,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                         )
                     except Exception:
                         pass
-
                     row_results.append({
                         "row": row_idx,
                         "employee": f"{apellido}, {nombre}",
@@ -2002,7 +1992,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     msg = f"Zeile {row_idx}: Unerwarteter Fehler: {e}"
                     errors.append(msg)
                     row_results.append({"row": row_idx, "success": False, "error": "unexpected"})
-
             success_overall = processed_count > 0 and len(errors) == 0
             return {
                 "success": success_overall,

@@ -625,6 +625,7 @@ class TestDatabaseManagerCore:
                     'nombre': 'Juan',
                     'apellido': 'Perez',
                     'ceco': '1001',
+                    'kategorie': None,
                     'activo': True,
                     'anio': 2024,
                     'salario_anual_bruto': 36000.0,

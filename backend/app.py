@@ -951,6 +951,7 @@ def apply_ingresos_deducciones_to_all_active(current_user):
         year = data.get('year')
         ingresos = data.get('ingresos')
         deducciones = data.get('deducciones')
+        kategorie = data.get('kategorie')
 
         if year is None or not isinstance(year, int) or year < 2020 or year > 2030:
             return jsonify({"error": "year muss eine gültige Jahreszahl zwischen 2020 und 2030 sein"}), 400
@@ -962,6 +963,7 @@ def apply_ingresos_deducciones_to_all_active(current_user):
             year=year,
             ingresos=ingresos,
             deducciones=deducciones,
+            kategorie=kategorie,
         )
 
         if result.get('success'):

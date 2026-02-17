@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS t001_empleados (
     nombre VARCHAR(200) NOT NULL,
     apellido VARCHAR(200) NOT NULL,
     ceco VARCHAR(10),
+    kategorie VARCHAR(20),
+    fecha_alta  DATE,
     activo BOOLEAN DEFAULT TRUE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
