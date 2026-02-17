@@ -2,13 +2,13 @@
 
 
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { Employee } from '@/types/employee'
 
 import { Button } from '@/components/ui/button'
 
-import { Search, Plus, Edit, Trash2, Eye, TrendingUp, CheckCircle, AlertCircle } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Eye, TrendingUp, CheckCircle, AlertCircle, ArrowUp, ArrowDown } from 'lucide-react'
 
 import EmployeeForm from './EmployeeForm'
 
@@ -47,6 +47,14 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
   const [showDetail, setShowDetail] = useState(false)
 
   const [activeTab, setActiveTab] = useState<'employees' | 'increase' | 'salary-copy' | 'overview' | 'settings' | 'bulk-ingresos-deducciones' | 'bearbeitungshistorie' | 'import'>('employees')
+
+  
+
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Employee | null;
+    direction: 'asc' | 'desc' | null;
+  }>({ key: null, direction: null })
 
   
 
@@ -916,8 +924,6 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
   }
 
-
-
   const filteredEmployees = Array.isArray(employees) ? employees.filter(employee =>
 
     employee.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -926,11 +932,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
     employee.ceco?.toLowerCase().includes(searchTerm.toLowerCase()) ||
 
+    employee.kategorie?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+
     employee.id_empleado.toString().includes(searchTerm)
 
   ) : []
-
-
 
   const filteredEmployeesForIncrease = Array.isArray(employees) ? employees.filter(employee =>
 
@@ -943,6 +949,63 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
     employee.id_empleado.toString().includes(searchTermIncrease)
 
   ) : []
+
+  // Sorting handler
+  const handleSort = (key: keyof Employee) => {
+    let direction: 'asc' | 'desc' | null = 'asc'
+    
+    if (sortConfig.key === key) {
+      if (sortConfig.direction === 'asc') {
+        direction = 'desc'
+      } else if (sortConfig.direction === 'desc') {
+        direction = null
+      } else {
+        direction = 'asc'
+      }
+    }
+    
+    setSortConfig({ key, direction })
+  }
+
+  // Apply sorting to filtered employees
+  const sortedFilteredEmployees = React.useMemo(() => {
+    if (!sortConfig.key || !sortConfig.direction) {
+      return filteredEmployees
+    }
+
+    return [...filteredEmployees].sort((a, b) => {
+      let aValue: any
+      let bValue: any
+
+      if (sortConfig.key === 'nombre') {
+        aValue = `${a.apellido} ${a.nombre}`
+        bValue = `${b.apellido} ${b.nombre}`
+      } else if (sortConfig.key === 'activo') {
+        aValue = a.activo ? 1 : 0
+        bValue = b.activo ? 1 : 0
+      } else {
+        aValue = a[sortConfig.key]
+        bValue = b[sortConfig.key]
+      }
+
+      if (aValue === null || aValue === undefined) return 1
+      if (bValue === null || bValue === undefined) return -1
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConfig.direction === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue)
+      }
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortConfig.direction === 'asc' 
+          ? aValue - bValue
+          : bValue - aValue
+      }
+
+      return 0
+    })
+  }, [filteredEmployees, sortConfig])
 
 
 
@@ -1086,13 +1149,70 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   <tr className="bg-gray-50 border-b border-gray-200">
 
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('id_empleado')}
+                    >
+                      <div className="flex items-center gap-1">
+                        ID
+                        {sortConfig.key === 'id_empleado' && (
+                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
+                          sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                        )}
+                      </div>
+                    </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('nombre')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Name
+                        {sortConfig.key === 'nombre' && (
+                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
+                          sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                        )}
+                      </div>
+                    </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CECO</th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('ceco')}
+                    >
+                      <div className="flex items-center gap-1">
+                        CECO
+                        {sortConfig.key === 'ceco' && (
+                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
+                          sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                        )}
+                      </div>
+                    </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('activo')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Status
+                        {sortConfig.key === 'activo' && (
+                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
+                          sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                        )}
+                      </div>
+                    </th>
+
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('kategorie')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Kategorie
+                        {sortConfig.key === 'kategorie' && (
+                          sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
+                          sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                        )}
+                      </div>
+                    </th>
 
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktionen</th>
 
@@ -1102,7 +1222,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <tbody className="bg-white divide-y divide-gray-200">
 
-                  {filteredEmployees.map((employee) => (
+                  {sortedFilteredEmployees.map((employee) => (
 
                     <tr key={employee.id_empleado} className="hover:bg-gray-50 transition-colors">
 
@@ -1131,6 +1251,12 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                           {employee.activo ? 'Aktiv' : 'Inaktiv'}
 
                         </span>
+
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+
+                        {employee.kategorie || '-'}
 
                       </td>
 
@@ -1208,7 +1334,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
 
 
-            {filteredEmployees.length === 0 && (
+            {sortedFilteredEmployees.length === 0 && (
 
               <div className="text-center py-8 text-gray-500">
 

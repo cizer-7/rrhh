@@ -159,13 +159,14 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     const table = page.locator('table')
     await expect(table).toBeVisible()
     
-    // Überprüfe, dass Tabelle Struktur hat (5 Spalten: ID, Name, CECO, Status, Aktionen)
+    // Überprüfe, dass Tabelle Struktur hat (6 Spalten: ID, Name, CECO, Status, Kategorie, Aktionen)
     const headers = table.locator('th')
-    await expect(headers).toHaveCount(5)
+    await expect(headers).toHaveCount(6)
     
     // Überprüfe wichtige Spalten
     await expect(table.locator('th:has-text("Name")')).toBeVisible()
     await expect(table.locator('th:has-text("ID")')).toBeVisible()
+    await expect(table.locator('th:has-text("Kategorie")')).toBeVisible()
     await expect(table.locator('th:has-text("Aktionen")')).toBeVisible()
   })
 
