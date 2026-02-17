@@ -92,6 +92,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
     ceco: employee.ceco || '',
 
+    fecha_alta: (employee as any).fecha_alta || '',
+
     activo: employee.activo ?? true
 
   })
@@ -831,6 +833,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
       ceco: employee.ceco || '',
 
+      fecha_alta: (employee as any).fecha_alta || '',
+
       activo: employee.activo ?? true
 
     })
@@ -1185,6 +1189,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
 
           ceco: data?.ceco ?? employee.ceco ?? '',
+
+          fecha_alta: (data as any)?.fecha_alta ?? (employee as any)?.fecha_alta ?? '',
 
 
           activo: data?.activo ?? employee.activo ?? true
@@ -1942,6 +1948,134 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     return totalSalary
 
   }
+
+
+
+  const prorateSalaryForHireMonth = (baseSalary: number, selectedMonth: number | null) => {
+
+
+
+    try {
+
+
+
+      if (!selectedMonth) return baseSalary
+
+
+
+      const rawHireDate = (employeeFormData as any)?.fecha_alta || (employee as any)?.fecha_alta
+
+
+
+      if (!rawHireDate || typeof rawHireDate !== 'string') return baseSalary
+
+
+
+      const d = new Date(rawHireDate)
+
+
+
+      if (Number.isNaN(d.getTime())) return baseSalary
+
+
+
+      const hireYear = d.getFullYear()
+
+
+
+      const hireMonth = d.getMonth() + 1
+
+
+
+      if (hireYear !== year || hireMonth !== selectedMonth) return baseSalary
+
+
+
+      const day = d.getDate()
+
+
+
+      const employedDays = Math.max(0, 30 - (day - 1))
+
+
+
+      return (baseSalary / 30) * employedDays
+
+
+
+    } catch {
+
+
+
+      return baseSalary
+
+
+
+    }
+
+
+
+  }
+
+
+
+  const hireMonthProrationInfo = useMemo(() => {
+
+
+
+    try {
+
+
+
+      if (dataMode !== 'monthly' || !month) return { applied: false, employedDays: 30 }
+
+
+
+      const rawHireDate = (employeeFormData as any)?.fecha_alta || (employee as any)?.fecha_alta
+
+
+
+      if (!rawHireDate || typeof rawHireDate !== 'string') return { applied: false, employedDays: 30 }
+
+
+
+      const d = new Date(rawHireDate)
+
+
+
+      if (Number.isNaN(d.getTime())) return { applied: false, employedDays: 30 }
+
+
+
+      if (d.getFullYear() !== year || (d.getMonth() + 1) !== month) return { applied: false, employedDays: 30 }
+
+
+
+      const day = d.getDate()
+
+
+
+      const employedDays = Math.max(0, 30 - (day - 1))
+
+
+
+      return { applied: true, employedDays }
+
+
+
+    } catch {
+
+
+
+      return { applied: false, employedDays: 30 }
+
+
+
+    }
+
+
+
+  }, [dataMode, month, year, employeeFormData, employee])
 
 
 
@@ -2827,11 +2961,31 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
 
 
 
-              €{calculateMonthlySalary(month).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              €{prorateSalaryForHireMonth(calculateMonthlySalary(month), month).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 
 
 
             </div>
+
+
+
+            {hireMonthProrationInfo.applied && (
+
+
+
+              <div className="mt-2 text-xs text-gray-600">
+
+
+
+                Anteilig wegen Einstellungsdatum ({hireMonthProrationInfo.employedDays}/30 Tage)
+
+
+
+              </div>
+
+
+
+            )}
 
 
 
@@ -3928,6 +4082,26 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                           value={employeeFormData.ceco}
 
                           onChange={(e) => setEmployeeFormData({...employeeFormData, ceco: e.target.value})}
+
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+
+                        />
+
+                      </div>
+
+                      <div>
+
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Einstellungsdatum</label>
+
+                        <input
+
+                          type="date"
+
+                          name="fecha_alta"
+
+                          value={(employeeFormData as any).fecha_alta || ''}
+
+                          onChange={(e) => setEmployeeFormData({ ...(employeeFormData as any), fecha_alta: e.target.value })}
 
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 

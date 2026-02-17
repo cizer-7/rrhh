@@ -22,6 +22,35 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         self._pool = None
         self.logger = logging.getLogger(__name__)
 
+    def _ensure_employee_hire_date_column(self) -> None:
+        """Ensures t001_empleados has fecha_alta column (hire date).
+
+        This is a lightweight migration to keep existing installations working.
+        """
+        try:
+            check_query = """
+            SELECT COUNT(*) AS cnt
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = %s
+              AND TABLE_NAME = 't001_empleados'
+              AND COLUMN_NAME = 'fecha_alta'
+            """
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(check_query, (self.database,))
+            rows = cursor.fetchall()
+            cursor.close()
+            
+            cnt = int(rows[0].get('cnt', 0)) if rows else 0
+            if cnt > 0:
+                return
+
+            alter_query = "ALTER TABLE t001_empleados ADD COLUMN fecha_alta DATE NULL"
+            cursor = self.connection.cursor()
+            cursor.execute(alter_query)
+            cursor.close()
+        except Exception as e:
+            self.logger.error(f"Fehler beim Sicherstellen von fecha_alta Spalte: {e}")
+
     def insert_bearbeitungslog(
         self,
         usuario_login: str,
@@ -255,6 +284,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             self.connection = self._create_connection()
             if self.connection.is_connected():
                 self.logger.info(f"Erfolgreich verbunden mit MySQL Datenbank {self.database}")
+                self._ensure_employee_hire_date_column()
                 return True
         except Error as e:
             self.logger.error(f"Fehler bei der Verbindung zur Datenbank: {e}")
@@ -370,7 +400,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             return False
     def get_all_employees(self) -> List[Dict]:
         query = """
-        SELECT id_empleado, nombre, apellido, ceco, activo 
+        SELECT id_empleado, nombre, apellido, ceco, activo, fecha_alta
         FROM t001_empleados 
         ORDER BY apellido, nombre
         """
@@ -378,7 +408,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def get_all_employees_with_salaries(self) -> List[Dict]:
         """Hole alle Mitarbeiter mit ihren Gehaltsdaten"""
         query = """
-        SELECT e.id_empleado, e.nombre, e.apellido, e.ceco, e.activo,
+        SELECT e.id_empleado, e.nombre, e.apellido, e.ceco, e.activo, e.fecha_alta,
                s.anio, s.salario_anual_bruto, s.salario_mensual_bruto, 
                s.modalidad, s.atrasos, s.antiguedad
         FROM t001_empleados e
@@ -397,6 +427,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     'apellido': row['apellido'],
                     'ceco': row['ceco'],
                     'activo': row['activo'],
+                    'fecha_alta': row.get('fecha_alta'),
                     'salaries': []
                 }
             # Füge Gehaltsdaten hinzu, wenn vorhanden
@@ -414,7 +445,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         """Hole einen Mitarbeiter anhand seiner ID"""
         try:
             query = """
-            SELECT id_empleado, nombre, apellido, ceco, activo 
+            SELECT id_empleado, nombre, apellido, ceco, activo, fecha_alta
             FROM t001_empleados 
             WHERE id_empleado = %s
             """
@@ -427,7 +458,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def get_employee_complete_info(self, employee_id: int) -> Dict:
         # Mitarbeiterstammdaten
         employee_query = """
-        SELECT id_empleado, nombre, apellido, ceco, activo 
+        SELECT id_empleado, nombre, apellido, ceco, activo, fecha_alta
         FROM t001_empleados 
         WHERE id_empleado = %s
         """
@@ -591,7 +622,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def update_employee(self, employee_id: int, table: str, data: Dict[str, Any]) -> bool:
         if table == 't001_empleados':
             # Nur updatable Felder erlauben
-            allowed_fields = ['nombre', 'apellido', 'ceco', 'activo']
+            allowed_fields = ['nombre', 'apellido', 'ceco', 'activo', 'fecha_alta']
             update_fields = []
             update_values = []
             for field, value in data.items():
@@ -701,15 +732,16 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             new_id = result[0]['max_id'] + 1 if result else 1
             # Mitarbeiter einfügen
             insert_query = """
-            INSERT INTO t001_empleados (id_empleado, nombre, apellido, ceco, activo) 
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO t001_empleados (id_empleado, nombre, apellido, ceco, activo, fecha_alta)
+            VALUES (%s, %s, %s, %s, %s, %s)
             """
             params = (
                 new_id,
                 employee_data.get('nombre', ''),
                 employee_data.get('apellido', ''),
                 employee_data.get('ceco', ''),
-                employee_data.get('activo', True)
+                employee_data.get('activo', True),
+                employee_data.get('fecha_alta')
             )
             if self.execute_update(insert_query, params):
                 # Standard-Datensätze für neuen Mitarbeiter erstellen

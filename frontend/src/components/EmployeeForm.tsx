@@ -17,6 +17,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
     nombre: employee?.nombre || '',
     apellido: employee?.apellido || '',
     ceco: employee?.ceco || '',
+    fecha_alta: employee?.fecha_alta || '',
     activo: employee?.activo ?? true
   })
 
@@ -25,6 +26,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
       nombre: employee?.nombre || '',
       apellido: employee?.apellido || '',
       ceco: employee?.ceco || '',
+      fecha_alta: employee?.fecha_alta || '',
       activo: employee?.activo ?? true
     })
   }, [employee])
@@ -94,6 +96,19 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
               type="text"
               name="ceco"
               value={formData.ceco}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Einstellungsdatum
+            </label>
+            <input
+              type="date"
+              name="fecha_alta"
+              value={formData.fecha_alta}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />

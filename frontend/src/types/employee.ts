@@ -10,6 +10,8 @@ export interface Employee {
 
   activo: boolean;
 
+  fecha_alta?: string;
+
   fecha_creacion?: string;
 
   fecha_modificacion?: string;

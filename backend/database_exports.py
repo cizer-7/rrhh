@@ -2,8 +2,40 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
+from datetime import date
+
 
 class DatabaseManagerExportsMixin:
+    def _prorate_salary_for_hire_month(
+        self,
+        year: int,
+        month: int,
+        fecha_alta: Any,
+        salario_mes: float,
+    ) -> float:
+        try:
+            if not fecha_alta:
+                return float(salario_mes or 0)
+
+            if isinstance(fecha_alta, str):
+                try:
+                    fecha_alta_date = date.fromisoformat(fecha_alta[:10])
+                except Exception:
+                    return float(salario_mes or 0)
+            elif isinstance(fecha_alta, date):
+                fecha_alta_date = fecha_alta
+            else:
+                return float(salario_mes or 0)
+
+            if int(fecha_alta_date.year) != int(year) or int(fecha_alta_date.month) != int(month):
+                return float(salario_mes or 0)
+
+            day = int(fecha_alta_date.day)
+            employed_days = max(0, 30 - (day - 1))
+            return (float(salario_mes or 0) / 30.0) * float(employed_days)
+        except Exception:
+            return float(salario_mes or 0)
+
     def _calculate_salario_mes_for_export(
         self,
         month: int,
@@ -78,6 +110,7 @@ class DatabaseManagerExportsMixin:
             SELECT 
                 CONCAT(e.apellido, ', ', e.nombre) as nombre_completo,
                 e.ceco,
+                e.fecha_alta,
                 COALESCE(s.modalidad, 0) as modalidad,
                 COALESCE(s.salario_mensual_bruto, 0) as salario_mensual_bruto,
                 COALESCE(s.atrasos, 0) as atrasos,
@@ -146,6 +179,16 @@ class DatabaseManagerExportsMixin:
                     salario_mensual_bruto_prev=r.get('salario_mensual_bruto_prev', 0),
                     antiguedad=r.get('antiguedad', 0),
                     fte_porcentaje=r.get('fte_porcentaje', 100),
+                ),
+                axis=1,
+            )
+
+            df['salario_mes'] = df.apply(
+                lambda r: self._prorate_salary_for_hire_month(
+                    year=year,
+                    month=month,
+                    fecha_alta=r.get('fecha_alta'),
+                    salario_mes=r.get('salario_mes', 0),
                 ),
                 axis=1,
             )
@@ -322,6 +365,7 @@ class DatabaseManagerExportsMixin:
                 e.id_empleado,
                 e.ceco,
                 CONCAT(e.apellido, ', ', e.nombre) as nombre_completo,
+                e.fecha_alta,
                 COALESCE(s.salario_mensual_bruto, 0) as salario_mensual_bruto,
                 COALESCE(s.atrasos, 0) as atrasos,
                 COALESCE(s.antiguedad, 0) as antiguedad,
@@ -388,6 +432,16 @@ class DatabaseManagerExportsMixin:
                     salario_mensual_bruto_prev=r.get('salario_mensual_bruto_prev', 0),
                     antiguedad=r.get('antiguedad', 0),
                     fte_porcentaje=r.get('fte_porcentaje', 100),
+                ),
+                axis=1,
+            )
+
+            df['salario_mes'] = df.apply(
+                lambda r: self._prorate_salary_for_hire_month(
+                    year=year,
+                    month=month,
+                    fecha_alta=r.get('fecha_alta'),
+                    salario_mes=r.get('salario_mes', 0),
                 ),
                 axis=1,
             )
