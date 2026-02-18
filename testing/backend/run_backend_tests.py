@@ -90,7 +90,13 @@ def run_unit_tests():
         'test_integration_simple.py',
         'test_api_core.py',
         'test_api_missing_endpoints.py',
-        'test_edge_cases.py'
+        'test_edge_cases.py',
+        'test_auth_endpoints.py',
+        'test_fte_endpoints.py',
+        'test_bearbeitungslog.py',
+        'test_import_export.py',
+        'test_settings_endpoints.py',
+        'test_salary_management.py'
     ]
     
     all_passed = True
