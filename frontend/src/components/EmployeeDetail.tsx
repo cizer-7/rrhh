@@ -367,8 +367,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         seguro_accidentes: 0,
         adelas: 0,
         sanitas: 0,
-        gasolina_arval: 0,
-        gasolina_ald: 0,
+        gasolina: 0,
         ret_especie: 0,
         seguro_medico: 0,
         cotizacion_especie: 0
@@ -690,8 +689,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     const deduccionesTotal = (typeof deducciones?.seguro_accidentes === 'string' ? parseFloat(deducciones.seguro_accidentes) || 0 : (deducciones?.seguro_accidentes || 0)) + 
                            (typeof deducciones?.adelas === 'string' ? parseFloat(deducciones.adelas) || 0 : (deducciones?.adelas || 0)) + 
                            (typeof deducciones?.sanitas === 'string' ? parseFloat(deducciones.sanitas) || 0 : (deducciones?.sanitas || 0)) + 
-                           (typeof deducciones?.gasolina_arval === 'string' ? parseFloat(deducciones.gasolina_arval) || 0 : (deducciones?.gasolina_arval || 0)) + 
-                           (typeof deducciones?.gasolina_ald === 'string' ? parseFloat(deducciones.gasolina_ald) || 0 : (deducciones?.gasolina_ald || 0)) +
+                           (typeof deducciones?.gasolina === 'string' ? parseFloat(deducciones.gasolina) || 0 : (deducciones?.gasolina || 0)) + 
                            (typeof deducciones?.ret_especie === 'string' ? parseFloat(deducciones.ret_especie) || 0 : (deducciones?.ret_especie || 0)) +
                            (typeof deducciones?.seguro_medico === 'string' ? parseFloat(deducciones.seguro_medico) || 0 : (deducciones?.seguro_medico || 0)) +
                            (typeof deducciones?.cotizacion_especie === 'string' ? parseFloat(deducciones.cotizacion_especie) || 0 : (deducciones?.cotizacion_especie || 0))

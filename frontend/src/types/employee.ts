@@ -224,11 +224,7 @@ export interface Deducciones {
 
 
 
-  gasolina_arval: number;
-
-
-
-  gasolina_ald: number;
+  gasolina: number;
 
 
 

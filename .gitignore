@@ -152,19 +152,10 @@ testing/backup/
 # Additional Python
 *.pyo
 *.pyd
-.Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
 
 # Additional Node.js
 .npm
 .eslintcache
-
-# Database user credentials (sensitive)
-backend/sql_statements/03_data/01_insert_benutzer.sql
 
 # IDE specific files
 .vscode/settings.json

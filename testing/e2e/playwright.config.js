@@ -11,7 +11,6 @@ module.exports = defineConfig({
     timeout: 20000, // Erhöht auf 20 Sekunden
   },
   reporter: [
-    ['html'],
     ['json', { outputFile: 'test-results.json' }],
     ['junit', { outputFile: 'test-results.xml' }]
   ],

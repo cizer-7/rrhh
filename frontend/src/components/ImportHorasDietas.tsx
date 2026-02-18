@@ -22,11 +22,15 @@ export default function ImportHorasDietas() {
   const [year, setYear] = useState<number>(now.getFullYear())
   const [month, setMonth] = useState<number>(now.getMonth() + 1)
   const [file, setFile] = useState<File | null>(null)
+  const [gasolinaFile, setGasolinaFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
 
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmGasolinaOpen, setConfirmGasolinaOpen] = useState(false)
   const [result, setResult] = useState<ImportResult | null>(null)
+  const [gasolinaResult, setGasolinaResult] = useState<ImportResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [gasolinaError, setGasolinaError] = useState<string | null>(null)
 
   const years = useMemo(() => {
     const start = now.getFullYear() - 4
@@ -39,6 +43,12 @@ export default function ImportHorasDietas() {
     setFile(f)
   }
 
+  const onSelectGasolinaFile = (f: File | null) => {
+    setGasolinaResult(null)
+    setGasolinaError(null)
+    setGasolinaFile(f)
+  }
+
   const openConfirm = () => {
     setResult(null)
     setError(null)
@@ -49,6 +59,18 @@ export default function ImportHorasDietas() {
     }
 
     setConfirmOpen(true)
+  }
+
+  const openGasolinaConfirm = () => {
+    setGasolinaResult(null)
+    setGasolinaError(null)
+
+    if (!gasolinaFile) {
+      setGasolinaError('Bitte wähle eine Excel-Datei aus.')
+      return
+    }
+
+    setConfirmGasolinaOpen(true)
   }
 
   const doUpload = async () => {
@@ -81,6 +103,41 @@ export default function ImportHorasDietas() {
       setResult(data)
     } catch (e: any) {
       setError(e?.message || 'Upload fehlgeschlagen')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const doGasolinaUpload = async () => {
+    if (!gasolinaFile) return
+
+    setLoading(true)
+    setGasolinaError(null)
+    setGasolinaResult(null)
+
+    try {
+      const token = localStorage.getItem('token')
+      const form = new FormData()
+      form.append('year', String(year))
+      form.append('month', String(month))
+      form.append('file', gasolinaFile)
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/imports/gasolina`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: form,
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data?.error || data?.detail || `HTTP ${res.status}`)
+      }
+
+      setGasolinaResult(data)
+    } catch (e: any) {
+      setGasolinaError(e?.message || 'Upload fehlgeschlagen')
     } finally {
       setLoading(false)
     }
@@ -176,6 +233,96 @@ export default function ImportHorasDietas() {
         </Button>
       </div>
 
+      <div className="border-t border-gray-200 pt-6" />
+
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Gasolina</h3>
+        <p className="text-sm text-gray-600">
+          Importiert Werte aus einer Excel-Datei in Abzüge (Gasolina) für den ausgewählten Monat.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Jahr</label>
+          <select
+            value={year}
+            onChange={(e) => setYear(parseInt(e.target.value, 10))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            disabled={loading}
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Monat</label>
+          <select
+            value={month}
+            onChange={(e) => setMonth(parseInt(e.target.value, 10))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            disabled={loading}
+          >
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Datei</label>
+          <input
+            type="file"
+            accept=".xlsx"
+            onChange={(e) => onSelectGasolinaFile(e.target.files?.[0] || null)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+            disabled={loading}
+          />
+          {gasolinaFile && <div className="text-xs text-gray-600 mt-1">{gasolinaFile.name}</div>}
+        </div>
+      </div>
+
+      {gasolinaResult && (
+        <Alert>
+          <AlertTitle>{gasolinaResult.success ? 'Gasolina Import erfolgreich' : 'Gasolina Import abgeschlossen mit Fehlern'}</AlertTitle>
+          <AlertDescription>
+            <div className="space-y-1">
+              {gasolinaResult.message && <div>{gasolinaResult.message}</div>}
+              <div>
+                verarbeitet: {gasolinaResult.processed_count ?? 0}, neu: {gasolinaResult.inserted_count ?? 0}, aktualisiert:{' '}
+                {gasolinaResult.updated_count ?? 0}, übersprungen: {gasolinaResult.skipped_count ?? 0}, Fehler: {gasolinaResult.error_count ?? 0}
+              </div>
+              {Array.isArray(gasolinaResult.errors) && gasolinaResult.errors.length > 0 && (
+                <div className="mt-2 max-h-40 overflow-y-auto text-xs bg-gray-50 border border-gray-200 rounded p-2">
+                  {gasolinaResult.errors.slice(0, 50).map((err, idx) => (
+                    <div key={idx}>{err}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {gasolinaError && (
+        <Alert variant="destructive">
+          <AlertTitle>Fehler</AlertTitle>
+          <AlertDescription>{gasolinaError}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="flex items-center gap-3">
+        <Button onClick={openGasolinaConfirm} disabled={loading}>
+          Gasolina Import starten
+        </Button>
+      </div>
+
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => (loading ? null : setConfirmOpen(false))} />
@@ -201,6 +348,41 @@ export default function ImportHorasDietas() {
                 onClick={async () => {
                   setConfirmOpen(false)
                   await doUpload()
+                }}
+                disabled={loading}
+              >
+                OK
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmGasolinaOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => (loading ? null : setConfirmGasolinaOpen(false))} />
+          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6">
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">Gasolina Import bestätigen</h4>
+            <p className="text-sm text-gray-700 mb-4">
+              Möchtest du die Datei <span className="font-medium">{gasolinaFile?.name}</span> für{' '}
+              <span className="font-medium">
+                {month}.{year}
+              </span>{' '}
+              importieren?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setConfirmGasolinaOpen(false)}
+                disabled={loading}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                onClick={async () => {
+                  setConfirmGasolinaOpen(false)
+                  await doGasolinaUpload()
                 }}
                 disabled={loading}
               >

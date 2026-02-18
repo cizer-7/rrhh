@@ -118,7 +118,7 @@ def sample_deducciones_data():
         'seguro_accidentes': 30.0,
         'adelas': 40.0,
         'sanitas': 50.0,
-        'gasolina_arval': 60.0,
+        'gasolina': 60.0,
         'cotizacion_especie': 20.0
     }
 

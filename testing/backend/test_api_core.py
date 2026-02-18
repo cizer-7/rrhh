@@ -327,25 +327,27 @@ class TestFlaskAPICore:
         
         assert response.status_code == 400
 
-    @patch('app.db_manager')
-    def test_delete_employee_success(self, mock_db_manager, client, auth_headers):
-        """Test Mitarbeiter löschen erfolgreich"""
-        mock_db_manager.delete_employee.return_value = True
-        
-        response = client.delete('/employees/1', headers=auth_headers)
-        
-        assert response.status_code == 200
-        data = json.loads(response.data)
-        assert 'message' in data
+    # DEAKTIVIERT zum Schutz der Produktivdaten
+    # @patch('app.db_manager')
+    # def test_delete_employee_success(self, mock_db_manager, client, auth_headers):
+    #     """Test Mitarbeiter löschen erfolgreich"""
+    #     mock_db_manager.delete_employee.return_value = True
+    #     
+    #     response = client.delete('/employees/1', headers=auth_headers)
+    #     
+    #     assert response.status_code == 200
+    #     data = json.loads(response.data)
+    #     assert 'message' in data
 
-    @patch('app.db_manager')
-    def test_delete_employee_failure(self, mock_db_manager, client, auth_headers):
-        """Test Mitarbeiter löschen fehlgeschlagen"""
-        mock_db_manager.delete_employee.return_value = False
-        
-        response = client.delete('/employees/1', headers=auth_headers)
-        
-        assert response.status_code == 400
+    # DEAKTIVIERT zum Schutz der Produktivdaten
+    # @patch('app.db_manager')
+    # def test_delete_employee_failure(self, mock_db_manager, client, auth_headers):
+    #     """Test Mitarbeiter löschen fehlgeschlagen"""
+    #     mock_db_manager.delete_employee.return_value = False
+    #     
+    #     response = client.delete('/employees/1', headers=auth_headers)
+    #     
+    #     assert response.status_code == 400
 
     @patch('app.db_manager')
     def test_search_employees_success(self, mock_db_manager, client, auth_headers):

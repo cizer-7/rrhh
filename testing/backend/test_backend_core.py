@@ -324,8 +324,7 @@ class TestDatabaseManagerCore:
                 'formacion': 0,
                 'adelas': 0,
                 'sanitas': 0,
-                'gasolina_arval': 0,
-                'gasolina_ald': 0,
+                'gasolina': 0,
                 'dias_exentos': 0,
             }
         ]

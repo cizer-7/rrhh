@@ -10,6 +10,7 @@ import json
 import os
 from decimal import Decimal
 from openpyxl.worksheet.worksheet import Worksheet
+
 class DatabaseManager(DatabaseManagerExportsMixin):
     def __init__(self, host: str, database: str, user: str, password: str, port: int = 3307):
         self.host = host
@@ -20,6 +21,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         self.connection = None
         self._pool = None
         self.logger = logging.getLogger(__name__)
+
     def _ensure_employee_hire_date_column(self) -> None:
         """Ensures t001_empleados has fecha_alta column (hire date).
         This is a lightweight migration to keep existing installations working.
@@ -46,6 +48,48 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             cursor.close()
         except Exception as e:
             self.logger.error(f"Fehler beim Sicherstellen von fecha_alta Spalte: {e}")
+
+    def _ensure_deducciones_gasolina_column(self) -> None:
+        """Ensures t004_deducciones_mensuales has a single 'gasolina' column.
+
+        Existing data in those legacy columns is intentionally ignored.
+        """
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(
+                """
+                SELECT COLUMN_NAME
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = %s
+                  AND TABLE_NAME = 't004_deducciones_mensuales'
+                  AND COLUMN_NAME IN ('gasolina', 'gasolina_arval', 'gasolina_ald')
+                """,
+                (self.database,),
+            )
+            rows = cursor.fetchall() or []
+            cursor.close()
+
+            existing = {str(r.get('COLUMN_NAME', '')).strip().lower() for r in rows}
+            if 'gasolina' not in existing:
+                cursor = self.connection.cursor()
+                cursor.execute("ALTER TABLE t004_deducciones_mensuales ADD COLUMN gasolina DECIMAL(10,2) DEFAULT 0.00")
+                cursor.close()
+
+            drop_cols = []
+            if 'gasolina_arval' in existing:
+                drop_cols.append('gasolina_arval')
+            if 'gasolina_ald' in existing:
+                drop_cols.append('gasolina_ald')
+
+            if drop_cols:
+                cursor = self.connection.cursor()
+                cursor.execute(
+                    f"ALTER TABLE t004_deducciones_mensuales {', '.join([f'DROP COLUMN {c}' for c in drop_cols])}"
+                )
+                cursor.close()
+        except Exception as e:
+            self.logger.error(f"Fehler beim Sicherstellen von gasolina Spalte: {e}")
+
     def insert_bearbeitungslog(
         self,
         usuario_login: str,
@@ -84,6 +128,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Schreiben in t007_bearbeitungslog: {e}")
             return False
+
     def get_bearbeitungslog(
         self,
         id_empleado: int,
@@ -136,6 +181,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Lesen von t007_bearbeitungslog: {e}")
             return []
+
     def get_global_bearbeitungslog(
         self,
         id_empleado: int = None,
@@ -192,6 +238,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Lesen von global t007_bearbeitungslog: {e}")
             return []
+
     def create_change_details(self, old_data: dict = None, new_data: dict = None, changed_fields: list = None) -> dict:
         """Erstellt Details mit Vorher/Nachher Werten für geänderte Felder"""
         details = {}
@@ -231,6 +278,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     }
         
         return details
+
     def _normalize_employee_category(self, value: Any) -> Optional[str]:
         if value is None:
             return None
@@ -239,9 +287,11 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             return v or None
         v = str(value).strip()
         return v or None
+
     def _is_valid_employee_category(self, value: Any) -> bool:
         v = self._normalize_employee_category(value)
         return v is None or v in {"Techniker", "Office"}
+
     def _create_connection(self):
         if self._pool is None:
             self._pool = pooling.MySQLConnectionPool(
@@ -256,6 +306,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 connection_timeout=10,
             )
         return self._pool.get_connection()
+
     def _is_transient_connection_error(self, err: Exception) -> bool:
         if not isinstance(err, Error):
             return False
@@ -268,21 +319,25 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             or "MySQL Connection not available" in msg
             or "EOF occurred" in msg
         )
+
     def connect(self) -> bool:
         try:
             self.connection = self._create_connection()
             if self.connection.is_connected():
                 self.logger.info(f"Erfolgreich verbunden mit MySQL Datenbank {self.database}")
                 self._ensure_employee_hire_date_column()
+                self._ensure_deducciones_gasolina_column()
                 return True
         except Error as e:
             self.logger.error(f"Fehler bei der Verbindung zur Datenbank: {e}")
             return False
         return False
+
     def disconnect(self):
         if self.connection and self.connection.is_connected():
             self.connection.close()
             self.logger.info("Datenbankverbindung geschlossen")
+
     def execute_query(self, query: str, params: tuple = None) -> List[Dict]:
         last_error: Optional[Error] = None
         for attempt in range(2):
@@ -315,6 +370,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         if last_error is not None:
             self.logger.error(f"Fehler bei der Abfrage: {last_error}")
         return []
+
     def execute_update(self, query: str, params: tuple = None) -> bool:
         last_error: Optional[Error] = None
         for attempt in range(2):
@@ -354,6 +410,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         if last_error is not None:
             self.logger.error(f"Fehler beim Update: {last_error}")
         return False
+
     def get_payout_month(self) -> int:
         """Returns the globally configured payout month (1-12). Defaults to 4 (April)."""
         try:
@@ -375,6 +432,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Lesen von payout_month: {e}")
             return 4
+
     def set_payout_month(self, payout_month: int) -> bool:
         """Sets the globally configured payout month (1-12)."""
         try:
@@ -387,6 +445,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Setzen von payout_month: {e}")
             return False
+
     def get_all_employees(self) -> List[Dict]:
         query = """
         SELECT id_empleado, nombre, apellido, ceco, kategorie, activo, fecha_alta
@@ -394,6 +453,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         ORDER BY apellido, nombre
         """
         return self.execute_query(query)
+
     def get_all_employees_with_salaries(self) -> List[Dict]:
         """Hole alle Mitarbeiter mit ihren Gehaltsdaten"""
         query = """
@@ -431,6 +491,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     'antiguedad': row['antiguedad']
                 })
         return list(employees.values())
+
     def get_employee(self, employee_id: int) -> Optional[Dict]:
         """Hole einen Mitarbeiter anhand seiner ID"""
         try:
@@ -444,6 +505,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Abrufen des Mitarbeiters {employee_id}: {e}")
             return None
+
     def get_employee_complete_info(self, employee_id: int) -> Dict:
         # Mitarbeiterstammdaten
         employee_query = """
@@ -491,8 +553,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             ROUND(AVG(seguro_accidentes), 2) as seguro_accidentes,
             ROUND(AVG(adelas), 2) as adelas,
             ROUND(AVG(sanitas), 2) as sanitas,
-            ROUND(AVG(gasolina_arval), 2) as gasolina_arval,
-            ROUND(AVG(gasolina_ald), 2) as gasolina_ald,
+            ROUND(AVG(gasolina), 2) as gasolina,
             ROUND(AVG(ret_especie), 2) as ret_especie,
             ROUND(AVG(seguro_medico), 2) as seguro_medico,
             ROUND(AVG(cotizacion_especie), 2) as cotizacion_especie,
@@ -516,7 +577,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         # Monatliche Abzüge
         deducciones_mensuales_query = """
         SELECT anio, mes, seguro_accidentes, adelas, sanitas, 
-               gasolina_arval, gasolina_ald, ret_especie, seguro_medico, cotizacion_especie, fecha_modificacion
+               gasolina, ret_especie, seguro_medico, cotizacion_especie, fecha_modificacion
         FROM t004_deducciones_mensuales 
         WHERE id_empleado = %s
         ORDER BY anio DESC, mes ASC
@@ -538,6 +599,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             'deducciones_mensuales': deducciones_mensuales_results,
             'fte': fte_results,
         }
+
     def get_employee_fte(self, employee_id: int) -> List[Dict[str, Any]]:
         try:
             query = """
@@ -550,6 +612,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Abrufen FTE für Mitarbeiter {employee_id}: {e}")
             return []
+
     def upsert_employee_fte(self, employee_id: int, year: int, month: int, porcentaje: float) -> bool:
         try:
             year = int(year)
@@ -571,6 +634,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Upsert FTE für Mitarbeiter {employee_id}: {e}")
             return False
+
     def delete_employee_fte(self, employee_id: int, year: int, month: int) -> bool:
         try:
             year = int(year)
@@ -583,6 +647,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Löschen FTE für Mitarbeiter {employee_id}: {e}")
             return False
+
     def get_employee_fte_effective_percent(self, employee_id: int, year: int, month: int) -> float:
         try:
             year = int(year)
@@ -602,6 +667,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Lesen effective FTE für Mitarbeiter {employee_id}: {e}")
             return 100.0
+
     def update_employee(self, employee_id: int, table: str, data: Dict[str, Any]) -> bool:
         if table == 't001_empleados':
             # Nur updatable Felder erlauben
@@ -626,6 +692,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             update_values.append(employee_id)
             return self.execute_update(query, tuple(update_values))
         return False
+
     def update_salary(self, employee_id: int, year: int, data: Dict[str, Any]) -> bool:
         # Prüfen ob Gehalt für dieses Jahr existiert
         check_query = """
@@ -699,6 +766,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             if result:
                 self._update_subsequent_years_atrasos(employee_id, year)
             return result
+
     def search_employees(self, search_term: str) -> List[Dict]:
         query = """
         SELECT id_empleado, nombre, apellido, ceco, activo 
@@ -711,6 +779,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         """
         search_pattern = f"%{search_term}%"
         return self.execute_query(query, (search_term, search_pattern, search_pattern, search_pattern))
+
     def add_employee(self, employee_data: Dict[str, Any]) -> int:
         try:
             # Neue ID holen
@@ -742,10 +811,12 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Hinzufügen des Mitarbeiters: {e}")
             return -1
+
     def _create_default_records(self, employee_id: int):
         # Nur noch monatliche Standarddatensätze für das aktuelle Jahr erstellen
         current_year = datetime.now().year
         self._create_monthly_default_records(employee_id, current_year)
+
     def _create_monthly_default_records(self, employee_id: int, year: int):
         """Erstellt Standard-Monatsdatensätze für einen Mitarbeiter"""
         try:
@@ -773,14 +844,13 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             for month in range(1, 13):
                 deducciones_monthly_query = """
                 INSERT INTO t004_deducciones_mensuales (id_empleado, anio, mes, seguro_accidentes, 
-                                                        adelas, sanitas, gasolina_arval, gasolina_ald, cotizacion_especie) 
-                VALUES (%s, %s, %s, 0, 0, 0, 0, 0, 0)
+                                                        adelas, sanitas, gasolina, cotizacion_especie) 
+                VALUES (%s, %s, %s, 0, 0, 0, 0, 0)
                 ON DUPLICATE KEY UPDATE
                     seguro_accidentes = VALUES(seguro_accidentes),
                     adelas = VALUES(adelas),
                     sanitas = VALUES(sanitas),
-                    gasolina_arval = VALUES(gasolina_arval),
-                    gasolina_ald = VALUES(gasolina_ald),
+                    gasolina = VALUES(gasolina),
                     cotizacion_especie = VALUES(cotizacion_especie)
                 """
                 self.execute_update(deducciones_monthly_query, (employee_id, year, month))
@@ -1296,7 +1366,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def update_deducciones(self, employee_id: int, year: int, data: Dict[str, Any]) -> bool:
         """Aktualisiert oder fügt Abzüge für einen Mitarbeiter für alle Monate eines Jahres hinzu"""
         try:
-            allowed_fields = ['seguro_accidentes', 'adelas', 'sanitas', 'gasolina_arval', 'gasolina_ald', 'ret_especie', 'seguro_medico', 'cotizacion_especie']
+            allowed_fields = ['seguro_accidentes', 'adelas', 'sanitas', 'gasolina', 'ret_especie', 'seguro_medico', 'cotizacion_especie']
             # Filtere die Daten auf erlaubte Felder
             filtered_data = {k: v for k, v in data.items() if k in allowed_fields}
             if not filtered_data:
@@ -1443,7 +1513,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                  ]
             elif table_type == 'deducciones':
                 table_name = 't004_deducciones_mensuales'
-                allowed_fields = ['seguro_accidentes', 'adelas', 'sanitas', 'gasolina_arval', 'gasolina_ald', 'ret_especie', 'seguro_medico', 'cotizacion_especie']
+                allowed_fields = ['seguro_accidentes', 'adelas', 'sanitas', 'gasolina', 'ret_especie', 'seguro_medico', 'cotizacion_especie']
             else:
                 return
             # Für jeden Monat (1-12) die monatlichen Datensätze aktualisieren
@@ -1761,7 +1831,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def update_deducciones_mensuales(self, employee_id: int, year: int, month: int, data: Dict[str, Any]) -> bool:
         """Aktualisiert monatliche Abzüge für einen spezifischen Monat"""
         try:
-            allowed_fields = ['seguro_accidentes', 'adelas', 'sanitas', 'gasolina_arval', 'gasolina_ald', 'ret_especie', 'seguro_medico', 'cotizacion_especie']
+            allowed_fields = ['seguro_accidentes', 'adelas', 'sanitas', 'gasolina', 'ret_especie', 'seguro_medico', 'cotizacion_especie']
             # Filtere die Daten auf erlaubte Felder
             filtered_data = {k: v for k, v in data.items() if k in allowed_fields}
             if not filtered_data:
@@ -2008,6 +2078,168 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             }
         except Exception as e:
             self.logger.error(f"Fehler beim Import Horas+Dietas Worksheet: {e}")
+            return {"success": False, "message": f"Import fehlgeschlagen: {str(e)}"}
+
+    def import_gasolina_worksheet(
+        self,
+        worksheet: Worksheet,
+        year: int,
+        month: int,
+        usuario_login: str,
+        source_filename: str,
+    ) -> Dict[str, Any]:
+        """Importiert Gasolina (monatlich) in t004_deducciones_mensuales.gasolina.
+
+        Expected format:
+        - Column A: employee name in format "APELLIDO, NOMBRE"
+        - Column B: amount
+        """
+        errors: List[str] = []
+        row_results: List[Dict[str, Any]] = []
+        processed_count = 0
+        updated_count = 0
+        inserted_count = 0
+        skipped_count = 0
+        if worksheet is None:
+            return {"success": False, "message": "worksheet fehlt"}
+        try:
+            employees = self.execute_query("SELECT id_empleado, nombre, apellido FROM t001_empleados") or []
+            employee_map: Dict[str, int] = {}
+            for e in employees:
+                key = f"{str(e.get('apellido','')).strip().lower()}|{str(e.get('nombre','')).strip().lower()}"
+                if key and e.get('id_empleado') is not None:
+                    employee_map[key] = int(e['id_empleado'])
+
+            def get_employee_id(apellido: str, nombre: str) -> Optional[int]:
+                key = f"{apellido.strip().lower()}|{nombre.strip().lower()}"
+                if key in employee_map:
+                    return employee_map[key]
+                emp_id = self._find_employee_id_by_name(apellido, nombre)
+                if emp_id is not None:
+                    employee_map[key] = emp_id
+                return emp_id
+
+            max_row = worksheet.max_row or 0
+            for row_idx in range(2, max_row + 1):
+                try:
+                    name_cell = worksheet[f"A{row_idx}"].value
+                    parsed = self._parse_employee_name_cell(name_cell)
+                    if not parsed:
+                        skipped_count += 1
+                        continue
+
+                    apellido = parsed['apellido']
+                    nombre = parsed['nombre']
+                    employee_id = get_employee_id(apellido, nombre)
+                    if employee_id is None:
+                        msg = f"Zeile {row_idx}: Mitarbeiter nicht gefunden: {apellido}, {nombre}"
+                        errors.append(msg)
+                        row_results.append({
+                            "row": row_idx,
+                            "employee": f"{apellido}, {nombre}",
+                            "success": False,
+                            "error": "employee_not_found",
+                        })
+                        continue
+
+                    gasolina = self._to_decimal_number(worksheet[f"B{row_idx}"].value)
+                    
+                    # Überspringen, wenn kein gültiger Wert (0.0 oder None)
+                    if gasolina == 0.0:
+                        skipped_count += 1
+                        continue
+                        
+                    payload = {"gasolina": gasolina}
+
+                    check_query = """
+                    SELECT id_empleado
+                    FROM t004_deducciones_mensuales
+                    WHERE id_empleado = %s AND anio = %s AND mes = %s
+                    """
+                    exists = self.execute_query(check_query, (employee_id, year, month))
+                    old_data = None
+                    if exists:
+                        old_rows = self.execute_query(
+                            """
+                            SELECT seguro_accidentes, adelas, sanitas, gasolina, ret_especie, seguro_medico, cotizacion_especie
+                            FROM t004_deducciones_mensuales
+                            WHERE id_empleado = %s AND anio = %s AND mes = %s
+                            """,
+                            (employee_id, year, month),
+                        )
+                        old_data = old_rows[0] if old_rows else None
+
+                    success = self.update_deducciones_mensuales(employee_id, year, month, payload)
+                    if not success:
+                        msg = f"Zeile {row_idx}: Fehler beim Speichern für empleado_id={employee_id}"
+                        errors.append(msg)
+                        row_results.append({
+                            "row": row_idx,
+                            "employee": f"{apellido}, {nombre}",
+                            "employee_id": employee_id,
+                            "success": False,
+                            "error": "db_write_failed",
+                        })
+                        continue
+
+                    processed_count += 1
+                    if exists:
+                        updated_count += 1
+                    else:
+                        inserted_count += 1
+
+                    try:
+                        new_data = payload
+                        details = None
+                        try:
+                            details = self.create_change_details(old_data=old_data, new_data=new_data)
+                        except Exception:
+                            details = {
+                                "source": "import_gasolina",
+                                "filename": source_filename,
+                                "row": row_idx,
+                                "data": new_data,
+                            }
+                        self.insert_bearbeitungslog(
+                            usuario_login=usuario_login,
+                            aktion="import",
+                            objekt="deducciones_mensuales",
+                            id_empleado=employee_id,
+                            anio=year,
+                            mes=month,
+                            details=details,
+                        )
+                    except Exception:
+                        pass
+
+                    row_results.append({
+                        "row": row_idx,
+                        "employee": f"{apellido}, {nombre}",
+                        "employee_id": employee_id,
+                        "success": True,
+                        "data": payload,
+                    })
+                except Exception as e:
+                    msg = f"Zeile {row_idx}: Unerwarteter Fehler: {e}"
+                    errors.append(msg)
+                    row_results.append({"row": row_idx, "success": False, "error": "unexpected"})
+
+            success_overall = processed_count > 0 and len(errors) == 0
+            return {
+                "success": success_overall,
+                "year": year,
+                "month": month,
+                "processed_count": processed_count,
+                "inserted_count": inserted_count,
+                "updated_count": updated_count,
+                "skipped_count": skipped_count,
+                "error_count": len(errors),
+                "errors": errors,
+                "rows": row_results,
+                "message": f"Import abgeschlossen: {processed_count} verarbeitet ({inserted_count} neu, {updated_count} aktualisiert), {len(errors)} Fehler.",
+            }
+        except Exception as e:
+            self.logger.error(f"Fehler beim Import Gasolina Worksheet: {e}")
             return {"success": False, "message": f"Import fehlgeschlagen: {str(e)}"}
     def copy_salaries_to_new_year(self, target_year: int) -> Dict[str, Any]:
         """Kopiert Gehälter aller aktiven Mitarbeiter vom Vorjahr ins Zieljahr"""

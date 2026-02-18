@@ -115,8 +115,7 @@ describe('EmployeeDetail Component', () => {
           seguro_accidentes: 30,
           adelas: 40,
           sanitas: 50,
-          gasolina_arval: 60,
-          gasolina_ald: 0,
+          gasolina: 60,
           ret_especie: 0,
           seguro_medico: 0,
           cotizacion_especie: 20
@@ -210,8 +209,7 @@ describe('EmployeeDetail Component', () => {
           seguro_accidentes: 36,
           adelas: 48,
           sanitas: 60,
-          gasolina_arval: 72,
-          gasolina_ald: 0,
+          gasolina: 72,
           ret_especie: 0,
           seguro_medico: 0,
           cotizacion_especie: 24
@@ -318,8 +316,7 @@ describe('EmployeeDetail Component', () => {
           seguro_accidentes: 30,
           adelas: 40,
           sanitas: 50,
-          gasolina_arval: 60,
-          gasolina_ald: 0,
+          gasolina: 60,
           ret_especie: 0,
           seguro_medico: 0,
           cotizacion_especie: 20

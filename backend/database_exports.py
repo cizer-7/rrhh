@@ -135,8 +135,7 @@ class DatabaseManagerExportsMixin:
                 COALESCE(i.formacion, 0) as formacion,
                 COALESCE(d.adelas, 0) as adelas,
                 COALESCE(d.sanitas, 0) as sanitas,
-                COALESCE(d.gasolina_arval, 0) as gasolina_arval,
-                COALESCE(d.gasolina_ald, 0) as gasolina_ald,
+                COALESCE(d.gasolina, 0) as gasolina,
                 COALESCE(i.dias_exentos, 0) as dias_exentos
             FROM t001_empleados e
             LEFT JOIN t002_salarios s ON e.id_empleado = s.id_empleado AND s.anio = %s
@@ -162,7 +161,7 @@ class DatabaseManagerExportsMixin:
                 'fte_porcentaje',
                 'ticket_restaurant', 'cotizacion_especie', 'primas', 'dietas_cotizables',
                 'horas_extras', 'seguro_pensiones', 'seguro_accidentes', 'dietas_exentas',
-                'formacion', 'adelas', 'sanitas', 'gasolina_arval', 'gasolina_ald', 'dias_exentos'
+                'formacion', 'adelas', 'sanitas', 'gasolina', 'dias_exentos'
             ]
             
             for col in numeric_columns:
@@ -271,17 +270,16 @@ class DatabaseManagerExportsMixin:
                 'formacion',                # M = FORMACION
                 'adelas',                   # N = ADESLAS
                 'sanitas',                  # O = SANITAS
-                'gasolina_arval',           # P = GASOLINA ARVAL
-                'gasolina_ald',             # Q = GASOLINA ALD
-                'anticipos',                # R = ANTICIPOS
-                'total_especie',            # S = TOTAL ESPECIE
-                'dias_exentos',             # T = DIAS EXENTOS
-                'base_imponible',           # U = BASE IMPONIBLE
-                'dietas_cotizables',        # V = DIETAS COTIZABLES (Kopie von G)
-                'dietas_exentas',           # W = DIETAS EXENTAS (Kopie von K)
-                'ticket_restaurant',        # X = TICKETS (Kopie von D)
-                'total_especie',            # Y = RET. ESPECIE (Kopie von S)
-                'seguro_medico',            # Z = SEGURO MEDICO
+                'gasolina',                 # P = GASOLINA
+                'anticipos',                # Q = ANTICIPOS
+                'total_especie',            # R = TOTAL ESPECIE
+                'dias_exentos',             # S = DIAS EXENTOS
+                'base_imponible',           # T = BASE IMPONIBLE
+                'dietas_cotizables',        # U = DIETAS COTIZABLES (Kopie von G)
+                'dietas_exentas',           # V = DIETAS EXENTAS (Kopie von K)
+                'ticket_restaurant',        # W = TICKETS (Kopie von D)
+                'total_especie',            # X = RET. ESPECIE (Kopie von R)
+                'seguro_medico',            # Y = SEGURO MEDICO
             ]
 
             df = df[columns]
@@ -311,17 +309,16 @@ class DatabaseManagerExportsMixin:
                     'FORMACION',                  # M
                     'ADESLAS',                    # N
                     'SANITAS',                    # O
-                    'GASOLINA ARVAL',             # P
-                    'GASOLINA ALD',               # Q
-                    'ANTICIPOS',                  # R
-                    'TOTAL ESPECIE',              # S
-                    'DÍAS EXENTOS',               # T
-                    'BASE IMPONIBLE',             # U
-                    'DIETAS COTIZABLES',          # V (Kopie)
-                    'DIETAS EXENTAS',             # W (Kopie)
-                    'TICKETS',                    # X (Kopie)
-                    'RET. ESPECIE',               # Y (Kopie)
-                    'SEGURO MÉDICO',              # Z
+                    'GASOLINA',                   # P
+                    'ANTICIPOS',                  # Q
+                    'TOTAL ESPECIE',              # R
+                    'DÍAS EXENTOS',               # S
+                    'BASE IMPONIBLE',             # T
+                    'DIETAS COTIZABLES',          # U (Kopie)
+                    'DIETAS EXENTAS',             # V (Kopie)
+                    'TICKETS',                    # W (Kopie)
+                    'RET. ESPECIE',               # X (Kopie)
+                    'SEGURO MÉDICO',              # Y
                 ]
 
                 columns_df = pd.DataFrame([column_names])
@@ -389,8 +386,7 @@ class DatabaseManagerExportsMixin:
                 COALESCE(i.formacion, 0) as formacion,
                 COALESCE(d.adelas, 0) as adelas,
                 COALESCE(d.sanitas, 0) as sanitas,
-                COALESCE(d.gasolina_arval, 0) as gasolina_arval,
-                COALESCE(d.gasolina_ald, 0) as gasolina_ald,
+                COALESCE(d.gasolina, 0) as gasolina,
                 COALESCE(i.dias_exentos, 0) as dias_exentos
             FROM t001_empleados e
             LEFT JOIN t002_salarios s ON e.id_empleado = s.id_empleado AND s.anio = %s
@@ -415,7 +411,7 @@ class DatabaseManagerExportsMixin:
                 'fte_porcentaje',
                 'ticket_restaurant', 'cotizacion_especie', 'primas', 'dietas_cotizables',
                 'horas_extras', 'seguro_pensiones', 'seguro_accidentes', 'dietas_exentas',
-                'formacion', 'adelas', 'sanitas', 'gasolina_arval', 'gasolina_ald', 'dias_exentos'
+                'formacion', 'adelas', 'sanitas', 'gasolina', 'dias_exentos'
             ]
             
             for col in numeric_columns:
@@ -447,7 +443,7 @@ class DatabaseManagerExportsMixin:
             )
 
             df['seguro_medico'] = df['adelas'] + df['sanitas']
-            df['combustible'] = df['gasolina_arval'] + df['gasolina_ald']
+            df['combustible'] = df['gasolina']
 
             month_names = [
                 '',

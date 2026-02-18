@@ -158,9 +158,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
     sanitas: 0,
 
-    gasolina_arval: 0,
-
-    gasolina_ald: 0,
+    gasolina: 0,
 
     ret_especie: 0,
 
@@ -214,9 +212,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
     sanitas: false,
 
-    gasolina_arval: false,
-
-    gasolina_ald: false,
+    gasolina: false,
 
     ret_especie: false,
 

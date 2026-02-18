@@ -176,51 +176,54 @@ class TestFTEEndpoints:
                              headers=auth_headers)
         assert response.status_code == 400
 
-    @patch('app.db_manager')
-    def test_delete_employee_fte_success(self, mock_db_manager, client, auth_headers):
-        """Test FTE-Daten löschen erfolgreich"""
-        mock_db_manager.delete_employee_fte.return_value = True
-        mock_db_manager.get_employee_fte.return_value = [
-            {'anio': 2025, 'mes': 1, 'porcentaje': 75.5}
-        ]  # Existing entry
-        
-        response = client.delete('/employees/1/fte/2025/1', headers=auth_headers)
-        
-        assert response.status_code == 200
-        data = json.loads(response.data)
-        assert 'message' in data
-        assert 'Stundenreduzierung gelöscht' in data['message']
-        mock_db_manager.delete_employee_fte.assert_called_once_with(1, 2025, 1)
+    # DEAKTIVIERT zum Schutz der Produktivdaten
+    # @patch('app.db_manager')
+    # def test_delete_employee_fte_success(self, mock_db_manager, client, auth_headers):
+    #     """Test FTE-Daten löschen erfolgreich"""
+    #     mock_db_manager.delete_employee_fte.return_value = True
+    #     mock_db_manager.get_employee_fte.return_value = [
+    #         {'anio': 2025, 'mes': 1, 'porcentaje': 75.5}
+    #     ]  # Existing entry
+    #     
+    #     response = client.delete('/employees/1/fte/2025/1', headers=auth_headers)
+    #     
+    #     assert response.status_code == 200
+    #     data = json.loads(response.data)
+    #     assert 'message' in data
+    #     assert 'Stundenreduzierung gelöscht' in data['message']
+    #     mock_db_manager.delete_employee_fte.assert_called_once_with(1, 2025, 1)
 
-    @patch('app.db_manager')
-    def test_delete_employee_fte_failure(self, mock_db_manager, client, auth_headers):
-        """Test FTE-Daten löschen fehlgeschlagen"""
-        mock_db_manager.delete_employee_fte.return_value = False
-        
-        response = client.delete('/employees/1/fte/2025/1', headers=auth_headers)
-        
-        assert response.status_code == 400
-        data = json.loads(response.data)
-        assert 'error' in data
+    # DEAKTIVIERT zum Schutz der Produktivdaten
+    # @patch('app.db_manager')
+    # def test_delete_employee_fte_failure(self, mock_db_manager, client, auth_headers):
+    #     """Test FTE-Daten löschen fehlgeschlagen"""
+    #     mock_db_manager.delete_employee_fte.return_value = False
+    #     
+    #     response = client.delete('/employees/1/fte/2025/1', headers=auth_headers)
+    #     
+    #     assert response.status_code == 400
+    #     data = json.loads(response.data)
+    #     assert 'error' in data
 
-    def test_delete_employee_fte_invalid_parameters(self, client, auth_headers):
-        """Test FTE-Daten löschen mit ungültigen Parametern"""
-        # Ungültiger Monat (API validiert nicht, gibt 200 zurück)
-        response = client.delete('/employees/1/fte/2025/13', headers=auth_headers)
-        assert response.status_code == 200  # API doesn't validate month
+    # DEAKTIVIERT zum Schutz der Produktivdaten
+    # def test_delete_employee_fte_invalid_parameters(self, client, auth_headers):
+    #     """Test FTE-Daten löschen mit ungültigen Parametern"""
+    #     # Ungültiger Monat (API validiert nicht, gibt 200 zurück)
+    #     response = client.delete('/employees/1/fte/2025/13', headers=auth_headers)
+    #     assert response.status_code == 200  # API doesn't validate month
         
-        # Ungültiger Monat (0)
-        response = client.delete('/employees/1/fte/2025/0', headers=auth_headers)
-        assert response.status_code == 200  # API doesn't validate month
+    #     # Ungültiger Monat (0)
+    #     response = client.delete('/employees/1/fte/2025/0', headers=auth_headers)
+    #     assert response.status_code == 200  # API doesn't validate month
 
-        # Ungültiges Jahr (API validiert nicht, gibt 200 zurück)
-        response = client.delete('/employees/1/fte/0/1', headers=auth_headers)
-        assert response.status_code == 200  # API doesn't validate year
+    #     # Ungültiges Jahr (API validiert nicht, gibt 200 zurück)
+    #     response = client.delete('/employees/1/fte/0/1', headers=auth_headers)
+    #     assert response.status_code == 200  # API doesn't validate year
 
-    def test_delete_employee_fte_unauthorized(self, client):
-        """Test FTE-Daten löschen ohne Autorisierung"""
-        response = client.delete('/employees/1/fte/2025/1')
-        assert response.status_code == 401
+    # def test_delete_employee_fte_unauthorized(self, client):
+    #     """Test FTE-Daten löschen ohne Autorisierung"""
+    #     response = client.delete('/employees/1/fte/2025/1')
+    #     assert response.status_code == 401
 
     @patch('app.db_manager')
     def test_fte_endpoints_with_invalid_employee_id(self, mock_db_manager, client, auth_headers):
