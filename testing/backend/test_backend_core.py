@@ -800,14 +800,17 @@ class TestDatabaseManagerCore:
     def test_update_deducciones_mensuales_without_connection(self, db_manager):
         """Test update_deducciones_mensuales ohne Verbindung"""
         result = db_manager.update_deducciones_mensuales(1, 2024, 1, {'monto': 100.0})
-        assert result is False
+        assert result['success'] is False
+        assert result['error'] == 'Keine gültigen Felder zum Aktualisieren'
 
     def test_update_deducciones_mensuales_success(self, db_manager):
         """Test erfolgreiche update_deducciones_mensuales"""
         with patch.object(db_manager, 'execute_query', return_value=[{'id_empleado': 1}]), \
              patch.object(db_manager, 'execute_update', return_value=True):
             result = db_manager.update_deducciones_mensuales(1, 2024, 1, {'seguro_accidentes': 50.0})
-            assert result is True
+            assert result['success'] is True
+            assert result['error'] is None
+            assert result['propagation_info'] is None
 
     def test_update_ingresos_without_connection(self, db_manager):
         """Test update_ingresos ohne Verbindung"""

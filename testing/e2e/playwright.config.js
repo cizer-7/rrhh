@@ -19,7 +19,7 @@ module.exports = defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    actionTimeout: 8000, // Reduziert von 10 auf 8 Sekunden
+    actionTimeout: 15000, // Erhöht für Firefox mit slowMo
   },
 
   projects: [
@@ -37,7 +37,7 @@ module.exports = defineConfig({
         ...devices['Desktop Firefox'],
         // Firefox-spezifische Einstellungen für bessere Stabilität
         launchOptions: {
-          slowMo: 200, // Erhöht für mehr Stabilität
+          slowMo: 100, // Reduziert für schnellere Tests
           firefoxUserPrefs: {
             'dom.webcomponents.enabled': true,
             'dom.webdriver.enabled': false

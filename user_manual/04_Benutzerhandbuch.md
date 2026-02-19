@@ -51,17 +51,17 @@ Wenn Sie Ihr Passwort vergessen haben:
 - **Automatischer Logout:** Bei Inaktivität werden Sie automatisch abgemeldet
 - **Sichere Reset-Tokens:** Kryptographisch sichere Passwort-Reset-Funktion
 
-### Passwort zurücksetzen - Detaillierte Schritte
+### Passwort vergessen - Detaillierte Schritte
 
 #### Schritt 1: Reset anfordern
 - Auf Login-Seite "Passwort vergessen?" klicken
 - Benutzername eingeben und absenden
-- System sendet Email mit Reset-Link
+- System sendet automatisch Email mit Reset-Link
 
 #### Schritt 2: Email prüfen
-- Email eingang prüfen (auch Spam-Ordner)
+- Email-Eingang prüfen (auch Spam-Ordner)
 - Reset-Link innerhalb 1 Stunde klicken
-- Link führt zur Passwort-Reset-Seite
+- Link führt zur sicheren Passwort-Reset-Seite
 
 #### Schritt 3: Neues Passwort setzen
 - Neues Passwort eingeben (mindestens 8 Zeichen)
@@ -71,6 +71,19 @@ Wenn Sie Ihr Passwort vergessen haben:
 #### Schritt 4: Bestätigung
 - Erfolgsmeldung erscheint
 - Mit neuen Passwort anmelden
+
+### 🔐 Technische Details der Passwort-Reset-Funktion
+
+**Sicherheitsfeatures:**
+- **Kryptographisch sichere Tokens:** 32-Byte URL-safe Tokens
+- **Zeitbegrenzung:** Tokens verfallen nach 1 Stunde automatisch
+- **Einmalige Verwendung:** Jeder Token kann nur einmal verwendet werden
+- **Sichere Übertragung:** HTTPS-Verschlüsselung erforderlich
+
+**Email-Konfiguration (für Administratoren):**
+- **SMTP-Server:** Unterstützt Gmail und andere SMTP-Provider
+- **Authentifizierung:** App-Passwörter für 2-Faktor-Authentifizierung
+- **Anpassung:** Email-Texte und Absender konfigurierbar
 
 ### Passwort vergessen - Fehlerbehandlung
 
@@ -92,9 +105,15 @@ Wenn Sie Ihr Passwort vergessen haben:
 **Zugriff:** Hauptmenü → "Mitarbeiter"
 
 **Funktionen:**
-- **Suche:** Schnelle Suche nach Namen oder Mitarbeiter-ID
-- **Filter:** Filtern nach Abteilung, Status, etc.
-- **Sortierung:** Nach Name, ID, Eintrittsdatum
+- **Suche:** Schnelle Suche nach Namen, Mitarbeiter-ID, CECO oder Kategorie
+- **Filter:** Filtern nach Abteilung, Status, Kategorie (Techniker/Office)
+- **Sortierung:** Klickbare Spaltenüberschriften mit 3-Wege-Sortierung:
+  - **ID:** Numerische Sortierung
+  - **Name:** Alphabetische Sortierung (Nachname, Vorname)
+  - **CECO:** Alphabetische Sortierung
+  - **Status:** Aktiv zuerst, dann Inaktiv
+  - **Kategorie:** Alphabetische Sortierung
+- **Visuelle Indikatoren:** Pfeilsymbole (↑/↓) zeigen aktuelle Sortierrichtung
 
 ### Neuen Mitarbeiter anlegen
 1. **"Neuer Mitarbeiter" klicken**
@@ -102,6 +121,7 @@ Wenn Sie Ihr Passwort vergessen haben:
    - Vollständiger Name
    - Mitarbeiter-ID (falls vorhanden)
    - Kostenstelle (CECO)
+   - **Kategorie:** Techniker oder Office auswählen
    - Abteilung
    - Position
    - Kontaktdaten
@@ -258,6 +278,8 @@ Für Schulungen und Schulungsunterlagen:
 - **Tastaturkürzel:** Verwenden Sie Tab für Navigation
 - **Suche:** Nutzen Sie die Schnellsuche für schnellen Zugriff
 - **Filter:** Kombinieren Sie mehrere Filter für präzise Ergebnisse
+- **Sortierung:** Klicken Sie auf Spaltenüberschriften für 3-Wege-Sortierung (↑→↓→keine Sortierung)
+- **Kategorie-Filter:** Nutzen Sie Kategorie-Filter für gezielte Mitarbeiterauswahl
 
 ### Datenqualität
 - **Regelmäßige Updates:** Halten Sie Mitarbeiterdaten aktuell

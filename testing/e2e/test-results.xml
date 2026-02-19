@@ -1,178 +1,181 @@
-<testsuites id="" name="" tests="54" failures="1" skipped="0" errors="0" time="369.469424">
-<testsuite name="tests-final.spec.js" timestamp="2026-02-18T10:21:42.147Z" hostname="chromium" tests="18" failures="0" skipped="0" time="431.834" errors="0">
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › home page loads correctly" classname="tests-final.spec.js" time="42.312">
+<testsuites id="" name="" tests="54" failures="1" skipped="0" errors="0" time="252.62655">
+<testsuite name="tests-final.spec.js" timestamp="2026-02-19T11:44:13.257Z" hostname="chromium" tests="18" failures="0" skipped="0" time="229.413" errors="0">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › home page loads correctly" classname="tests-final.spec.js" time="10.002">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › navigation to login page" classname="tests-final.spec.js" time="45.923">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › navigation to login page" classname="tests-final.spec.js" time="10.148">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › successful login workflow" classname="tests-final.spec.js" time="47.231">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › successful login workflow" classname="tests-final.spec.js" time="13.039">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › invalid login should fail" classname="tests-final.spec.js" time="46.639">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › invalid login should fail" classname="tests-final.spec.js" time="14.147">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table functionality" classname="tests-final.spec.js" time="10.254">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table functionality" classname="tests-final.spec.js" time="5.177">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee form modal" classname="tests-final.spec.js" time="11.944">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee form modal" classname="tests-final.spec.js" time="13.129">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › logout functionality" classname="tests-final.spec.js" time="10.846">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › logout functionality" classname="tests-final.spec.js" time="13.035">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › form validation - empty fields" classname="tests-final.spec.js" time="7.064">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › form validation - empty fields" classname="tests-final.spec.js" time="5.4">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › responsive design" classname="tests-final.spec.js" time="28.002">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › responsive design" classname="tests-final.spec.js" time="10.459">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › basic browser capabilities" classname="tests-final.spec.js" time="24.961">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › basic browser capabilities" classname="tests-final.spec.js" time="8.714">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › yearly and monthly income updates" classname="tests-final.spec.js" time="14.271">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › yearly and monthly income updates" classname="tests-final.spec.js" time="13.973">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table sorting functionality" classname="tests-final.spec.js" time="25.243">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table sorting functionality" classname="tests-final.spec.js" time="17.81">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee search functionality" classname="tests-final.spec.js" time="9.062">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee search functionality" classname="tests-final.spec.js" time="6.128">
 <system-out>
 <![CDATA[Suchfeld nicht gefunden
 ]]>
 </system-out>
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee CRUD operations" classname="tests-final.spec.js" time="21.73">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee CRUD operations" classname="tests-final.spec.js" time="24.489">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee detail view comprehensive" classname="tests-final.spec.js" time="30.971">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee detail view comprehensive" classname="tests-final.spec.js" time="16.09">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › error handling and loading states" classname="tests-final.spec.js" time="19.902">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › error handling and loading states" classname="tests-final.spec.js" time="20.726">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › import export functionality" classname="tests-final.spec.js" time="28.21">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › import export functionality" classname="tests-final.spec.js" time="18.724">
 <system-out>
 <![CDATA[Download nicht gestartet, möglicherweise Modal erforderlich
 ]]>
 </system-out>
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › accessibility and keyboard navigation" classname="tests-final.spec.js" time="7.269">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › accessibility and keyboard navigation" classname="tests-final.spec.js" time="8.223">
 </testcase>
 </testsuite>
-<testsuite name="tests-final.spec.js" timestamp="2026-02-18T10:21:42.147Z" hostname="edge" tests="18" failures="1" skipped="0" time="285.834" errors="0">
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › home page loads correctly" classname="tests-final.spec.js" time="3.39">
+<testsuite name="tests-final.spec.js" timestamp="2026-02-19T11:44:13.257Z" hostname="edge" tests="18" failures="0" skipped="0" time="219.502" errors="0">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › home page loads correctly" classname="tests-final.spec.js" time="9.441">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › navigation to login page" classname="tests-final.spec.js" time="7.235">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › navigation to login page" classname="tests-final.spec.js" time="12.24">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › successful login workflow" classname="tests-final.spec.js" time="12.512">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › successful login workflow" classname="tests-final.spec.js" time="14.792">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › invalid login should fail" classname="tests-final.spec.js" time="11.369">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › invalid login should fail" classname="tests-final.spec.js" time="15.353">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table functionality" classname="tests-final.spec.js" time="18.579">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table functionality" classname="tests-final.spec.js" time="5.547">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee form modal" classname="tests-final.spec.js" time="17.066">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee form modal" classname="tests-final.spec.js" time="9.921">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › logout functionality" classname="tests-final.spec.js" time="19.487">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › logout functionality" classname="tests-final.spec.js" time="8.86">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › form validation - empty fields" classname="tests-final.spec.js" time="11.922">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › form validation - empty fields" classname="tests-final.spec.js" time="6.299">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › responsive design" classname="tests-final.spec.js" time="7.94">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › responsive design" classname="tests-final.spec.js" time="14.32">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › basic browser capabilities" classname="tests-final.spec.js" time="7.962">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › basic browser capabilities" classname="tests-final.spec.js" time="3.608">
 </testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › yearly and monthly income updates" classname="tests-final.spec.js" time="41.408">
-<failure message="tests-final.spec.js:297:3 yearly and monthly income updates" type="FAILURE">
-<![CDATA[  [edge] › tests-final.spec.js:297:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › yearly and monthly income updates 
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › yearly and monthly income updates" classname="tests-final.spec.js" time="9.059">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table sorting functionality" classname="tests-final.spec.js" time="22.541">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee search functionality" classname="tests-final.spec.js" time="5.763">
+<system-out>
+<![CDATA[Suchfeld nicht gefunden
+]]>
+</system-out>
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee CRUD operations" classname="tests-final.spec.js" time="17.544">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee detail view comprehensive" classname="tests-final.spec.js" time="17.752">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › error handling and loading states" classname="tests-final.spec.js" time="19.14">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › import export functionality" classname="tests-final.spec.js" time="20.016">
+<system-out>
+<![CDATA[Download nicht gestartet, möglicherweise Modal erforderlich
+]]>
+</system-out>
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › accessibility and keyboard navigation" classname="tests-final.spec.js" time="7.306">
+</testcase>
+</testsuite>
+<testsuite name="tests-final.spec.js" timestamp="2026-02-19T11:44:13.257Z" hostname="firefox" tests="18" failures="1" skipped="0" time="337.225" errors="0">
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › home page loads correctly" classname="tests-final.spec.js" time="9.395">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › navigation to login page" classname="tests-final.spec.js" time="19.611">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › successful login workflow" classname="tests-final.spec.js" time="25.893">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › invalid login should fail" classname="tests-final.spec.js" time="23.126">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table functionality" classname="tests-final.spec.js" time="14.736">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee form modal" classname="tests-final.spec.js" time="13.329">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › logout functionality" classname="tests-final.spec.js" time="17.544">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › form validation - empty fields" classname="tests-final.spec.js" time="6.717">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › responsive design" classname="tests-final.spec.js" time="11.007">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › basic browser capabilities" classname="tests-final.spec.js" time="7.608">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › yearly and monthly income updates" classname="tests-final.spec.js" time="16.527">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table sorting functionality" classname="tests-final.spec.js" time="32.612">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee search functionality" classname="tests-final.spec.js" time="15.48">
+<system-out>
+<![CDATA[Suchfeld nicht gefunden
+]]>
+</system-out>
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee CRUD operations" classname="tests-final.spec.js" time="33.233">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee detail view comprehensive" classname="tests-final.spec.js" time="19.86">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › error handling and loading states" classname="tests-final.spec.js" time="20.357">
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › import export functionality" classname="tests-final.spec.js" time="25.155">
+<system-out>
+<![CDATA[Download nicht gestartet, möglicherweise Modal erforderlich
+]]>
+</system-out>
+</testcase>
+<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › accessibility and keyboard navigation" classname="tests-final.spec.js" time="25.035">
+<failure message="tests-final.spec.js:918:3 accessibility and keyboard navigation" type="FAILURE">
+<![CDATA[  [firefox] › tests-final.spec.js:918:3 › Mitarbeiter Gehaltsabrechnung E2E Tests › accessibility and keyboard navigation 
 
-    TimeoutError: page.click: Timeout 10000ms exceeded.
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
     Call log:
-      - waiting for locator('button:has-text("Speichern")')
+      - waiting for locator('button:has-text("Neuer Mitarbeiter")')
+        - locator resolved to <button class="justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 flex items-center gap-2">…</button>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+      - element was detached from the DOM, retrying
 
 
-      387 |     
-      388 |     // Speichere im jährlichen Modus
-    > 389 |     await page.click('button:has-text("Speichern")')
-          |                ^
-      390 |     await page.waitForTimeout(2000)
-      391 |     
-      392 |     // Überprüfe, dass keine Fehlermeldung erscheint
-        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:389:16
+      941 |     const addButton = page.locator('button:has-text("Neuer Mitarbeiter")')
+      942 |     if (await addButton.isVisible({ timeout: 5000 })) {
+    > 943 |       await addButton.click()
+          |                       ^
+      944 |       await page.waitForTimeout(1000)
+      945 |       
+      946 |       // Prüfe, ob Modal geöffnet ist
+        at C:\Projekte\Digitalisierung Gehaltsabrechnung\testing\e2e\tests-final.spec.js:943:23
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\tests-final-Mitarbeiter-Ge-4fe41--and-monthly-income-updates-edge\test-failed-1.png
+    test-results\tests-final-Mitarbeiter-Ge-bc4b6-ity-and-keyboard-navigation-firefox\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\tests-final-Mitarbeiter-Ge-4fe41--and-monthly-income-updates-edge\video.webm
+    test-results\tests-final-Mitarbeiter-Ge-bc4b6-ity-and-keyboard-navigation-firefox\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: test-results\tests-final-Mitarbeiter-Ge-4fe41--and-monthly-income-updates-edge\error-context.md
+    Error Context: test-results\tests-final-Mitarbeiter-Ge-bc4b6-ity-and-keyboard-navigation-firefox\error-context.md
 ]]>
 </failure>
 <system-out>
-<![CDATA[Ticket Restaurant Input nicht gefunden, überspringe diesen Teil
+<![CDATA[
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-bc4b6-ity-and-keyboard-navigation-firefox\test-failed-1.png]]
 
-[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-4fe41--and-monthly-income-updates-edge\test-failed-1.png]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-bc4b6-ity-and-keyboard-navigation-firefox\video.webm]]
 
-[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-4fe41--and-monthly-income-updates-edge\video.webm]]
-
-[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-4fe41--and-monthly-income-updates-edge\error-context.md]]
+[[ATTACHMENT|test-results\tests-final-Mitarbeiter-Ge-bc4b6-ity-and-keyboard-navigation-firefox\error-context.md]]
 ]]>
 </system-out>
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table sorting functionality" classname="tests-final.spec.js" time="21.641">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee search functionality" classname="tests-final.spec.js" time="23.026">
-<system-out>
-<![CDATA[Suchfeld nicht gefunden
-]]>
-</system-out>
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee CRUD operations" classname="tests-final.spec.js" time="16.883">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee detail view comprehensive" classname="tests-final.spec.js" time="14.456">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › error handling and loading states" classname="tests-final.spec.js" time="22.083">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › import export functionality" classname="tests-final.spec.js" time="18.157">
-<system-out>
-<![CDATA[Download nicht gestartet, möglicherweise Modal erforderlich
-]]>
-</system-out>
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › accessibility and keyboard navigation" classname="tests-final.spec.js" time="10.718">
-</testcase>
-</testsuite>
-<testsuite name="tests-final.spec.js" timestamp="2026-02-18T10:21:42.147Z" hostname="firefox" tests="18" failures="0" skipped="0" time="481.07" errors="0">
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › home page loads correctly" classname="tests-final.spec.js" time="10.641">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › navigation to login page" classname="tests-final.spec.js" time="32.467">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › successful login workflow" classname="tests-final.spec.js" time="40.663">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › invalid login should fail" classname="tests-final.spec.js" time="21.329">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table functionality" classname="tests-final.spec.js" time="21.439">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee form modal" classname="tests-final.spec.js" time="35.594">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › logout functionality" classname="tests-final.spec.js" time="27.049">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › form validation - empty fields" classname="tests-final.spec.js" time="13.465">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › responsive design" classname="tests-final.spec.js" time="22.589">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › basic browser capabilities" classname="tests-final.spec.js" time="8.29">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › yearly and monthly income updates" classname="tests-final.spec.js" time="35.341">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee table sorting functionality" classname="tests-final.spec.js" time="47.313">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee search functionality" classname="tests-final.spec.js" time="24.949">
-<system-out>
-<![CDATA[Suchfeld nicht gefunden
-]]>
-</system-out>
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee CRUD operations" classname="tests-final.spec.js" time="48.795">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › employee detail view comprehensive" classname="tests-final.spec.js" time="33.676">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › error handling and loading states" classname="tests-final.spec.js" time="22.255">
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › import export functionality" classname="tests-final.spec.js" time="21.827">
-<system-out>
-<![CDATA[Download nicht gestartet, möglicherweise Modal erforderlich
-]]>
-</system-out>
-</testcase>
-<testcase name="Mitarbeiter Gehaltsabrechnung E2E Tests › accessibility and keyboard navigation" classname="tests-final.spec.js" time="13.388">
 </testcase>
 </testsuite>
 </testsuites>

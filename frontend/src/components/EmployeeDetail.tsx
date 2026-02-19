@@ -1012,7 +1012,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
             {activeTab === 'ingresos' && ingresos && (
               <form onSubmit={handleSaveIngresos} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(ingresos).filter(([key]) => !['id_empleado', 'anio', 'fecha_creacion', 'fecha_modificacion'].includes(key)).map(([key, value]) => (
+                  {Object.entries(ingresos).filter(([key]) => !['id_empleado', 'anio', 'mes', 'fecha_creacion', 'fecha_modificacion'].includes(key)).map(([key, value]) => (
                     <div key={key}>
                       <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
                         {key.replace(/_/g, ' ')}
@@ -1037,7 +1037,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
             {activeTab === 'deducciones' && deducciones && (
               <form onSubmit={handleSaveDeducciones} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(deducciones).filter(([key]) => !['id_empleado', 'anio', 'fecha_creacion', 'fecha_modificacion'].includes(key)).map(([key, value]) => (
+                  {Object.entries(deducciones).filter(([key]) => !['id_empleado', 'anio', 'mes', 'fecha_creacion', 'fecha_modificacion'].includes(key)).map(([key, value]) => (
                     <div key={key}>
                       <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
                         {key.replace(/_/g, ' ')}

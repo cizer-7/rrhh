@@ -23,14 +23,18 @@ export default function ImportHorasDietas() {
   const [month, setMonth] = useState<number>(now.getMonth() + 1)
   const [file, setFile] = useState<File | null>(null)
   const [gasolinaFile, setGasolinaFile] = useState<File | null>(null)
+  const [cotizacionEspecieFile, setCotizacionEspecieFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmGasolinaOpen, setConfirmGasolinaOpen] = useState(false)
+  const [confirmCotizacionEspecieOpen, setConfirmCotizacionEspecieOpen] = useState(false)
   const [result, setResult] = useState<ImportResult | null>(null)
   const [gasolinaResult, setGasolinaResult] = useState<ImportResult | null>(null)
+  const [cotizacionEspecieResult, setCotizacionEspecieResult] = useState<ImportResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [gasolinaError, setGasolinaError] = useState<string | null>(null)
+  const [cotizacionEspecieError, setCotizacionEspecieError] = useState<string | null>(null)
 
   const years = useMemo(() => {
     const start = now.getFullYear() - 4
@@ -47,6 +51,12 @@ export default function ImportHorasDietas() {
     setGasolinaResult(null)
     setGasolinaError(null)
     setGasolinaFile(f)
+  }
+
+  const onSelectCotizacionEspecieFile = (f: File | null) => {
+    setCotizacionEspecieResult(null)
+    setCotizacionEspecieError(null)
+    setCotizacionEspecieFile(f)
   }
 
   const openConfirm = () => {
@@ -71,6 +81,18 @@ export default function ImportHorasDietas() {
     }
 
     setConfirmGasolinaOpen(true)
+  }
+
+  const openCotizacionEspecieConfirm = () => {
+    setCotizacionEspecieResult(null)
+    setCotizacionEspecieError(null)
+
+    if (!cotizacionEspecieFile) {
+      setCotizacionEspecieError('Bitte wähle eine Excel-Datei aus.')
+      return
+    }
+
+    setConfirmCotizacionEspecieOpen(true)
   }
 
   const doUpload = async () => {
@@ -103,6 +125,41 @@ export default function ImportHorasDietas() {
       setResult(data)
     } catch (e: any) {
       setError(e?.message || 'Upload fehlgeschlagen')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const doCotizacionEspecieUpload = async () => {
+    if (!cotizacionEspecieFile) return
+
+    setLoading(true)
+    setCotizacionEspecieError(null)
+    setCotizacionEspecieResult(null)
+
+    try {
+      const token = localStorage.getItem('token')
+      const form = new FormData()
+      form.append('year', String(year))
+      form.append('month', String(month))
+      form.append('file', cotizacionEspecieFile)
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/imports/cotizacion-especie`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: form,
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data?.error || data?.detail || `HTTP ${res.status}`)
+      }
+
+      setCotizacionEspecieResult(data)
+    } catch (e: any) {
+      setCotizacionEspecieError(e?.message || 'Upload fehlgeschlagen')
     } finally {
       setLoading(false)
     }
@@ -323,6 +380,99 @@ export default function ImportHorasDietas() {
         </Button>
       </div>
 
+      <div className="border-t border-gray-200 pt-6" />
+
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Cotizacion Especie</h3>
+        <p className="text-sm text-gray-600">
+          Importiert Werte aus einer Excel-Datei in Abzüge (Cotizacion Especie) für den ausgewählten Monat.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Jahr</label>
+          <select
+            value={year}
+            onChange={(e) => setYear(parseInt(e.target.value, 10))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            disabled={loading}
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Monat</label>
+          <select
+            value={month}
+            onChange={(e) => setMonth(parseInt(e.target.value, 10))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            disabled={loading}
+          >
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Datei</label>
+          <input
+            type="file"
+            accept=".xlsx"
+            onChange={(e) => onSelectCotizacionEspecieFile(e.target.files?.[0] || null)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+            disabled={loading}
+          />
+          {cotizacionEspecieFile && <div className="text-xs text-gray-600 mt-1">{cotizacionEspecieFile.name}</div>}
+        </div>
+      </div>
+
+      {cotizacionEspecieResult && (
+        <Alert>
+          <AlertTitle>
+            {cotizacionEspecieResult.success ? 'Cotizacion Especie Import erfolgreich' : 'Cotizacion Especie Import abgeschlossen mit Fehlern'}
+          </AlertTitle>
+          <AlertDescription>
+            <div className="space-y-1">
+              {cotizacionEspecieResult.message && <div>{cotizacionEspecieResult.message}</div>}
+              <div>
+                verarbeitet: {cotizacionEspecieResult.processed_count ?? 0}, neu: {cotizacionEspecieResult.inserted_count ?? 0}, aktualisiert:{' '}
+                {cotizacionEspecieResult.updated_count ?? 0}, übersprungen: {cotizacionEspecieResult.skipped_count ?? 0}, Fehler:{' '}
+                {cotizacionEspecieResult.error_count ?? 0}
+              </div>
+              {Array.isArray(cotizacionEspecieResult.errors) && cotizacionEspecieResult.errors.length > 0 && (
+                <div className="mt-2 max-h-40 overflow-y-auto text-xs bg-gray-50 border border-gray-200 rounded p-2">
+                  {cotizacionEspecieResult.errors.slice(0, 50).map((err, idx) => (
+                    <div key={idx}>{err}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {cotizacionEspecieError && (
+        <Alert variant="destructive">
+          <AlertTitle>Fehler</AlertTitle>
+          <AlertDescription>{cotizacionEspecieError}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="flex items-center gap-3">
+        <Button onClick={openCotizacionEspecieConfirm} disabled={loading}>
+          Cotizacion Especie Import starten
+        </Button>
+      </div>
+
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => (loading ? null : setConfirmOpen(false))} />
@@ -383,6 +533,44 @@ export default function ImportHorasDietas() {
                 onClick={async () => {
                   setConfirmGasolinaOpen(false)
                   await doGasolinaUpload()
+                }}
+                disabled={loading}
+              >
+                OK
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmCotizacionEspecieOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => (loading ? null : setConfirmCotizacionEspecieOpen(false))}
+          />
+          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6">
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">Cotizacion Especie Import bestätigen</h4>
+            <p className="text-sm text-gray-700 mb-4">
+              Möchtest du die Datei <span className="font-medium">{cotizacionEspecieFile?.name}</span> für{' '}
+              <span className="font-medium">
+                {month}.{year}
+              </span>{' '}
+              importieren?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setConfirmCotizacionEspecieOpen(false)}
+                disabled={loading}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                onClick={async () => {
+                  setConfirmCotizacionEspecieOpen(false)
+                  await doCotizacionEspecieUpload()
                 }}
                 disabled={loading}
               >

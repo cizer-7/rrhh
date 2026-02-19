@@ -30,6 +30,9 @@ Die Digitalisierung der Gehaltsabrechnung ist eine moderne Web-Anwendung, die di
 - Vollständige CRUD-Operationen für Mitarbeiter
 - Erweiterte Such- und Filterfunktionen
 - Import/Export von Mitarbeiterdaten
+- **Neu:** Sortierfunktionen für alle Tabellenspalten (ID, Name, CECO, Status, Kategorie)
+- **Neu:** Mitarbeiter-Kategorien (Techniker, Office) mit Filterung
+- **Neu:** Visuelle Sortierungsindikatoren mit Pfeilsymbole
 
 ### 💰 Gehaltsabrechnung
 - Jahresabhängige Gehaltsverwaltung
@@ -45,6 +48,9 @@ Die Digitalisierung der Gehaltsabrechnung ist eine moderne Web-Anwendung, die di
 - JWT-basierte Benutzerauthentifizierung
 - Rollenbasierte Zugriffskontrolle
 - Sichere API-Endpunkte
+- **Neu:** Passwort-Reset-Funktionalität mit Email-Bestätigung
+- **Neu:** Sichere Token-generierung mit 1-Stunden-Gültigkeit
+- **Neu:** SMTP-Email-Integration für Passwort-Wiederherstellung
 
 ## 🔄 Migration von Desktop-Anwendung
 

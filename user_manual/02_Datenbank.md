@@ -18,6 +18,7 @@
 - **ID:** Eindeutige Mitarbeiteridentifikation
 - **Name:** Vollständiger Mitarbeitername
 - **CECO:** Kostenstellennummer
+- **Kategorie:** Mitarbeiterkategorie (Techniker, Office)
 - **Weitere Felder:** Kontaktinformationen, Abteilung, Position
 
 #### `t002_salarios` - Gehaltsinformationen

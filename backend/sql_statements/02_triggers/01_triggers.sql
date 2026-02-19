@@ -41,8 +41,6 @@ DELIMITER ;
 -- ============================================================================
 -- INDEXES FÜR PERFORMANCE MONATLICHE TABELLEN
 -- ============================================================================
-
--- Indexes für schnelle Abfragen nach Jahr und Monat
 CREATE INDEX idx_ingresos_mensuales_anio_mes ON t003_ingresos_brutos_mensuales(anio, mes);
 CREATE INDEX idx_deducciones_mensuales_anio_mes ON t004_deducciones_mensuales(anio, mes);
 

@@ -154,7 +154,11 @@ class TestFlaskAPIMissingEndpoints:
     @patch('app.db_manager')
     def test_update_deducciones_mensuales_success(self, mock_db_manager, client, auth_headers):
         """Test PUT /employees/{id}/deducciones/{year}/{month} erfolgreich"""
-        mock_db_manager.update_deducciones_mensuales.return_value = True
+        mock_db_manager.update_deducciones_mensuales.return_value = {
+            "success": True,
+            "propagation_info": None,
+            "error": None
+        }
         
         deducciones_data = {'ausencias': 50, 'atrasos': 20}
         response = client.put('/employees/1/deducciones/2025/6',

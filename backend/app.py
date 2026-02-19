@@ -814,6 +814,54 @@ def import_gasolina(current_user):
         logger.error(f"Fehler beim Import Gasolina: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
 
+
+@app.route('/imports/cotizacion-especie', methods=['POST'])
+@token_required
+def import_cotizacion_especie(current_user):
+    try:
+        year_raw = request.form.get('year', '').strip()
+        month_raw = request.form.get('month', '').strip()
+        if not year_raw or not month_raw:
+            return jsonify({"error": "year und month sind erforderlich"}), 400
+
+        try:
+            year = int(year_raw)
+            month = int(month_raw)
+        except Exception:
+            return jsonify({"error": "year und month müssen Ganzzahlen sein"}), 400
+
+        if month < 1 or month > 12:
+            return jsonify({"error": "month muss zwischen 1 und 12 liegen"}), 400
+
+        if 'file' not in request.files:
+            return jsonify({"error": "file ist erforderlich"}), 400
+        file = request.files['file']
+        if not file or not file.filename:
+            return jsonify({"error": "Ungültige Datei"}), 400
+
+        try:
+            content = file.read()
+            wb = load_workbook(filename=io.BytesIO(content), data_only=True)
+            ws = wb.active
+        except Exception as e:
+            logger.error(f"Fehler beim Lesen der Excel-Datei: {e}")
+            return jsonify({"error": "Excel-Datei konnte nicht gelesen werden"}), 400
+
+        result = db_manager.import_cotizacion_especie_worksheet(
+            worksheet=ws,
+            year=year,
+            month=month,
+            usuario_login=current_user,
+            source_filename=file.filename,
+        )
+
+        status_code = 200 if result.get('success') else 400
+        return jsonify(result), status_code
+
+    except Exception as e:
+        logger.error(f"Fehler beim Import Cotizacion Especie: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
 # Monatliche Einkünfte Endpunkte
 @app.route('/employees/<int:employee_id>/ingresos/<int:year>/<int:month>', methods=['PUT'])
 @token_required
@@ -850,9 +898,10 @@ def update_deducciones_mensuales(current_user, employee_id, year, month):
     """Monatliche Abzüge für Mitarbeiter aktualisieren"""
     try:
         deducciones = request.get_json()
-        success = db_manager.update_deducciones_mensuales(employee_id, year, month, deducciones)
-        if not success:
-            return jsonify({"error": "Fehler beim Aktualisieren der monatlichen Abzüge"}), 400
+        result = db_manager.update_deducciones_mensuales(employee_id, year, month, deducciones)
+        
+        if not result["success"]:
+            return jsonify({"error": result.get("error", "Fehler beim Aktualisieren der monatlichen Abzüge")}), 400
 
         try:
             db_manager.insert_bearbeitungslog(
@@ -867,7 +916,16 @@ def update_deducciones_mensuales(current_user, employee_id, year, month):
         except Exception:
             pass
         
-        return jsonify({"message": "Monatliche Abzüge erfolgreich aktualisiert"})
+        # Bereite die Antwort mit Propagation-Informationen vor
+        response_message = "Monatliche Abzüge erfolgreich aktualisiert"
+        if result.get("propagation_info") and result["propagation_info"].get("propagated"):
+            months = result["propagation_info"]["months_updated"]
+            response_message += f". Cotizacion Especie wurde automatisch für die folgenden Monate übernommen: {', '.join(map(str, months))}"
+        
+        return jsonify({
+            "message": response_message,
+            "propagation_info": result.get("propagation_info")
+        })
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren der monatlichen Abzüge für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500

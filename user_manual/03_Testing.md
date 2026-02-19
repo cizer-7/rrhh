@@ -89,12 +89,21 @@ def test_employee_creation(self, mock_db_manager):
 - User-Interaktionen
 - Formular-Validierung
 - State-Management
+- **Neu:** Sortierfunktionen und Tabelleninteraktionen
+- **Neu:** Kategorie-Filterung und Suche
 
 **Beispiel:**
 ```javascript
 test('renders employee form correctly', () => {
   render(<EmployeeForm />);
   expect(screen.getByLabelText('Name')).toBeInTheDocument();
+});
+
+// Neuer Test für Sortierung
+test('table sorting works correctly', () => {
+  render(<EmployeeTable />);
+  fireEvent.click(screen.getByText('Name'));
+  expect(screen.getByRole('arrow-up')).toBeInTheDocument();
 });
 ```
 
@@ -115,6 +124,9 @@ test('renders employee form correctly', () => {
 - Mitarbeiter-Anlage und -Bearbeitung
 - Gehaltsabrechnung
 - Daten-Export
+- **Neu:** Passwort-Reset-Workflow
+- **Neu:** Sortierung und Filterung in der UI
+- **Neu:** Kategorie-basierte Mitarbeiterverwaltung
 
 ---
 
@@ -258,12 +270,12 @@ test('complete user workflow', async ({ page }) => {
 ## 📈 Test-Statistiken
 
 ### Aktuelle Test-Abdeckung
-- **Gesamt:** 66+ Tests
-- **Backend Unit-Tests:** 31+ Tests
-- **Flask API Tests:** 26+ Tests
-- **Integrationstests:** 9+ Tests
-- **Frontend Tests:** React Komponenten Tests
-- **E2E Tests:** Browser-basierte Workflow-Tests
+- **Gesamt:** 70+ Tests
+- **Backend Unit-Tests:** 35+ Tests (inkl. API Core, Authentifizierung)
+- **Flask API Tests:** 30+ Tests (alle Endpunkte)
+- **Integrationstests:** 10+ Tests (komplette Workflows)
+- **Frontend Tests:** React Komponenten Tests (EmployeeTable, Forms)
+- **E2E Tests:** Browser-basierte Workflow-Tests (Mitarbeiterverwaltung)
 
 ### Test-Ausführungszeiten
 - **Unit-Tests:** < 2 Minuten

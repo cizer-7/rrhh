@@ -9,6 +9,8 @@ Willkommen zur umfassenden Dokumentation des digitalisierten Gehaltsabrechnungss
 - Projektbeschreibung und Ziele
 - Systemarchitektur und Technologien
 - Migration von der Desktop-Anwendung
+- **Neu:** Erweiterte Mitarbeiterverwaltung mit Sortierung und Kategorien
+- **Neu:** Passwort-Reset-Funktionalität mit Email-Integration
 - Systemstatus und zukünftige Entwicklungen
 
 ### 🗄️ [Datenbank-Dokumentation](02_Datenbank.md)
@@ -17,6 +19,7 @@ Willkommen zur umfassenden Dokumentation des digitalisierten Gehaltsabrechnungss
 - Installation und Setup
 - Trigger und Automatisierung
 - Passwort-Reset-Funktionalität
+- **Neu:** Mitarbeiter-Kategorien (Techniker, Office)
 - Test-Benutzer und Wartung
 
 ### 🧪 [Testing-Handbuch](03_Testing.md)
@@ -24,13 +27,18 @@ Willkommen zur umfassenden Dokumentation des digitalisierten Gehaltsabrechnungss
 - Schnellstart für alle Testarten
 - Detaillierte Test-Struktur
 - Coverage und Berichte
+- **Neu:** Erweiterte Test-Abdeckung (70+ Tests)
+- **Neu:** Tests für Sortierung und Kategorie-Funktionen
+- **Neu:** E2E-Tests für Passwort-Reset-Workflow
 - Fehlerbehandlung und Debugging
 - Anleitung zum Schreiben von Tests
 
 ### 📖 [Benutzerhandbuch](04_Benutzerhandbuch.md)
 **Für:** Endbenutzer, Personalabteilung, Administratoren
 - Erste Schritte und Anmeldung
-- Mitarbeiterverwaltung
+- **Neu:** Detaillierte Anleitung für Passwort-Reset
+- Mitarbeiterverwaltung mit Sortierung und Filterung
+- **Neu:** Kategorie-basierte Mitarbeiterverwaltung
 - Gehaltsabrechnung und Reporting
 - Systemeinstellungen
 - Häufige Fragen und Support
@@ -115,7 +123,10 @@ Wir freuen uns über Ihr Feedback zur Dokumentation:
 ### Versionshistorie
 - **v1.0:** Erste vollständige Dokumentation
 - **v1.1:** Überarbeitete Struktur und erweiterte Inhalte
-- **Aktuelle Version:** Diese Dokumentation
+- **v1.2 (Aktuell):** **Neu:** Dokumentation der Sortierfunktionen und Mitarbeiter-Kategorien
+- **v1.2 (Aktuell):** **Neu:** Passwort-Reset-Funktionalität mit Email-Integration
+- **v1.2 (Aktuell):** **Neu:** Erweiterte Test-Dokumentation (70+ Tests)
+- **v1.2 (Aktuell):** **Neu:** Aktualisierte Benutzerhandbücher mit neuen UI-Funktionen
 
 ### Zukünftige Erweiterungen
 - **Video-Tutorials:** Schritt-für-Schritt Videoanleitungen
@@ -139,8 +150,9 @@ Wir freuen uns über Ihr Feedback zur Dokumentation:
 ---
 
 **Letzte Aktualisierung:** Februar 2026  
-**Version:** 1.1  
-**Maintainer:** Systemadministration
+**Version:** 1.2  
+**Maintainer:** Systemadministration  
+**Neu in dieser Version:** Sortierfunktionen, Mitarbeiter-Kategorien, Passwort-Reset-Workflow
 
 ---
 
