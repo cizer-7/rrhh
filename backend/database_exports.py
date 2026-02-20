@@ -127,6 +127,8 @@ class DatabaseManagerExportsMixin:
                 COALESCE(i.ticket_restaurant, 0) as ticket_restaurant,
                 COALESCE(d.cotizacion_especie, 0) as cotizacion_especie,
                 COALESCE(i.primas, 0) as primas,
+                COALESCE(i.lavado_coche, 0) as lavado_coche,
+                COALESCE(i.beca_escolar, 0) as beca_escolar,
                 COALESCE(i.dietas_cotizables, 0) as dietas_cotizables,
                 COALESCE(i.horas_extras, 0) as horas_extras,
                 COALESCE(i.seguro_pensiones, 0) as seguro_pensiones,
@@ -159,7 +161,7 @@ class DatabaseManagerExportsMixin:
             numeric_columns = [
                 'salario_mensual_bruto', 'atrasos', 'antiguedad', 'salario_mensual_bruto_prev',
                 'fte_porcentaje',
-                'ticket_restaurant', 'cotizacion_especie', 'primas', 'dietas_cotizables',
+                'ticket_restaurant', 'cotizacion_especie', 'primas', 'lavado_coche', 'beca_escolar', 'dietas_cotizables',
                 'horas_extras', 'seguro_pensiones', 'seguro_accidentes', 'dietas_exentas',
                 'formacion', 'adelas', 'sanitas', 'gasolina', 'dias_exentos'
             ]
@@ -191,6 +193,11 @@ class DatabaseManagerExportsMixin:
                 ),
                 axis=1,
             )
+
+            # beca_escolar wird immer im Monat, in dem es eingetragen ist, zu Primas addiert
+            df['primas'] = df['primas'] + df.get('beca_escolar', 0)
+            if int(month) == 1:
+                df['primas'] = df['primas'] + df.get('lavado_coche', 0)
 
             if extra:
                 columns = [

@@ -168,6 +168,7 @@ CREATE TABLE IF NOT EXISTS t003_ingresos_brutos_mensuales (
     dietas_exentas DECIMAL(10,2) DEFAULT 0.00,
     seguro_pensiones DECIMAL(10,2) DEFAULT 0.00,
     lavado_coche DECIMAL(10,2) DEFAULT 0.00,
+    beca_escolar DECIMAL(10,2) DEFAULT 0.00,
     formacion DECIMAL(10,2) DEFAULT 0.00,
     tickets DECIMAL(10,2) DEFAULT 0.00,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

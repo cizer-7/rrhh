@@ -172,6 +172,10 @@ export interface Ingresos {
 
 
 
+  beca_escolar: number;
+
+
+
   formacion: number;
 
 

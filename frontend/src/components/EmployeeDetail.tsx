@@ -359,6 +359,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         dietas_exentas: 0,
         seguro_pensiones: 0,
         lavado_coche: 0,
+        ...(dataMode === 'monthly' ? { beca_escolar: 0 } : {}),
         formacion: 0,
         tickets: 0
       }
@@ -684,6 +685,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                          (typeof ingresos?.dietas_exentas === 'string' ? parseFloat(ingresos.dietas_exentas) || 0 : (ingresos?.dietas_exentas || 0)) + 
                          (typeof ingresos?.seguro_pensiones === 'string' ? parseFloat(ingresos.seguro_pensiones) || 0 : (ingresos?.seguro_pensiones || 0)) + 
                          (typeof ingresos?.lavado_coche === 'string' ? parseFloat(ingresos.lavado_coche) || 0 : (ingresos?.lavado_coche || 0)) +
+                         (typeof ingresos?.beca_escolar === 'string' ? parseFloat((ingresos as any).beca_escolar) || 0 : ((ingresos as any)?.beca_escolar || 0)) +
                          (typeof ingresos?.formacion === 'string' ? parseFloat(ingresos.formacion) || 0 : (ingresos?.formacion || 0)) +
                          (typeof ingresos?.tickets === 'string' ? parseFloat(ingresos.tickets) || 0 : (ingresos?.tickets || 0))
     const deduccionesTotal = (typeof deducciones?.seguro_accidentes === 'string' ? parseFloat(deducciones.seguro_accidentes) || 0 : (deducciones?.seguro_accidentes || 0)) + 
@@ -1012,7 +1014,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
             {activeTab === 'ingresos' && ingresos && (
               <form onSubmit={handleSaveIngresos} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(ingresos).filter(([key]) => !['id_empleado', 'anio', 'mes', 'fecha_creacion', 'fecha_modificacion'].includes(key)).map(([key, value]) => (
+                  {Object.entries(ingresos).filter(([key]) => !['id_empleado', 'anio', 'mes', 'fecha_creacion', 'fecha_modificacion', ...(dataMode === 'yearly' ? ['beca_escolar'] : [])].includes(key)).map(([key, value]) => (
                     <div key={key}>
                       <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
                         {key.replace(/_/g, ' ')}

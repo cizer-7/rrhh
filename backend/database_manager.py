@@ -537,6 +537,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             ROUND(AVG(dietas_exentas), 2) as dietas_exentas,
             ROUND(AVG(seguro_pensiones), 2) as seguro_pensiones,
             ROUND(AVG(lavado_coche), 2) as lavado_coche,
+            ROUND(AVG(beca_escolar), 2) as beca_escolar,
             ROUND(AVG(formacion), 2) as formacion,
             ROUND(AVG(tickets), 2) as tickets,
             MAX(fecha_modificacion) as fecha_modificacion
@@ -568,7 +569,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         ingresos_mensuales_query = """
         SELECT anio, mes, ticket_restaurant, primas, 
                dietas_cotizables, horas_extras, dias_exentos, 
-               dietas_exentas, seguro_pensiones, lavado_coche, formacion, tickets, fecha_modificacion
+               dietas_exentas, seguro_pensiones, lavado_coche, beca_escolar, formacion, tickets, fecha_modificacion
         FROM t003_ingresos_brutos_mensuales 
         WHERE id_empleado = %s
         ORDER BY anio DESC, mes ASC
@@ -1316,7 +1317,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 'dietas_cotizables', 'horas_extras', 'dias_exentos', 
                 'dietas_exentas', 'seguro_pensiones', 'lavado_coche', 'formacion', 'tickets'
                 ]
-            # Filtere die Daten auf erlaubte Felder
+            # beca_escolar wird im Jahresmodus nicht unterstützt; wird aus Daten entfernt
             filtered_data = {k: v for k, v in data.items() if k in allowed_fields}
             if not filtered_data:
                 return False
@@ -1789,7 +1790,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             allowed_fields = [
                 'ticket_restaurant', 'primas', 
                 'dietas_cotizables', 'horas_extras', 'dias_exentos', 
-                'dietas_exentas', 'seguro_pensiones', 'lavado_coche', 'formacion', 'tickets'
+                'dietas_exentas', 'seguro_pensiones', 'lavado_coche', 'beca_escolar', 'formacion', 'tickets'
             ]
             # Filtere die Daten auf erlaubte Felder
             filtered_data = {k: v for k, v in data.items() if k in allowed_fields}
