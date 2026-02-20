@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Employee, Salary, Ingresos, Deducciones, EmployeeFte } from '@/types/employee'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Save, Download, Euro, TrendingUp, TrendingDown, Calendar } from 'lucide-react'
+import LogDetails from '@/components/ui/LogDetails'
 import apiClient from '@/lib/api'
 interface EmployeeDetailProps {
   employee: Employee
@@ -1218,8 +1219,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                             </td>
                             <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{item.aktion || '-'}</td>
                             <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{item.objekt || '-'}</td>
-                            <td className="px-4 py-2 text-xs text-gray-600">
-                              <pre className="whitespace-pre-wrap break-words max-w-xl">{item.details ? JSON.stringify(item.details, null, 2) : '-'}</pre>
+                            <td className="px-4 py-2 text-sm text-gray-600">
+                              <LogDetails details={item.details} />
                             </td>
                           </tr>
                         ))}

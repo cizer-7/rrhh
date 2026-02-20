@@ -1,159 +1,159 @@
-# 📚 Benutzerhandbuch - Digitalisierung Gehaltsabrechnung
+# 📚 Manual de Usuario - Digitalización de Nóminas
 
-Willkommen zur umfassenden Dokumentation des digitalisierten Gehaltsabrechnungssystems. Dieses Handbuch enthält alle Informationen für die effektive Nutzung und Verwaltung der Anwendung.
+Bienvenido a la documentación completa del sistema de nóminas digitalizado. Este manual contiene toda la información para el uso efectivo y administración de la aplicación.
 
-## 📖 Dokumentationsübersicht
+## 📖 Resumen de Documentación
 
-### 🎯 [Systemübersicht](01_Übersicht.md)
-**Für:** Alle Benutzer, Administratoren, Entwickler
-- Projektbeschreibung und Ziele
-- Systemarchitektur und Technologien
-- Migration von der Desktop-Anwendung
-- **Neu:** Erweiterte Mitarbeiterverwaltung mit Sortierung und Kategorien
-- **Neu:** Passwort-Reset-Funktionalität mit Email-Integration
-- Systemstatus und zukünftige Entwicklungen
+### 🎯 [Resumen del Sistema](01_Übersicht.md)
+**Para:** Todos los usuarios, administradores, desarrolladores
+- Descripción del proyecto y objetivos
+- Arquitectura del sistema y tecnologías
+- Migración desde la aplicación de escritorio
+- **Nuevo:** Gestión de empleados extendida con ordenamiento y categorías
+- **Nuevo:** Funcionalidad de restablecimiento de contraseña con integración email
+- Estado del sistema y desarrollos futuros
 
-### 🗄️ [Datenbank-Dokumentation](02_Datenbank.md)
-**Für:** Administratoren, Entwickler, Datenbankadministratoren
-- Vollständige Datenbankstruktur
-- Installation und Setup
-- Trigger und Automatisierung
-- Passwort-Reset-Funktionalität
-- **Neu:** Mitarbeiter-Kategorien (Techniker, Office)
-- Test-Benutzer und Wartung
+### 🗄️ [Documentación de Base de Datos](02_Datenbank.md)
+**Para:** Administradores, desarrolladores, administradores de base de datos
+- Estructura completa de la base de datos
+- Instalación y configuración
+- Triggers y automatización
+- Funcionalidad de restablecimiento de contraseña
+- **Nuevo:** Categorías de empleados (Técnico, Oficina)
+- Usuarios de prueba y mantenimiento
 
-### 🧪 [Testing-Handbuch](03_Testing.md)
-**Für:** Entwickler, QA-Tester, Administratoren
-- Schnellstart für alle Testarten
-- Detaillierte Test-Struktur
-- Coverage und Berichte
-- **Neu:** Erweiterte Test-Abdeckung (70+ Tests)
-- **Neu:** Tests für Sortierung und Kategorie-Funktionen
-- **Neu:** E2E-Tests für Passwort-Reset-Workflow
-- Fehlerbehandlung und Debugging
-- Anleitung zum Schreiben von Tests
+### 🧪 [Manual de Testing](03_Testing.md)
+**Para:** Desarrolladores, QA testers, administradores
+- Inicio rápido para todos los tipos de tests
+- Estructura de tests detallada
+- Cobertura e informes
+- **Nuevo:** Cobertura de tests extendida (70+ Tests)
+- **Nuevo:** Tests para funciones de ordenamiento y categorías
+- **Nuevo:** Tests E2E para flujo de restablecimiento de contraseña
+- Manejo de errores y debugging
+- Guía para escribir tests
 
-### 📖 [Benutzerhandbuch](04_Benutzerhandbuch.md)
-**Für:** Endbenutzer, Personalabteilung, Administratoren
-- Erste Schritte und Anmeldung
-- **Neu:** Detaillierte Anleitung für Passwort-Reset
-- Mitarbeiterverwaltung mit Sortierung und Filterung
-- **Neu:** Kategorie-basierte Mitarbeiterverwaltung
-- Gehaltsabrechnung und Reporting
-- Systemeinstellungen
-- Häufige Fragen und Support
-
----
-
-## 🚀 Schnellstart
-
-### Für Endbenutzer
-1. **Lesen:** [Benutzerhandbuch](04_Benutzerhandbuch.md) → "Erste Schritte"
-2. **Anmelden:** Mit Ihren Zugangsdaten am System anmelden
-3. **Erkunden:** Die Benutzeroberfläche und grundlegenden Funktionen testen
-
-### Für Administratoren
-1. **Systemsetup:** [Datenbank-Dokumentation](02_Datenbank.md) → "Installation & Setup"
-2. **Konfiguration:** Benutzer und Rollen einrichten
-3. **Testing:** [Testing-Handbuch](03_Testing.md) → "Schnellstart"
-
-### Für Entwickler
-1. **Architektur verstehen:** [Systemübersicht](01_Übersicht.md) → "Systemarchitektur"
-2. **Datenbankstruktur:** [Datenbank-Dokumentation](02_Datenbank.md) → "Datenbankstruktur"
-3. **Testing:** [Testing-Handbuch](03_Testing.md) → "Test-Arten"
+### 📖 [Manual de Usuario](04_Benutzerhandbuch.md)
+**Para:** Usuarios finales, departamento de personal, administradores
+- Primeros pasos y login
+- **Nuevo:** Guía detallada para restablecimiento de contraseña
+- Gestión de empleados con ordenamiento y filtrado
+- **Nuevo:** Gestión de empleados basada en categorías
+- Procesamiento de nóminas y reportes
+- Configuración del sistema
+- Preguntas frecuentes y soporte
 
 ---
 
-## 📋 Zielgruppen
+## 🚀 Inicio Rápido
 
-### 👤 Endbenutzer
-- **Personalabteilung:** Mitarbeiterverwaltung, Gehaltsabrechnung
-- **Abteilungsleiter:** Zugriff auf Mitarbeiterdaten ihrer Abteilung
-- **Management:** Reporting und Statistiken
+### Para Usuarios Finales
+1. **Leer:** [Manual de Usuario](04_Benutzerhandbuch.md) → "Primeros Pasos"
+2. **Iniciar Sesión:** Acceder al sistema con sus credenciales
+3. **Explorar:** Probar la interfaz de usuario y funciones básicas
 
-### 🔧 Administratoren
-- **IT-Administration:** Systemwartung, Benutzer管理
-- **Datenbankadministratoren:** Datenbankpflege, Backup
-- **Systemintegratoren:** Schnittstellen und Integrationen
+### Para Administradores
+1. **Configuración del Sistema:** [Documentación de Base de Datos](02_Datenbank.md) → "Instalación y Configuración"
+2. **Configuración:** Configurar usuarios y roles
+3. **Testing:** [Manual de Testing](03_Testing.md) → "Inicio Rápido"
 
-### 💻 Entwickler
-- **Frontend-Entwickler:** React/Next.js Komponenten
-- **Backend-Entwickler:** Flask API, Datenbanklogik
-- **QA-Tester:** Testautomatisierung, Qualitätssicherung
-
----
-
-## 🎯 Dokumentationsziele
-
-### Vollständigkeit
-- **Alle Funktionen:** Jede Systemfunktion ist dokumentiert
-- **Alle Rollen:** Spezifische Anleitungen für jede Benutzerrolle
-- **Alle Prozesse:** Von der Installation bis zur täglichen Nutzung
-
-### Verständlichkeit
-- **Klare Sprache:** Einfache, verständliche Formulierungen
-- **Strukturierte Inhalte:** Logische Gliederung und Querverweise
-- **Praktische Beispiele:** Konkrete Anwendungsfälle und Beispiele
-
-### Aktualität
-- **Regelmäßige Updates:** Dokumentation wird mit Systemänderungen aktualisiert
-- **Versionierung:** Klare Kennzeichnung der Dokumentationsversion
-- **Feedback:** Möglichkeiten zur Verbesserung der Dokumentation
+### Para Desarrolladores
+1. **Entender la Arquitectura:** [Resumen del Sistema](01_Übersicht.md) → "Arquitectura del Sistema"
+2. **Estructura de la Base de Datos:** [Documentación de Base de Datos](02_Datenbank.md) → "Estructura de la Base de Datos"
+3. **Testing:** [Manual de Testing](03_Testing.md) → "Tipos de Tests"
 
 ---
 
-## 📞 Support & Feedback
+## 📋 Público Objetivo
 
-### Technischer Support
-Bei technischen Problemen oder Fragen:
-- **Systemadministrator:** [E-Mail/Telefon]
-- **IT-Helpdesk:** [E-Mail/Telefon]
-- **Dokumentationsfeedback:** [E-Mail/Feedback-Formular]
+### 👤 Usuarios Finales
+- **Departamento de Personal:** Gestión de empleados, procesamiento de nóminas
+- **Jefes de Departamento:** Acceso a datos de empleados de su departamento
+- **Gerencia:** Reportes y estadísticas
 
-### Dokumentationsfeedback
-Wir freuen uns über Ihr Feedback zur Dokumentation:
-- **Verständlichkeit:** Sind die Anleitungen klar verständlich?
-- **Vollständigkeit:** Fehlen wichtige Informationen?
-- **Verbesserungen:** Welche Inhalte wären hilfreich?
+### 🔧 Administradores
+- **Administración de TI:** Mantenimiento del sistema, gestión de usuarios
+- **Administradores de Base de Datos:** Mantenimiento de base de datos, backup
+- **Integradores de Sistemas:** Interfaces e integraciones
 
----
-
-## 🔄 Aktualisierungen
-
-### Versionshistorie
-- **v1.0:** Erste vollständige Dokumentation
-- **v1.1:** Überarbeitete Struktur und erweiterte Inhalte
-- **v1.2 (Aktuell):** **Neu:** Dokumentation der Sortierfunktionen und Mitarbeiter-Kategorien
-- **v1.2 (Aktuell):** **Neu:** Passwort-Reset-Funktionalität mit Email-Integration
-- **v1.2 (Aktuell):** **Neu:** Erweiterte Test-Dokumentation (70+ Tests)
-- **v1.2 (Aktuell):** **Neu:** Aktualisierte Benutzerhandbücher mit neuen UI-Funktionen
-
-### Zukünftige Erweiterungen
-- **Video-Tutorials:** Schritt-für-Schritt Videoanleitungen
-- **API-Dokumentation:** Detaillierte API-Referenz
-- **Best-Practices:** Empfehlungen für optimales Systemnutzung
+### 💻 Desarrolladores
+- **Desarrolladores Frontend:** Componentes React/Next.js
+- **Desarrolladores Backend:** API Flask, lógica de base de datos
+- **QA Testers:** Automatización de tests, aseguramiento de calidad
 
 ---
 
-## 📚 Zusätzliche Ressourcen
+## 🎯 Objetivos de la Documentación
 
-### Projektdateien
-- **Haupt-README:** `../README.md` - Projektübersicht und Schnellstart
-- **Testing-Dokumentation:** `../testing/README_TESTING.md` - Detaillierte Test-Dokumentation
-- **Datenbank-Skripte:** `../backend/sql_statements/README_DB.md` - Datenbank-Setup
+### Completitud
+- **Todas las Funciones:** Cada función del sistema está documentada
+- **Todos los Roles:** Guías específicas para cada rol de usuario
+- **Todos los Procesos:** Desde la instalación hasta el uso diario
 
-### Externe Ressourcen
-- **React-Dokumentation:** https://react.dev/
-- **Flask-Dokumentation:** https://flask.palletsprojects.com/
-- **MySQL-Dokumentation:** https://dev.mysql.com/doc/
+### Comprensibilidad
+- **Lenguaje Claro:** Formulaciones simples y comprensibles
+- **Contenido Estructurado:** Organización lógica y referencias cruzadas
+- **Ejemplos Prácticos:** Casos de uso concretos y ejemplos
 
----
-
-**Letzte Aktualisierung:** Februar 2026  
-**Version:** 1.2  
-**Maintainer:** Systemadministration  
-**Neu in dieser Version:** Sortierfunktionen, Mitarbeiter-Kategorien, Passwort-Reset-Workflow
+### Actualidad
+- **Actualizaciones Regulares:** La documentación se actualiza con cambios del sistema
+- **Versionamiento:** Marcado claro de la versión de la documentación
+- **Feedback:** Oportunidades para mejorar la documentación
 
 ---
 
-*Beginnen Sie mit der [Systemübersicht](01_Übersicht.md) für einen umfassenden Einstieg in das System.*
+## 📞 Soporte y Feedback
+
+### Soporte Técnico
+Para problemas técnicos o preguntas:
+- **Administrador del Sistema:** [Email/Teléfono]
+- **Helpdesk de TI:** [Email/Teléfono]
+- **Feedback de Documentación:** [Email/Formulario de Feedback]
+
+### Feedback de Documentación
+Apreciamos su feedback sobre la documentación:
+- **Comprensibilidad:** ¿Las guías son claras y comprensibles?
+- **Completitud:** ¿Falta información importante?
+- **Mejoras:** ¿Qué contenidos serían útiles?
+
+---
+
+## 🔄 Actualizaciones
+
+### Historial de Versiones
+- **v1.0:** Primera documentación completa
+- **v1.1:** Estructura revisada y contenidos extendidos
+- **v1.2 (Actual):** **Nuevo:** Documentación de funciones de ordenamiento y categorías de empleados
+- **v1.2 (Actual):** **Nuevo:** Funcionalidad de restablecimiento de contraseña con integración email
+- **v1.2 (Actual):** **Nuevo:** Documentación de tests extendida (70+ Tests)
+- **v1.2 (Actual):** **Nuevo:** Manuales de usuario actualizados con nuevas funciones de UI
+
+### Extensiones Futuras
+- **Video Tutoriales:** Guías de video paso a paso
+- **Documentación API:** Referencia API detallada
+- **Best Practices:** Recomendaciones para uso óptimo del sistema
+
+---
+
+## 📚 Recursos Adicionales
+
+### Archivos del Proyecto
+- **README Principal:** `../README.md` - Resumen del proyecto e inicio rápido
+- **Documentación de Testing:** `../testing/README_TESTING.md` - Documentación de tests detallada
+- **Scripts de Base de Datos:** `../backend/sql_statements/README_DB.md` - Configuración de base de datos
+
+### Recursos Externos
+- **Documentación React:** https://react.dev/
+- **Documentación Flask:** https://flask.palletsprojects.com/
+- **Documentación MySQL:** https://dev.mysql.com/doc/
+
+---
+
+**Última Actualización:** Febrero 2026  
+**Versión:** 1.2  
+**Mantenedor:** Administración del Sistema  
+**Nuevo en esta Versión:** Funciones de ordenamiento, categorías de empleados, flujo de restablecimiento de contraseña
+
+---
+
+*Comience con la [Resumen del Sistema](01_Übersicht.md) para una introducción completa al sistema.*

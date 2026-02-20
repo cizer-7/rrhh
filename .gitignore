@@ -157,6 +157,10 @@ testing/backup/
 .npm
 .eslintcache
 
+# Tailwind CSS
+.tailwindrc/
+tailwind.config.js
+
 # IDE specific files
 .vscode/settings.json
 .vscode/launch.json

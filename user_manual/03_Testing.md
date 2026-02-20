@@ -1,79 +1,79 @@
-# 🧪 Testing-Handbuch - Digitalisierung Gehaltsabrechnung
+# 🧪 Manual de Testing - Digitalización de Nóminas
 
-## 📋 Inhaltsverzeichnis
+## 📋 Índice
 
-1. [🚀 Schnellstart](#-schnellstart)
-2. [📁 Test-Struktur](#-test-struktur)
-3. [🧪 Test-Arten](#-test-arten)
-4. [📊 Coverage & Berichte](#-coverage--berichte)
-5. [🔧 Konfiguration](#-konfiguration)
-6. [🐛 Fehlerbehandlung](#-fehlerbehandlung)
-7. [📝 Test-Schreiben](#-test-schreiben)
+1. [🚀 Inicio Rápido](#-inicio-rápido)
+2. [📁 Estructura de Tests](#-estructura-de-tests)
+3. [🧪 Tipos de Tests](#-tipos-de-tests)
+4. [📊 Cobertura e Informes](#-cobertura-e-informes)
+5. [🔧 Configuración](#-configuración)
+6. [🐛 Manejo de Errores](#-manejo-de-errores)
+7. [📝 Escribir Tests](#-escribir-tests)
 
 ---
 
-## 🚀 Schnellstart
+## 🚀 Inicio Rápido
 
-### Alle Tests ausführen
+### Ejecutar Todos los Tests
 ```bash
-# Backend-Tests
+# Tests del Backend
 python testing/backend/test_backend.py
 
-# Frontend-Tests
+# Tests del Frontend
 cd testing/frontend
 
-# E2E-Tests
+# Tests E2E
 cd testing/e2e
 npx playwright test tests-final.spec.js --project=chromium --reporter=list
 ```
 
-### Schnelle Tests (Entwicklung)
+### Tests Rápidos (Desarrollo)
 ```bash
-# Nur Unit-Tests (schnell)
+# Solo Unit Tests (rápido)
 python testing/backend/run_backend_tests.py --unit-only
 
-# Frontend im Watch-Mode
+# Frontend en modo Watch
 cd testing/frontend && npm run test:watch
 
-# E2E-Tests mit sichtbarem Browser
+# Tests E2E con navegador visible
 cd testing/e2e && npm run test:headed
 ```
 
 ---
 
-## 📁 Test-Struktur
+## 📁 Estructura de Tests
 
-### Backend-Tests (`testing/backend/`)
-- **`run_backend_tests.py`** - Haupt-Test-Runner
-- **`test_backend_core.py`** - DatabaseManager Tests
-- **`test_api_core.py`** - Flask API Tests
-- **`test_integration_simple.py`** - Integrationstests
+### Tests del Backend (`testing/backend/`)
+- **`run_backend_tests.py`** - Ejecutor principal de tests
+- **`test_backend_core.py`** - Tests de DatabaseManager
+- **`test_api_core.py`** - Tests de Flask API
+- **`test_integration_simple.py`** - Tests de integración
 
-### Frontend-Tests (`testing/frontend/`)
-- **`*.test.js`** - React-Komponenten-Tests
-- **`jest.config.js`** - Jest-Konfiguration
-- **`package.json`** - Test-Dependencies
+### Tests del Frontend (`testing/frontend/`)
+- **`*.test.js`** - Tests de componentes React
+- **`jest.config.js`** - Configuración de Jest
+- **`package.json`** - Dependencias de tests
 
-### E2E-Tests (`testing/e2e/`)
-- **`tests-final.spec.js`** - Haupt-E2E-Test-Suite
-- **`playwright.config.js`** - Playwright-Einstellungen
-- **`test-results/`** - Test-Ergebnisse und Screenshots
+### Tests E2E (`testing/e2e/`)
+- **`tests-final.spec.js`** - Suite principal de tests E2E
+- **`playwright.config.js`** - Configuración de Playwright
+- **`test-results/`** - Resultados de tests y capturas de pantalla
 
 ---
 
-## 🧪 Test-Arten
+## 🧪 Tipos de Tests
 
-### Backend Unit-Tests
-**Zweck:** Isolierte Tests einzelner Backend-Komponenten
+### Unit Tests del Backend
+**Propósito:** Tests aislados de componentes individuales del backend
 
-**Getestete Funktionen:**
-- DatabaseManager Methoden
-- Flask API Endpunkte
-- JWT Token-Verarbeitung
-- Passwort-Hashing
-- Datenbankoperationen
+**Funciones Probadas:**
+- Métodos de DatabaseManager
+- Endpoints de Flask API
+- Procesamiento de Tokens JWT
+- Hash de Contraseñas
+- Operaciones de base de datos
 
-**Beispiel:**
+**Ejemplo:**
 ```python
 def test_employee_creation(self, mock_db_manager):
     result = mock_db_manager.create_employee(test_data)
@@ -81,25 +81,25 @@ def test_employee_creation(self, mock_db_manager):
     assert 'employee_id' in result
 ```
 
-### Frontend Unit-Tests
-**Zweck:** Tests einzelner React-Komponenten
+### Unit Tests del Frontend
+**Propósito:** Tests de componentes React individuales
 
-**Getestete Funktionen:**
-- Komponenten-Rendering
-- User-Interaktionen
-- Formular-Validierung
-- State-Management
-- **Neu:** Sortierfunktionen und Tabelleninteraktionen
-- **Neu:** Kategorie-Filterung und Suche
+**Funciones Probadas:**
+- Renderizado de componentes
+- Interacciones del usuario
+- Validación de formularios
+- Gestión de estado
+- **Nuevo:** Funciones de ordenación e interacciones de tabla
+- **Nuevo:** Filtrado por categoría y búsqueda
 
-**Beispiel:**
+**Ejemplo:**
 ```javascript
 test('renders employee form correctly', () => {
   render(<EmployeeForm />);
   expect(screen.getByLabelText('Name')).toBeInTheDocument();
 });
 
-// Neuer Test für Sortierung
+// Nuevo test para ordenación
 test('table sorting works correctly', () => {
   render(<EmployeeTable />);
   fireEvent.click(screen.getByText('Name'));
@@ -107,57 +107,57 @@ test('table sorting works correctly', () => {
 });
 ```
 
-### Integrationstests
-**Zweck:** Tests kompletter Workflows
+### Tests de Integración
+**Propósito:** Tests de flujos de trabajo completos
 
-**Getestete Workflows:**
-- Mitarbeiter CRUD-Operationen
-- Gehaltsverwaltung
-- Benutzerauthentifizierung
-- Excel-Export
+**Flujos de Trabajo Probados:**
+- Operaciones CRUD de empleados
+- Gestión de salarios
+- Autenticación de usuarios
+- Exportación Excel
 
-### End-to-End Tests
-**Zweck:** Tests kompletter Benutzer-Workflows im Browser
+### Tests End-to-End
+**Propósito:** Tests de flujos de trabajo completos del usuario en el navegador
 
-**Getestete Szenarien:**
-- Login-Prozess
-- Mitarbeiter-Anlage und -Bearbeitung
-- Gehaltsabrechnung
-- Daten-Export
-- **Neu:** Passwort-Reset-Workflow
-- **Neu:** Sortierung und Filterung in der UI
-- **Neu:** Kategorie-basierte Mitarbeiterverwaltung
-
----
-
-## 📊 Coverage & Berichte
-
-### Backend Coverage
-- **HTML-Reports:** `htmlcov_db/` und `htmlcov_api/`
-- **Terminal-Reports:** Direkte Ausgabe im Terminal
-- **Ziel:** >80% Code-Abdeckung
-
-### Frontend Coverage
-- **HTML-Report:** `testing/frontend/coverage/`
-- **LCOV-Format:** Für CI/CD-Integration
-- **Ziel:** >80% Komponenten-Abdeckung
-
-### E2E Berichte
-- **Screenshots:** Automatisch bei Fehlern
-- **Videos:** Für Debugging-Zwecke
-- **HTML-Report:** `testing/e2e/playwright-report/`
+**Escenarios Probados:**
+- Proceso de login
+- Creación y edición de empleados
+- Procesamiento de nóminas
+- Exportación de datos
+- **Nuevo:** Flujo de restablecimiento de contraseña
+- **Nuevo:** Ordenación y filtrado en la UI
+- **Nuevo:** Gestión de empleados basada en categorías
 
 ---
 
-## 🔧 Konfiguration
+## 📊 Cobertura e Informes
 
-### Backend Konfiguration
-**Datei:** `testing/pytest.ini`
-- Test-Discovery-Einstellungen
-- Marker-Definitionen
-- Output-Formatierung
+### Cobertura del Backend
+- **Informes HTML:** `htmlcov_db/` y `htmlcov_api/`
+- **Informes de Terminal:** Salida directa en terminal
+- **Objetivo:** >80% de cobertura de código
 
-**Dependencies:** `testing/backend/requirements.txt`
+### Cobertura del Frontend
+- **Informe HTML:** `testing/frontend/coverage/`
+- **Formato LCOV:** Para integración CI/CD
+- **Objetivo:** >80% de cobertura de componentes
+
+### Informes E2E
+- **Capturas de Pantalla:** Automáticas en caso de errores
+- **Videos:** Para propósitos de debugging
+- **Informe HTML:** `testing/e2e/playwright-report/`
+
+---
+
+## 🔧 Configuración
+
+### Configuración del Backend
+**Archivo:** `testing/pytest.ini`
+- Configuración de descubrimiento de tests
+- Definición de marcadores
+- Formato de salida
+
+**Dependencias:** `testing/backend/requirements.txt`
 ```
 pytest==7.4.3
 pytest-cov==4.1.0
@@ -165,58 +165,58 @@ pytest-mock==3.12.0
 mysql-connector-python==8.2.0
 ```
 
-### Frontend Konfiguration
-**Datei:** `testing/frontend/jest.config.js`
-- React Testing Library Setup
-- TypeScript-Unterstützung
-- Test-Umgebungsvariablen
+### Configuración del Frontend
+**Archivo:** `testing/frontend/jest.config.js`
+- Configuración de React Testing Library
+- Soporte TypeScript
+- Variables de entorno de tests
 
-### E2E Konfiguration
-**Datei:** `testing/e2e/playwright.config.js`
-- Browser-Konfiguration
-- Timeout-Einstellungen
-- Reporter-Konfiguration
+### Configuración E2E
+**Archivo:** `testing/e2e/playwright.config.js`
+- Configuración del navegador
+- Configuración de timeouts
+- Configuración de reporteros
 
 ---
 
-## 🐛 Fehlerbehandlung
+## 🐛 Manejo de Errores
 
-### Häufige Probleme
+### Problemas Comunes
 
-#### Backend-Probleme
-1. **Datenbankverbindung fehlgeschlagen**
-   - Lösung: Tests verwenden Mocks, keine echte DB nötig
-   - Prüfung: mysql-connector-python Installation
+#### Problemas del Backend
+1. **Conexión a base de datos fallida**
+   - Solución: Los tests usan mocks, no se necesita DB real
+   - Verificación: Instalación de mysql-connector-python
 
-2. **Backend-Abhängigkeiten fehlen**
+2. **Faltan dependencias del backend**
    ```bash
    pip install -r testing/backend/requirements.txt
    ```
 
-#### Frontend-Probleme
-1. **Node.js Version**
-   - Erforderlich: Node.js 18+
-   - Prüfung: `node --version`
+#### Problemas del Frontend
+1. **Versión de Node.js**
+   - Requerido: Node.js 18+
+   - Verificación: `node --version`
 
-2. **TypeScript-Fehler**
-   - Lösung: tsconfig.json überprüfen
-   - Prüfung: Typ-Definitionen vorhanden
+2. **Errores de TypeScript**
+   - Solución: Verificar tsconfig.json
+   - Verificación: Definiciones de tipos presentes
 
-#### E2E-Probleme
-1. **Browser nicht installiert**
+#### Problemas E2E
+1. **Navegador no instalado**
    ```bash
    cd testing/e2e && npm run install:browsers
    ```
 
-2. **Server nicht erreichbar**
-   - Lösung: Backend und Frontend starten
-   - Prüfung: Playwright-Config URLs
+2. **Servidor no alcanzable**
+   - Solución: Iniciar backend y frontend
+   - Verificación: URLs de configuración de Playwright
 
 ---
 
-## 📝 Test-Schreiben
+## 📝 Escribir Tests
 
-### Backend-Test hinzufügen
+### Agregar Test del Backend
 ```python
 import pytest
 from testing.conftest_comprehensive import *
@@ -234,7 +234,7 @@ class TestNewFeature:
         assert result['success'] is True
 ```
 
-### Frontend-Test hinzufügen
+### Agregar Test del Frontend
 ```javascript
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MyComponent } from '../MyComponent';
@@ -250,7 +250,7 @@ describe('MyComponent', () => {
 });
 ```
 
-### E2E-Test hinzufügen
+### Agregar Test E2E
 ```javascript
 import { test, expect } from '@playwright/test';
 
@@ -267,22 +267,22 @@ test('complete user workflow', async ({ page }) => {
 
 ---
 
-## 📈 Test-Statistiken
+## 📈 Estadísticas de Tests
 
-### Aktuelle Test-Abdeckung
-- **Gesamt:** 70+ Tests
-- **Backend Unit-Tests:** 35+ Tests (inkl. API Core, Authentifizierung)
-- **Flask API Tests:** 30+ Tests (alle Endpunkte)
-- **Integrationstests:** 10+ Tests (komplette Workflows)
-- **Frontend Tests:** React Komponenten Tests (EmployeeTable, Forms)
-- **E2E Tests:** Browser-basierte Workflow-Tests (Mitarbeiterverwaltung)
+### Cobertura Actual de Tests
+- **Total:** 70+ tests
+- **Unit Tests del Backend:** 35+ tests (incluyendo API Core, Autenticación)
+- **Tests de Flask API:** 30+ tests (todos los endpoints)
+- **Tests de Integración:** 10+ tests (flujos completos)
+- **Tests del Frontend:** Tests de componentes React (EmployeeTable, Formularios)
+- **Tests E2E:** Tests de flujos basados en navegador (Gestión de empleados)
 
-### Test-Ausführungszeiten
-- **Unit-Tests:** < 2 Minuten
-- **Integrationstests:** < 5 Minuten
-- **E2E-Tests:** < 10 Minuten
-- **Gesamt:** < 20 Minuten
+### Tiempos de Ejecución de Tests
+- **Unit Tests:** < 2 minutos
+- **Tests de Integración:** < 5 minutos
+- **Tests E2E:** < 10 minutos
+- **Total:** < 20 minutos
 
 ---
 
-*Nächste Dokumente: [Systemübersicht](01_Übersicht.md) | [Datenbank-Dokumentation](02_Datenbank.md) | [Benutzerhandbuch](04_Benutzerhandbuch.md)*
+*Próximos documentos: [Resumen del Sistema](01_Overview.md) | [Documentación de Base de Datos](02_Database.md) | [Manual de Usuario](04_UserManual.md)*
