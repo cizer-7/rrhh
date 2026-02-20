@@ -108,6 +108,7 @@ class DatabaseManagerExportsMixin:
 
             query = f"""
             SELECT 
+                e.id_empleado,
                 CONCAT(e.apellido, ', ', e.nombre) as nombre_completo,
                 e.ceco,
                 e.fecha_alta,
@@ -170,6 +171,42 @@ class DatabaseManagerExportsMixin:
                 if col in df.columns:
                     df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(float)
 
+            # Apply carry over values (apply month = selected export month)
+            try:
+                employee_ids = [int(x) for x in df.get('id_empleado', pd.Series([])).fillna(0).astype(int).tolist() if int(x) > 0]
+                carry_rows = self.get_carry_over_sums_for_apply(year, month, employee_ids) if employee_ids else []
+                carry_map: Dict[int, Dict[str, float]] = {}
+                for r in carry_rows or []:
+                    try:
+                        emp_id = int(r.get('id_empleado'))
+                    except Exception:
+                        continue
+                    concept = str(r.get('concept', '')).strip().lower()
+                    try:
+                        amt = float(r.get('amount') or 0)
+                    except Exception:
+                        amt = 0.0
+                    if emp_id not in carry_map:
+                        carry_map[emp_id] = {}
+                    carry_map[emp_id][concept] = carry_map[emp_id].get(concept, 0.0) + amt
+
+                df['carry_salary'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('salary', 0.0)))
+                df['carry_primas'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('primas', 0.0)))
+                df['carry_horas_extras'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('horas_extras', 0.0)))
+                df['carry_dietas_cotizables'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('dietas_cotizables', 0.0)))
+                df['carry_dietas_exentas'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('dietas_exentas', 0.0)))
+                df['carry_anticipos'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('anticipos', 0.0)))
+                df['carry_cotizacion_especie'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('cotizacion_especie', 0.0)))
+            except Exception as e:
+                self.logger.error(f"Error applying carry over values: {str(e)}")
+                df['carry_salary'] = 0.0
+                df['carry_primas'] = 0.0
+                df['carry_horas_extras'] = 0.0
+                df['carry_dietas_cotizables'] = 0.0
+                df['carry_dietas_exentas'] = 0.0
+                df['carry_anticipos'] = 0.0
+                df['carry_cotizacion_especie'] = 0.0
+
             payout_month = self.get_payout_month() if hasattr(self, "get_payout_month") else 4
             df['salario_mes'] = df.apply(
                 lambda r: self._calculate_salario_mes_for_export(
@@ -193,6 +230,14 @@ class DatabaseManagerExportsMixin:
                 ),
                 axis=1,
             )
+
+            # Carry Over application
+            df['salario_mes'] = df['salario_mes'] + df.get('carry_salary', 0)
+            df['primas'] = df['primas'] + df.get('carry_primas', 0)
+            df['horas_extras'] = df['horas_extras'] + df.get('carry_horas_extras', 0)
+            df['dietas_cotizables'] = df['dietas_cotizables'] + df.get('carry_dietas_cotizables', 0)
+            df['dietas_exentas'] = df['dietas_exentas'] + df.get('carry_dietas_exentas', 0)
+            df['cotizacion_especie'] = df['cotizacion_especie'] + df.get('carry_cotizacion_especie', 0)
 
             # beca_escolar wird immer im Monat, in dem es eingetragen ist, zu Primas addiert
             df['primas'] = df['primas'] + df.get('beca_escolar', 0)
@@ -253,7 +298,7 @@ class DatabaseManagerExportsMixin:
                 + df['dietas_exentas']
             )
 
-            df['anticipos'] = df['ticket_restaurant'] + df['dietas_cotizables'] + df['dietas_exentas']
+            df['anticipos'] = df['ticket_restaurant'] + df['dietas_cotizables'] + df['dietas_exentas'] + df.get('carry_anticipos', 0)
 
             df['total_especie'] = df['cotizacion_especie'] + df['seguro_pensiones'] + df['seguro_accidentes']
 
@@ -425,6 +470,39 @@ class DatabaseManagerExportsMixin:
                 if col in df.columns:
                     df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(float)
 
+            # Apply carry over values (apply month = selected export month)
+            try:
+                employee_ids = [int(x) for x in df.get('id_empleado', pd.Series([])).fillna(0).astype(int).tolist() if int(x) > 0]
+                carry_rows = self.get_carry_over_sums_for_apply(year, month, employee_ids) if employee_ids else []
+                carry_map: Dict[int, Dict[str, float]] = {}
+                for r in carry_rows or []:
+                    try:
+                        emp_id = int(r.get('id_empleado'))
+                    except Exception:
+                        continue
+                    concept = str(r.get('concept', '')).strip().lower()
+                    try:
+                        amt = float(r.get('amount') or 0)
+                    except Exception:
+                        amt = 0.0
+                    if emp_id not in carry_map:
+                        carry_map[emp_id] = {}
+                    carry_map[emp_id][concept] = carry_map[emp_id].get(concept, 0.0) + amt
+
+                df['carry_salary'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('salary', 0.0)))
+                df['carry_primas'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('primas', 0.0)))
+                df['carry_horas_extras'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('horas_extras', 0.0)))
+                df['carry_dietas_cotizables'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('dietas_cotizables', 0.0)))
+                df['carry_dietas_exentas'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('dietas_exentas', 0.0)))
+                df['carry_cotizacion_especie'] = df['id_empleado'].apply(lambda eid: float(carry_map.get(int(eid), {}).get('cotizacion_especie', 0.0)))
+            except Exception:
+                df['carry_salary'] = 0.0
+                df['carry_primas'] = 0.0
+                df['carry_horas_extras'] = 0.0
+                df['carry_dietas_cotizables'] = 0.0
+                df['carry_dietas_exentas'] = 0.0
+                df['carry_cotizacion_especie'] = 0.0
+
             payout_month = self.get_payout_month() if hasattr(self, "get_payout_month") else 4
             df['salario_mes'] = df.apply(
                 lambda r: self._calculate_salario_mes_for_export(
@@ -448,6 +526,14 @@ class DatabaseManagerExportsMixin:
                 ),
                 axis=1,
             )
+
+            # Carry Over application
+            df['salario_mes'] = df['salario_mes'] + df.get('carry_salary', 0)
+            df['primas'] = df['primas'] + df.get('carry_primas', 0)
+            df['horas_extras'] = df['horas_extras'] + df.get('carry_horas_extras', 0)
+            df['dietas_cotizables'] = df['dietas_cotizables'] + df.get('carry_dietas_cotizables', 0)
+            df['dietas_exentas'] = df['dietas_exentas'] + df.get('carry_dietas_exentas', 0)
+            df['cotizacion_especie'] = df['cotizacion_especie'] + df.get('carry_cotizacion_especie', 0)
 
             df['seguro_medico'] = df['adelas'] + df['sanitas']
             df['combustible'] = df['gasolina']

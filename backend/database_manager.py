@@ -22,6 +22,49 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         self._pool = None
         self.logger = logging.getLogger(__name__)
 
+    def _ensure_carry_over_table(self) -> None:
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS cnt
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_SCHEMA = %s
+                  AND TABLE_NAME = 't010_carry_over'
+                """,
+                (self.database,),
+            )
+            rows = cursor.fetchall() or []
+            cursor.close()
+            cnt = int(rows[0].get('cnt', 0)) if rows else 0
+            if cnt > 0:
+                return
+
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS t010_carry_over (
+                    id_carry_over INT AUTO_INCREMENT PRIMARY KEY,
+                    id_empleado INT NOT NULL,
+                    source_anio INT NOT NULL,
+                    source_mes INT NOT NULL,
+                    apply_anio INT NOT NULL,
+                    apply_mes INT NOT NULL,
+                    concept VARCHAR(50) NOT NULL,
+                    amount DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    INDEX idx_t010_apply (apply_anio, apply_mes),
+                    INDEX idx_t010_source (source_anio, source_mes),
+                    INDEX idx_t010_empleado (id_empleado),
+                    FOREIGN KEY (id_empleado) REFERENCES t001_empleados(id_empleado) ON DELETE CASCADE
+                )
+                """
+            )
+            cursor.close()
+        except Exception as e:
+            self.logger.error(f"Fehler beim Sicherstellen der t010_carry_over Tabelle: {e}")
+
     def _ensure_employee_hire_date_column(self) -> None:
         """Ensures t001_empleados has fecha_alta column (hire date).
         This is a lightweight migration to keep existing installations working.
@@ -327,11 +370,224 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 self.logger.info(f"Erfolgreich verbunden mit MySQL Datenbank {self.database}")
                 self._ensure_employee_hire_date_column()
                 self._ensure_deducciones_gasolina_column()
+                self._ensure_carry_over_table()
                 return True
         except Error as e:
             self.logger.error(f"Fehler bei der Verbindung zur Datenbank: {e}")
             return False
         return False
+
+    def _next_year_month(self, year: int, month: int) -> (int, int):
+        y = int(year)
+        m = int(month)
+        if m >= 12:
+            return y + 1, 1
+        return y, m + 1
+
+    def create_carry_over_batch(
+        self,
+        employee_id: int,
+        source_year: int,
+        source_month: int,
+        items: List[Dict[str, Any]],
+        defer_concepts: List[str],
+    ) -> bool:
+        """Creates carry over entries for the month after source_year/source_month.
+
+        Behavior:
+        - The user enters carry over values for the selected source month.
+        - These values are applied in the following month.
+        - If there are already carry over values that are applied in the selected source
+          month (i.e., coming from the previous month), they are automatically carried
+          forward into the next month as well.
+
+        Notes:
+        - The save operation is idempotent for a given (employee, source_year, source_month):
+          it replaces previously stored carry overs for that source month.
+        - defer_concepts is accepted for backward compatibility but is ignored.
+        """
+        connection = None
+        cursor = None
+        try:
+            if employee_id is None:
+                return False
+            source_year_i = int(source_year)
+            source_month_i = int(source_month)
+            apply_year, apply_month = self._next_year_month(source_year_i, source_month_i)
+
+            # Collect carry overs that are applied in the selected source month.
+            # These will be carried forward into the next month automatically.
+            carry_forward: Dict[str, float] = {}
+
+            connection = self._create_connection()
+            cursor = connection.cursor()
+
+            # Replace existing carry overs for this source month
+            cursor.execute(
+                """
+                DELETE FROM t010_carry_over
+                WHERE id_empleado = %s
+                  AND source_anio = %s
+                  AND source_mes = %s
+                """,
+                (int(employee_id), source_year_i, source_month_i),
+            )
+
+            # Sum incoming carry overs (those applied in the selected source month)
+            cursor.execute(
+                """
+                SELECT concept, COALESCE(SUM(amount), 0) as amount
+                FROM t010_carry_over
+                WHERE id_empleado = %s
+                  AND apply_anio = %s
+                  AND apply_mes = %s
+                GROUP BY concept
+                """,
+                (int(employee_id), source_year_i, source_month_i),
+            )
+            for row in cursor.fetchall() or []:
+                concept = str(row[0] if isinstance(row, (list, tuple)) else row.get('concept', '')).strip()
+                if not concept:
+                    continue
+                try:
+                    amt = float(row[1] if isinstance(row, (list, tuple)) else row.get('amount', 0) or 0)
+                except Exception:
+                    amt = 0.0
+                if amt != 0:
+                    carry_forward[concept] = carry_forward.get(concept, 0.0) + amt
+
+            # Insert new entries
+            insert_query = """
+            INSERT INTO t010_carry_over
+                (id_empleado, source_anio, source_mes, apply_anio, apply_mes, concept, amount)
+            VALUES
+                (%s, %s, %s, %s, %s, %s, %s)
+            """
+
+            # Combine (carry forward) + (user input) per concept
+            combined: Dict[str, float] = dict(carry_forward)
+            for it in items or []:
+                concept = str(it.get('concept', '')).strip()
+                if not concept:
+                    continue
+                amount = it.get('amount', 0)
+                try:
+                    amount_f = float(amount)
+                except Exception:
+                    amount_f = 0.0
+
+                combined[concept] = combined.get(concept, 0.0) + amount_f
+
+            for concept, amount_f in combined.items():
+                if not concept:
+                    continue
+                try:
+                    amount_f = float(amount_f)
+                except Exception:
+                    amount_f = 0.0
+                if amount_f == 0:
+                    continue
+
+                cursor.execute(
+                    insert_query,
+                    (
+                        int(employee_id),
+                        source_year_i,
+                        source_month_i,
+                        apply_year,
+                        apply_month,
+                        concept,
+                        amount_f,
+                    ),
+                )
+
+            connection.commit()
+            return True
+        except Exception as e:
+            self.logger.error(f"Fehler beim Erstellen Carry Over: {e}")
+            try:
+                if connection is not None:
+                    connection.rollback()
+            except Exception:
+                pass
+            return False
+        finally:
+            if cursor is not None:
+                try:
+                    cursor.close()
+                except Exception:
+                    pass
+            if connection is not None:
+                try:
+                    connection.close()
+                except Exception:
+                    pass
+
+    def list_carry_over_by_source(
+        self,
+        employee_id: int,
+        source_year: int,
+        source_month: int,
+    ) -> List[Dict]:
+        try:
+            query = """
+            SELECT
+                id_carry_over,
+                id_empleado,
+                source_anio,
+                source_mes,
+                apply_anio,
+                apply_mes,
+                concept,
+                amount,
+                created_at,
+                updated_at
+            FROM t010_carry_over
+            WHERE id_empleado = %s
+              AND source_anio = %s
+              AND source_mes = %s
+            ORDER BY created_at DESC, id_carry_over DESC
+            """
+            return self.execute_query(query, (int(employee_id), int(source_year), int(source_month)))
+        except Exception as e:
+            self.logger.error(f"Fehler beim Abrufen Carry Over (source): {e}")
+            return []
+
+    def delete_carry_over(self, carry_over_id: int) -> bool:
+        try:
+            query = "DELETE FROM t010_carry_over WHERE id_carry_over = %s"
+            return self.execute_update(query, (int(carry_over_id),))
+        except Exception as e:
+            self.logger.error(f"Fehler beim Löschen Carry Over {carry_over_id}: {e}")
+            return False
+
+    def get_carry_over_sums_for_apply(
+        self,
+        apply_year: int,
+        apply_month: int,
+        employee_ids: List[int],
+    ) -> List[Dict]:
+        try:
+            if not employee_ids:
+                return []
+            employee_ids_clean = [int(x) for x in employee_ids]
+            placeholders = ", ".join(["%s"] * len(employee_ids_clean))
+            query = f"""
+            SELECT
+                id_empleado,
+                concept,
+                SUM(amount) AS amount
+            FROM t010_carry_over
+            WHERE apply_anio = %s
+              AND apply_mes = %s
+              AND id_empleado IN ({placeholders})
+            GROUP BY id_empleado, concept
+            """
+            params = (int(apply_year), int(apply_month), *employee_ids_clean)
+            return self.execute_query(query, params)
+        except Exception as e:
+            self.logger.error(f"Fehler beim Aggregieren Carry Over: {e}")
+            return []
 
     def disconnect(self):
         if self.connection and self.connection.is_connected():

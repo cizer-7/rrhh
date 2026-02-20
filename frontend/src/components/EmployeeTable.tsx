@@ -20,6 +20,8 @@ import GlobalBearbeitungshistorie from './GlobalBearbeitungshistorie'
 
 import ImportHorasDietas from './ImportHorasDietas'
 
+import CarryOverManager from './CarryOverManager'
+
 import apiClient from '@/lib/api'
 
 
@@ -46,7 +48,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
   const [showDetail, setShowDetail] = useState(false)
 
-  const [activeTab, setActiveTab] = useState<'employees' | 'increase' | 'salary-copy' | 'overview' | 'settings' | 'bulk-ingresos-deducciones' | 'bearbeitungshistorie' | 'import'>('employees')
+  const [activeTab, setActiveTab] = useState<'employees' | 'increase' | 'salary-copy' | 'overview' | 'settings' | 'bulk-ingresos-deducciones' | 'bearbeitungshistorie' | 'import' | 'carry-over'>('employees')
 
   
 
@@ -969,19 +971,21 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
       return filteredEmployees
     }
 
+    const key = sortConfig.key as keyof Employee
+
     return [...filteredEmployees].sort((a, b) => {
       let aValue: any
       let bValue: any
 
-      if (sortConfig.key === 'nombre') {
+      if (key === 'nombre') {
         aValue = `${a.apellido} ${a.nombre}`
         bValue = `${b.apellido} ${b.nombre}`
-      } else if (sortConfig.key === 'activo') {
+      } else if (key === 'activo') {
         aValue = a.activo ? 1 : 0
         bValue = b.activo ? 1 : 0
       } else {
-        aValue = a[sortConfig.key]
-        bValue = b[sortConfig.key]
+        aValue = a[key]
+        bValue = b[key]
       }
 
       if (aValue === null || aValue === undefined) return 1
@@ -1059,7 +1063,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
           <nav className="flex space-x-8">
 
-            {['employees', 'increase', 'salary-copy', 'overview', 'settings', 'bulk-ingresos-deducciones', 'bearbeitungshistorie', 'import'].map((tab) => (
+            {['employees', 'increase', 'salary-copy', 'overview', 'settings', 'bulk-ingresos-deducciones', 'bearbeitungshistorie', 'import', 'carry-over'].map((tab) => (
 
               <button
 
@@ -1079,7 +1083,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               >
 
-                {tab === 'employees' ? 'Mitarbeiter' : tab === 'increase' ? 'Erhöhung' : tab === 'salary-copy' ? 'Gehaltskopie' : tab === 'overview' ? 'Gehaltsübersicht' : tab === 'settings' ? 'Settings' : tab === 'bulk-ingresos-deducciones' ? 'Zulagen/Abzüge (Jahr)' : tab === 'bearbeitungshistorie' ? 'Bearbeitungshistorie' : 'Import'}
+                {tab === 'employees' ? 'Mitarbeiter' : tab === 'increase' ? 'Erhöhung' : tab === 'salary-copy' ? 'Gehaltskopie' : tab === 'overview' ? 'Gehaltsübersicht' : tab === 'settings' ? 'Settings' : tab === 'bulk-ingresos-deducciones' ? 'Zulagen/Abzüge (Jahr)' : tab === 'bearbeitungshistorie' ? 'Bearbeitungshistorie' : tab === 'import' ? 'Import' : 'Carry Over'}
 
               </button>
 
@@ -2427,6 +2431,18 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
           <div className="space-y-6">
 
             <ImportHorasDietas />
+
+          </div>
+
+        )}
+
+
+
+        {activeTab === 'carry-over' && (
+
+          <div className="space-y-6">
+
+            <CarryOverManager employees={employees} />
 
           </div>
 

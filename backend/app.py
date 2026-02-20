@@ -717,6 +717,91 @@ def export_asiento_nomina(current_user, year, month):
 
 
 
+# Carry Over Endpunkte
+@app.route('/carry-over/<int:employee_id>/<int:year>/<int:month>', methods=['GET'])
+@token_required
+def list_carry_over(current_user, employee_id, year, month):
+    try:
+        items = db_manager.list_carry_over_by_source(employee_id, year, month)
+        return jsonify({"items": items})
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen Carry Over für Mitarbeiter {employee_id}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+
+@app.route('/carry-over', methods=['POST'])
+@token_required
+def create_carry_over(current_user):
+    try:
+        payload = request.get_json() or {}
+        employee_id = payload.get('employee_id')
+        year = payload.get('year')
+        month = payload.get('month')
+        items = payload.get('items') or []
+        defer_concepts = payload.get('defer_concepts') or []
+
+        if employee_id is None or year is None or month is None:
+            return jsonify({"error": "employee_id, year und month sind erforderlich"}), 400
+
+        try:
+            employee_id_i = int(employee_id)
+            year_i = int(year)
+            month_i = int(month)
+        except Exception:
+            return jsonify({"error": "employee_id, year und month müssen Ganzzahlen sein"}), 400
+
+        if month_i < 1 or month_i > 12:
+            return jsonify({"error": "month muss zwischen 1 und 12 liegen"}), 400
+
+        if not isinstance(items, list):
+            return jsonify({"error": "items muss eine Liste sein"}), 400
+        if defer_concepts is not None and not isinstance(defer_concepts, list):
+            return jsonify({"error": "defer_concepts muss eine Liste sein"}), 400
+
+        success = db_manager.create_carry_over_batch(
+            employee_id=employee_id_i,
+            source_year=year_i,
+            source_month=month_i,
+            items=items,
+            defer_concepts=defer_concepts,
+        )
+
+        if not success:
+            return jsonify({"error": "Fehler beim Speichern Carry Over"}), 400
+
+        try:
+            db_manager.insert_bearbeitungslog(
+                usuario_login=current_user,
+                aktion="create",
+                objekt="carry_over",
+                id_empleado=employee_id_i,
+                anio=year_i,
+                mes=month_i,
+                details={"items": items},
+            )
+        except Exception:
+            pass
+
+        return jsonify({"success": True})
+    except Exception as e:
+        logger.error(f"Fehler beim Speichern Carry Over: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+
+@app.route('/carry-over/<int:carry_over_id>', methods=['DELETE'])
+@token_required
+def delete_carry_over(current_user, carry_over_id):
+    try:
+        success = db_manager.delete_carry_over(carry_over_id)
+        if not success:
+            return jsonify({"error": "Fehler beim Löschen Carry Over"}), 400
+        return jsonify({"success": True})
+    except Exception as e:
+        logger.error(f"Fehler beim Löschen Carry Over {carry_over_id}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+
+
 # Import Endpunkte
 @app.route('/imports/horas-dietas', methods=['POST'])
 @token_required
