@@ -514,10 +514,10 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
     await page.waitForSelector('table', { timeout: 15000 })
     
-    // Suche nach Suchfeld
-    const searchInput = page.locator('input[placeholder*="Suche"], input[placeholder*="search"], input[type="search"]')
+    // Suche nach Suchfeld mit erweiterten Selektoren
+    const searchInput = page.locator('input[placeholder*="Suche"], input[placeholder*="search"], input[type="search"], input[placeholder*="Filter"], input[placeholder*="filter"], .search-input, [data-testid="search"]')
     
-    if (await searchInput.isVisible({ timeout: 5000 })) {
+    if (await searchInput.isVisible({ timeout: 3000 })) {
       // Teste Suche mit vorhandenem Text
       await searchInput.fill('test')
       await page.waitForTimeout(2000)
@@ -539,7 +539,8 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
         await expect(noResults).toBeVisible()
       }
     } else {
-      console.log('Suchfeld nicht gefunden')
+      console.log('Suchfeld nicht gefunden - möglicherweise nicht implementiert')
+      // Überspringe Suche-Test wenn Feld nicht vorhanden
     }
   })
 
@@ -549,6 +550,7 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.waitForSelector('input[id="username"]', { timeout: 15000 })
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
+    await page.waitForTimeout(500) // Warte für CSS-Animationen
     await page.click('button:has-text("Anmelden")')
     
     await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
@@ -673,26 +675,26 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
       }
     }
     
-    // TEST 3: Mitarbeiter löschen
-    if (rowCount > 0) {
-      const deleteButton = page.locator('table tbody tr:first-child button:has-text("Löschen"), table tbody tr:first-child button:has-text("Delete")')
+    // TEST 3: Mitarbeiter löschen - DEAKTIVIERT zum Schutz der Produktivdaten
+    // if (rowCount > 0) {
+    //   const deleteButton = page.locator('table tbody tr:first-child button:has-text("Löschen"), table tbody tr:first-child button:has-text("Delete")')
       
-      if (await deleteButton.isVisible({ timeout: 3000 })) {
-        // Bestätigungsdialog abfangen
-        page.on('dialog', async dialog => {
-          await dialog.accept()
-        })
+    //   if (await deleteButton.isVisible({ timeout: 3000 })) {
+    //     // Bestätigungsdialog abfangen
+    //     page.on('dialog', async dialog => {
+    //       await dialog.accept()
+    //     })
         
-        await deleteButton.click()
-        await page.waitForTimeout(2000)
+    //     await deleteButton.click()
+    //     await page.waitForTimeout(2000)
         
-        // Überprüfe Erfolgsmeldung
-        const successMessage = page.locator('.success, .alert-success')
-        if (await successMessage.isVisible({ timeout: 3000 })) {
-          await expect(successMessage).toBeVisible()
-        }
-      }
-    }
+    //     // Überprüfe Erfolgsmeldung
+    //     const successMessage = page.locator('.success, .alert-success')
+    //     if (await successMessage.isVisible({ timeout: 3000 })) {
+    //       await expect(successMessage).toBeVisible()
+    //     }
+    //   }
+    // }
   })
 
   test('employee detail view comprehensive', async ({ page }) => {
@@ -855,23 +857,36 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     
     await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
     
-    // Suche nach Import/Export Buttons
-    const importButton = page.locator('button:has-text("Import"), button:has-text("Importieren")')
-    const exportButton = page.locator('button:has-text("Export"), button:has-text("Exportieren")')
+    // Suche nach Import/Export Buttons mit erweiterten Selektoren
+    const importButton = page.locator('button:has-text("Import"), button:has-text("Importieren"), button:has-text("Datei importieren")')
+    const exportButton = page.locator('button:has-text("Export"), button:has-text("Exportieren"), button:has-text("Excel export"), button:has-text("CSV export")')
     
     // Teste Export-Funktion
-    if (await exportButton.isVisible({ timeout: 5000 })) {
+    if (await exportButton.isVisible({ timeout: 3000 })) {
       // Überwache Downloads
-      const downloadPromise = page.waitForEvent('download')
+      const downloadPromise = page.waitForEvent('download', { timeout: 10000 })
       
       await exportButton.click()
+      await page.waitForTimeout(1000) // Warte auf mögliche Modal
+      
+      // Prüfe ob Modal erscheint und bestätige ggf.
+      const modalConfirm = page.locator('button:has-text("OK"), button:has-text("Bestätigen"), button:has-text("Export")')
+      if (await modalConfirm.isVisible({ timeout: 2000 })) {
+        await modalConfirm.click()
+      }
       
       try {
-        const download = await downloadPromise
+        const download = await Promise.race([
+          downloadPromise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Download timeout')), 8000))
+        ])
         expect(download.suggestedFilename()).toMatch(/\.(xlsx|csv|pdf)$/)
+        console.log('Export erfolgreich:', download.suggestedFilename())
       } catch (error) {
-        console.log('Download nicht gestartet, möglicherweise Modal erforderlich')
+        console.log('Export nicht gestartet - möglicherweise nicht implementiert oder Modal erforderlich')
       }
+    } else {
+      console.log('Export-Button nicht gefunden')
     }
     
     // Teste Import-Funktion
