@@ -58,7 +58,7 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
         const data = await response.json()
         setHistory(data.items || [])
       } else {
-        console.error('Fehler beim Abrufen der Bearbeitungshistorie')
+        console.error('Error al obtener el historial de procesamiento')
         setHistory([])
       }
     } catch (error) {
@@ -96,21 +96,21 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
 
   const getActionText = (action: string) => {
     const actionMap: Record<string, string> = {
-      'create': 'Erstellt',
-      'update': 'Aktualisiert',
-      'delete': 'Gelöscht'
+      'create': 'Creado',
+      'update': 'Actualizado',
+      'delete': 'Eliminado'
     }
     return actionMap[action] || action
   }
 
   const getObjectText = (object: string) => {
     const objectMap: Record<string, string> = {
-      'employee': 'Mitarbeiter',
-      'salary': 'Gehalt',
-      'ingresos': 'Bruttoeinkünfte',
-      'deducciones': 'Abzüge',
-      'ingresos_mensuales': 'Monatliche Bruttoeinkünfte',
-      'deducciones_mensuales': 'Monatliche Abzüge'
+      'employee': 'Empleado',
+      'salary': 'Salario',
+      'ingresos': 'Ingresos brutos',
+      'deducciones': 'Deducciones',
+      'ingresos_mensuales': 'Ingresos brutos mensuales',
+      'deducciones_mensuales': 'Deducciones mensuales'
     }
     return objectMap[object] || object
   }
@@ -147,13 +147,13 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
       {/* Filter Controls */}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-lg">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Jahr</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
           <select
             value={filterYear}
             onChange={(e) => setFilterYear(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md"
           >
-            <option value="">Alle Jahre</option>
+            <option value="">Todos los años</option>
             {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => (
               <option key={year} value={year}>{year}</option>
             ))}
@@ -161,13 +161,13 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Monat</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Mes</label>
           <select
             value={filterMonth}
             onChange={(e) => setFilterMonth(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md"
           >
-            <option value="">Alle Monate</option>
+            <option value="">Todos los meses</option>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => (
               <option key={month} value={month}>{month}</option>
             ))}
@@ -175,12 +175,12 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
         </div>
 
         <div className="flex-1 min-w-64">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Suche</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
           <div className="relative">
             <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Suche in Historie..."
+              placeholder="Buscar en historial..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -190,18 +190,18 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
 
         <Button onClick={fetchHistory} variant="outline" className="flex items-center gap-2">
           <Calendar className="w-4 h-4" />
-          Aktualisieren
+          Actualizar
         </Button>
       </div>
 
       {/* History List */}
       {loading ? (
         <div className="flex items-center justify-center h-32">
-          <div className="text-lg text-gray-600">Lade Bearbeitungshistorie...</div>
+          <div className="text-lg text-gray-600">Cargando historial de procesamiento...</div>
         </div>
       ) : filteredHistory.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          {searchTerm || filterYear || filterMonth ? 'Keine Einträge gefunden' : 'Keine Bearbeitungshistorie verfügbar'}
+          {searchTerm || filterYear || filterMonth ? 'No se encontraron entradas' : 'No hay historial de procesamiento disponible'}
         </div>
       ) : (
         <div className="space-y-3">

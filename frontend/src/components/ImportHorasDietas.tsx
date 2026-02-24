@@ -64,7 +64,7 @@ export default function ImportHorasDietas() {
     setError(null)
 
     if (!file) {
-      setError('Bitte wähle eine Excel-Datei aus.')
+      setError('Por favor, seleccione un archivo Excel.')
       return
     }
 
@@ -76,7 +76,7 @@ export default function ImportHorasDietas() {
     setGasolinaError(null)
 
     if (!gasolinaFile) {
-      setGasolinaError('Bitte wähle eine Excel-Datei aus.')
+      setGasolinaError('Por favor, seleccione un archivo Excel.')
       return
     }
 
@@ -88,7 +88,7 @@ export default function ImportHorasDietas() {
     setCotizacionEspecieError(null)
 
     if (!cotizacionEspecieFile) {
-      setCotizacionEspecieError('Bitte wähle eine Excel-Datei aus.')
+      setCotizacionEspecieError('Por favor, seleccione un archivo Excel.')
       return
     }
 
@@ -205,26 +205,26 @@ export default function ImportHorasDietas() {
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">Horas + Dietas</h3>
         <p className="text-sm text-gray-600">
-          Importiert Werte aus einer Excel-Datei in Zulagen & Abzüge für den ausgewählten Monat.
+          Importa valores de un archivo Excel a bonificaciones y deducciones para el mes seleccionado.
         </p>
       </div>
 
       {error && (
         <Alert variant="destructive">
-          <AlertTitle>Fehler</AlertTitle>
+          <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {result && (
         <Alert>
-          <AlertTitle>{result.success ? 'Import erfolgreich' : 'Import abgeschlossen mit Fehlern'}</AlertTitle>
+          <AlertTitle>{result.success ? 'Importación Exitosa' : 'Importación Completada con Errores'}</AlertTitle>
           <AlertDescription>
             <div className="space-y-1">
               {result.message && <div>{result.message}</div>}
               <div>
-                verarbeitet: {result.processed_count ?? 0}, neu: {result.inserted_count ?? 0}, aktualisiert:{' '}
-                {result.updated_count ?? 0}, übersprungen: {result.skipped_count ?? 0}, Fehler: {result.error_count ?? 0}
+                procesado: {result.processed_count ?? 0}, nuevo: {result.inserted_count ?? 0}, actualizado:{' '}
+                {result.updated_count ?? 0}, omitido: {result.skipped_count ?? 0}, errores: {result.error_count ?? 0}
               </div>
               {Array.isArray(result.errors) && result.errors.length > 0 && (
                 <div className="mt-2 max-h-40 overflow-y-auto text-xs bg-gray-50 border border-gray-200 rounded p-2">
@@ -240,7 +240,7 @@ export default function ImportHorasDietas() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Jahr</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
           <select
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value, 10))}
@@ -256,7 +256,7 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Monat</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Mes</label>
           <select
             value={month}
             onChange={(e) => setMonth(parseInt(e.target.value, 10))}
@@ -272,7 +272,7 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Datei</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Archivo</label>
           <input
             type="file"
             accept=".xlsx"
@@ -286,7 +286,7 @@ export default function ImportHorasDietas() {
 
       <div className="flex items-center gap-3">
         <Button onClick={openConfirm} disabled={loading}>
-          Import starten
+          Iniciar Importación
         </Button>
       </div>
 
@@ -295,13 +295,13 @@ export default function ImportHorasDietas() {
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">Gasolina</h3>
         <p className="text-sm text-gray-600">
-          Importiert Werte aus einer Excel-Datei in Abzüge (Gasolina) für den ausgewählten Monat.
+          Importa valores de un archivo Excel a deducciones (Gasolina) para el mes seleccionado.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Jahr</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
           <select
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value, 10))}
@@ -317,7 +317,7 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Monat</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Mes</label>
           <select
             value={month}
             onChange={(e) => setMonth(parseInt(e.target.value, 10))}
@@ -333,7 +333,7 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Datei</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Archivo</label>
           <input
             type="file"
             accept=".xlsx"
@@ -347,13 +347,13 @@ export default function ImportHorasDietas() {
 
       {gasolinaResult && (
         <Alert>
-          <AlertTitle>{gasolinaResult.success ? 'Gasolina Import erfolgreich' : 'Gasolina Import abgeschlossen mit Fehlern'}</AlertTitle>
+          <AlertTitle>{gasolinaResult.success ? 'Importación Gasolina Exitosa' : 'Importación Gasolina Completada con Errores'}</AlertTitle>
           <AlertDescription>
             <div className="space-y-1">
               {gasolinaResult.message && <div>{gasolinaResult.message}</div>}
               <div>
-                verarbeitet: {gasolinaResult.processed_count ?? 0}, neu: {gasolinaResult.inserted_count ?? 0}, aktualisiert:{' '}
-                {gasolinaResult.updated_count ?? 0}, übersprungen: {gasolinaResult.skipped_count ?? 0}, Fehler: {gasolinaResult.error_count ?? 0}
+                procesado: {gasolinaResult.processed_count ?? 0}, nuevo: {gasolinaResult.inserted_count ?? 0}, actualizado:{' '}
+                {gasolinaResult.updated_count ?? 0}, omitido: {gasolinaResult.skipped_count ?? 0}, errores: {gasolinaResult.error_count ?? 0}
               </div>
               {Array.isArray(gasolinaResult.errors) && gasolinaResult.errors.length > 0 && (
                 <div className="mt-2 max-h-40 overflow-y-auto text-xs bg-gray-50 border border-gray-200 rounded p-2">
@@ -369,29 +369,29 @@ export default function ImportHorasDietas() {
 
       {gasolinaError && (
         <Alert variant="destructive">
-          <AlertTitle>Fehler</AlertTitle>
+          <AlertTitle>Error</AlertTitle>
           <AlertDescription>{gasolinaError}</AlertDescription>
         </Alert>
       )}
 
       <div className="flex items-center gap-3">
         <Button onClick={openGasolinaConfirm} disabled={loading}>
-          Gasolina Import starten
+          Iniciar Importación Gasolina
         </Button>
       </div>
 
       <div className="border-t border-gray-200 pt-6" />
 
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Cotizacion Especie</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Cotización Especie</h3>
         <p className="text-sm text-gray-600">
-          Importiert Werte aus einer Excel-Datei in Abzüge (Cotizacion Especie) für den ausgewählten Monat.
+          Importa valores de un archivo Excel a deducciones (Cotización Especie) para el mes seleccionado.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Jahr</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
           <select
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value, 10))}
@@ -407,7 +407,7 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Monat</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Mes</label>
           <select
             value={month}
             onChange={(e) => setMonth(parseInt(e.target.value, 10))}
@@ -423,7 +423,7 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Datei</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Archivo</label>
           <input
             type="file"
             accept=".xlsx"
@@ -438,14 +438,14 @@ export default function ImportHorasDietas() {
       {cotizacionEspecieResult && (
         <Alert>
           <AlertTitle>
-            {cotizacionEspecieResult.success ? 'Cotizacion Especie Import erfolgreich' : 'Cotizacion Especie Import abgeschlossen mit Fehlern'}
+            {cotizacionEspecieResult.success ? 'Importación Cotización Especie Exitosa' : 'Importación Cotización Especie Completada con Errores'}
           </AlertTitle>
           <AlertDescription>
             <div className="space-y-1">
               {cotizacionEspecieResult.message && <div>{cotizacionEspecieResult.message}</div>}
               <div>
-                verarbeitet: {cotizacionEspecieResult.processed_count ?? 0}, neu: {cotizacionEspecieResult.inserted_count ?? 0}, aktualisiert:{' '}
-                {cotizacionEspecieResult.updated_count ?? 0}, übersprungen: {cotizacionEspecieResult.skipped_count ?? 0}, Fehler:{' '}
+                procesado: {cotizacionEspecieResult.processed_count ?? 0}, nuevo: {cotizacionEspecieResult.inserted_count ?? 0}, actualizado:{' '}
+                {cotizacionEspecieResult.updated_count ?? 0}, omitido: {cotizacionEspecieResult.skipped_count ?? 0}, errores:{' '}
                 {cotizacionEspecieResult.error_count ?? 0}
               </div>
               {Array.isArray(cotizacionEspecieResult.errors) && cotizacionEspecieResult.errors.length > 0 && (
@@ -462,14 +462,14 @@ export default function ImportHorasDietas() {
 
       {cotizacionEspecieError && (
         <Alert variant="destructive">
-          <AlertTitle>Fehler</AlertTitle>
+          <AlertTitle>Error</AlertTitle>
           <AlertDescription>{cotizacionEspecieError}</AlertDescription>
         </Alert>
       )}
 
       <div className="flex items-center gap-3">
         <Button onClick={openCotizacionEspecieConfirm} disabled={loading}>
-          Cotizacion Especie Import starten
+          Confirmar Importación Cotización Especie
         </Button>
       </div>
 
@@ -477,13 +477,13 @@ export default function ImportHorasDietas() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => (loading ? null : setConfirmOpen(false))} />
           <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Import bestätigen</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">Confirmar Importación</h4>
             <p className="text-sm text-gray-700 mb-4">
-              Möchtest du die Datei <span className="font-medium">{file?.name}</span> für{' '}
+              ¿Desea importar el archivo <span className="font-medium">{file?.name}</span> para{' '}
               <span className="font-medium">
                 {month}.{year}
               </span>{' '}
-              importieren?
+              ?
             </p>
 
             <div className="flex justify-end gap-3">
@@ -492,7 +492,7 @@ export default function ImportHorasDietas() {
                 onClick={() => setConfirmOpen(false)}
                 disabled={loading}
               >
-                Abbrechen
+                Cancelar
               </Button>
               <Button
                 onClick={async () => {
@@ -512,13 +512,13 @@ export default function ImportHorasDietas() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => (loading ? null : setConfirmGasolinaOpen(false))} />
           <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Gasolina Import bestätigen</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">Confirmar Importación Gasolina</h4>
             <p className="text-sm text-gray-700 mb-4">
-              Möchtest du die Datei <span className="font-medium">{gasolinaFile?.name}</span> für{' '}
+              ¿Desea importar el archivo <span className="font-medium">{gasolinaFile?.name}</span> para{' '}
               <span className="font-medium">
                 {month}.{year}
               </span>{' '}
-              importieren?
+              ?
             </p>
 
             <div className="flex justify-end gap-3">
@@ -527,7 +527,7 @@ export default function ImportHorasDietas() {
                 onClick={() => setConfirmGasolinaOpen(false)}
                 disabled={loading}
               >
-                Abbrechen
+                Cancelar
               </Button>
               <Button
                 onClick={async () => {
@@ -550,13 +550,13 @@ export default function ImportHorasDietas() {
             onClick={() => (loading ? null : setConfirmCotizacionEspecieOpen(false))}
           />
           <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Cotizacion Especie Import bestätigen</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">Confirmar Importación Cotización Especie</h4>
             <p className="text-sm text-gray-700 mb-4">
-              Möchtest du die Datei <span className="font-medium">{cotizacionEspecieFile?.name}</span> für{' '}
+              ¿Desea importar el archivo <span className="font-medium">{cotizacionEspecieFile?.name}</span> para{' '}
               <span className="font-medium">
                 {month}.{year}
               </span>{' '}
-              importieren?
+              ?
             </p>
 
             <div className="flex justify-end gap-3">
@@ -565,7 +565,7 @@ export default function ImportHorasDietas() {
                 onClick={() => setConfirmCotizacionEspecieOpen(false)}
                 disabled={loading}
               >
-                Abbrechen
+                Cancelar
               </Button>
               <Button
                 onClick={async () => {

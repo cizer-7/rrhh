@@ -1195,6 +1195,11 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             Dict mit Ergebnissen der Operation
         """
         try:
+            # Hole Mitarbeiterdaten für den Log-Eintrag
+            employee_info = self.get_employee(employee_id)
+            if not employee_info:
+                return {"success": False, "message": f"Mitarbeiter {employee_id} nicht gefunden"}
+            
             # Zuerst prüfen ob bereits ein Gehalt für target_year existiert
             existing_salary_query = """
             SELECT salario_anual_bruto, modalidad
@@ -1286,7 +1291,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     "error_count": 0,
                     "employees": [{
                         'id': employee_id,
-                        'name': f"{employee['nombre']} {employee['apellido']}",
+                        'name': f"{employee_info['nombre']} {employee_info['apellido']}",
                         'old_salary': current_salary,
                         'new_salary': new_salary,
                         'increase_percent': percentage_increase,
@@ -1294,10 +1299,10 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                         'base_year': base_year
                     }],
                     "errors": [],
-                    "message": f"Gehaltserhöhung für {employee['nombre']} {employee['apellido']} erfolgreich durchgeführt (Basis: {base_year})"
+                    "message": f"Gehaltserhöhung für {employee_info['nombre']} {employee_info['apellido']} erfolgreich durchgeführt (Basis: {base_year})"
                 }
             else:
-                return {"success": False, "message": f"Fehler bei Aktualisierung von {employee['nombre']} {employee['apellido']}"}
+                return {"success": False, "message": f"Fehler bei Aktualisierung von {employee_info['nombre']} {employee_info['apellido']}"}
         except Exception as e:
             self.logger.error(f"Fehler bei prozentualer Gehaltserhöhung für Mitarbeiter {employee_id}: {e}")
             return {"success": False, "message": f"Datenbankfehler: {str(e)}"}

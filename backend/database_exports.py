@@ -27,7 +27,15 @@ class DatabaseManagerExportsMixin:
             else:
                 return float(salario_mes or 0)
 
-            if int(fecha_alta_date.year) != int(year) or int(fecha_alta_date.month) != int(month):
+            target_year = int(year)
+            target_month = int(month)
+            hire_year = int(fecha_alta_date.year)
+            hire_month = int(fecha_alta_date.month)
+
+            if (target_year, target_month) < (hire_year, hire_month):
+                return 0.0
+
+            if (target_year, target_month) != (hire_year, hire_month):
                 return float(salario_mes or 0)
 
             day = int(fecha_alta_date.day)

@@ -47,25 +47,23 @@ export default function SalaryCopyManager() {
       const data = await response.json()
       if (data.success) {
         setMissingYears(data.missing_years)
-        
         // Extrahiere verfügbare Jahre für das Dropdown (nur Jahre mit Vorjahresdaten)
         const years = data.missing_years.map((y: MissingYear) => y.year)
         setAvailableYears(years)
-        
         // Setze das erste verfügbare Jahr als Standard, falls das aktuelle nicht verfügbar ist
         if (years.length > 0 && !years.includes(newYear)) {
           setNewYear(years[0])
         }
       }
     } catch (error) {
-      console.error('Error fetching missing years:', error)
+      console.error('Error al obtener años faltantes:', error)
     } finally {
       setLoading(false)
     }
   }
 
   const handleCopySalaries = async (year: number) => {
-    if (!confirm(`Möchten Sie wirklich alle Gehälter von ${year - 1} nach ${year} kopieren?`)) {
+    if (!confirm(`¿Realmente desea copiar todos los salarios de ${year - 1} a ${year}?`)) {
       return
     }
 
@@ -83,19 +81,18 @@ export default function SalaryCopyManager() {
       })
       const result = await response.json()
       setCopyResult(result)
-      
+      // Actualiza la lista de años faltantes
       if (result.success) {
-        // Aktualisiere die Liste der fehlenden Jahre
         fetchMissingYears()
       }
     } catch (error) {
-      console.error('Error copying salaries:', error)
+      console.error('Error al copiar salarios:', error)
       setCopyResult({
         success: false,
-        message: 'Fehler bei der Gehaltskopierung',
+        message: 'Error al copiar salarios',
         copied_count: 0,
         skipped_count: 0,
-        errors: ['Netzwerkfehler']
+        errors: ['Error de red']
       })
     } finally {
       setCopying(false)
@@ -104,7 +101,7 @@ export default function SalaryCopyManager() {
   }
 
   const handleCreateNewYear = async () => {
-    if (!confirm(`Möchten Sie wirklich alle Gehälter für das Jahr ${newYear} anlegen? Es werden alle Gehälter von ${newYear - 1} kopiert.`)) {
+    if (!confirm(`¿Realmente desea crear todos los salarios para el año ${newYear}? Se copiarán todos los salarios de ${newYear - 1}.`)) {
       return
     }
 
@@ -122,21 +119,20 @@ export default function SalaryCopyManager() {
       })
       const result = await response.json()
       setCopyResult(result)
-      
+      // Actualiza la lista de años faltantes
       if (result.success) {
-        // Aktualisiere die Liste der fehlenden Jahre
         fetchMissingYears()
-        // Setze das nächste Jahr als Standard
+        // Establece el próximo año como estándar
         setNewYear(newYear + 1)
       }
     } catch (error) {
-      console.error('Error copying salaries:', error)
+      console.error('Error al copiar salarios:', error)
       setCopyResult({
         success: false,
-        message: 'Fehler bei der Gehaltskopierung',
+        message: 'Error al copiar salarios',
         copied_count: 0,
         skipped_count: 0,
-        errors: ['Netzwerkfehler']
+        errors: ['Error de red']
       })
     } finally {
       setCopying(false)
@@ -149,7 +145,7 @@ export default function SalaryCopyManager() {
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-center h-32">
           <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-          <span className="ml-2 text-gray-600">Lade Gehaltsinformationen...</span>
+          <span className="ml-2 text-gray-600">Cargando información salarial...</span>
         </div>
       </div>
     )
@@ -163,7 +159,7 @@ export default function SalaryCopyManager() {
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex items-center gap-2 text-green-600">
           <CheckCircle className="w-5 h-5" />
-          <span className="font-medium">Alle Gehälter sind auf dem neuesten Stand</span>
+          <span className="font-medium">Todos los salarios están actualizados</span>
         </div>
       </div>
     )
@@ -171,16 +167,17 @@ export default function SalaryCopyManager() {
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-lg font-bold text-gray-800 mb-6">Gehaltsverwaltung</h3>
+      <h3 className="text-lg font-bold text-gray-800 mb-6">Gestión Salarial</h3>
       
-      {/* Neues Jahr anlegen */}
+      {/* Crear Nuevo Año */}
       <div className="border border-blue-200 bg-blue-50 rounded-lg p-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Copy className="w-5 h-5 text-blue-500" />
             <div>
-              <span className="font-medium text-gray-800">Neues Jahr anlegen</span>
-              <p className="text-sm text-gray-600 mt-1">Kopiert alle Gehälter vom Vorjahr in das ausgewählte Jahr</p>
+              <span className="font-medium text-gray-800">Crear Nuevo Año</span>
+              <p className="text-sm text-gray-600 mt-1">Copia todos los salarios del año anterior al año seleccionado.
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -191,7 +188,7 @@ export default function SalaryCopyManager() {
               disabled={copying || availableYears.length === 0}
             >
               {availableYears.length === 0 ? (
-                <option value="">Keine Jahre verfügbar</option>
+                <option value="">No hay años disponibles</option>
               ) : (
                 availableYears.map(year => (
                   <option key={year} value={year}>{year}</option>
@@ -209,29 +206,29 @@ export default function SalaryCopyManager() {
                 <Copy className="w-4 h-4" />
               )}
               {copying && selectedYear === newYear 
-                ? 'Kopiere...' 
+                ? 'Copiando...' 
                 : availableYears.length === 0
-                  ? 'Nicht verfügbar'
-                  : `Jahr ${newYear} anlegen`
+                  ? 'No disponible'
+                  : `Crear Año ${newYear}`
               }
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Fehlende Gehälter */}
+      {/* Salarios Faltantes */}
       {relevantMissingYears.filter(y => y.missing_count > 0).length > 0 && (
         <div className="space-y-4 mb-6">
-          <h4 className="text-md font-medium text-gray-700">Fehlende Gehälter:</h4>
+          <h4 className="text-md font-medium text-gray-700">Salarios Faltantes:</h4>
           {relevantMissingYears.filter(y => y.missing_count > 0).map((yearInfo) => (
             <div key={yearInfo.year} className="border border-orange-200 bg-orange-50 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <AlertCircle className="w-5 h-5 text-orange-500" />
                   <div>
-                    <span className="font-medium text-gray-800">Jahr {yearInfo.year}</span>
+                    <span className="font-medium text-gray-800">Año {yearInfo.year}</span>
                     <span className="text-gray-600 ml-2">
-                      ({yearInfo.missing_count} Mitarbeiter ohne Gehalt)
+                      ({yearInfo.missing_count} empleados sin salario)
                     </span>
                   </div>
                 </div>
@@ -247,15 +244,15 @@ export default function SalaryCopyManager() {
                     <Copy className="w-4 h-4" />
                   )}
                   {copying && selectedYear === yearInfo.year 
-                    ? 'Kopiere...' 
-                    : `Gehälter von ${yearInfo.year - 1} kopieren`
+                    ? 'Copiando...' 
+                    : `Copiar salarios de ${yearInfo.year - 1}`
                   }
                 </Button>
               </div>
               
               {yearInfo.missing_count <= 5 && (
                 <div className="mt-3 text-sm text-gray-600">
-                  Betroffene Mitarbeiter: {yearInfo.employees.map(emp => 
+                  Empleados afectados: {yearInfo.employees.map(emp => 
                     `${emp.nombre} ${emp.apellido}`
                   ).join(', ')}
                 </div>
@@ -265,7 +262,7 @@ export default function SalaryCopyManager() {
         </div>
       )}
 
-      {/* Ergebnis der Kopieraktion */}
+      {/* Resultado de la copia */}
       {copyResult && (
         <div className={`border rounded-lg p-4 ${
           copyResult.success 
@@ -287,22 +284,22 @@ export default function SalaryCopyManager() {
           
           {copyResult.success && (
             <div className="text-sm text-gray-700">
-              <p>Erfolgreich kopiert: {copyResult.copied_count} Mitarbeiter</p>
+              <p>Copiados con éxito: {copyResult.copied_count} empleados</p>
               {copyResult.skipped_count > 0 && (
-                <p>Übersprungen: {copyResult.skipped_count} Mitarbeiter</p>
+                <p>Omitidos: {copyResult.skipped_count} empleados</p>
               )}
             </div>
           )}
           
           {copyResult.errors.length > 0 && (
             <div className="mt-2">
-              <p className="text-sm font-medium text-red-700">Fehler:</p>
+              <p className="text-sm font-medium text-red-700">Errores:</p>
               <ul className="text-sm text-red-600 list-disc list-inside">
                 {copyResult.errors.slice(0, 3).map((error, index) => (
                   <li key={index}>{error}</li>
                 ))}
                 {copyResult.errors.length > 3 && (
-                  <li>... und {copyResult.errors.length - 3} weitere Fehler</li>
+                  <li>... y {copyResult.errors.length - 3} errores más</li>
                 )}
               </ul>
             </div>
@@ -310,11 +307,11 @@ export default function SalaryCopyManager() {
         </div>
       )}
 
-      {/* Status wenn alles okay */}
+      {/* Estado si todo está bien */}
       {relevantMissingYears.filter(y => y.missing_count > 0).length === 0 && !copyResult && (
         <div className="flex items-center gap-2 text-green-600">
           <CheckCircle className="w-5 h-5" />
-          <span className="font-medium">Alle Gehälter sind auf dem neuesten Stand</span>
+          <span className="font-medium">Todos los salarios están actualizados</span>
         </div>
       )}
     </div>

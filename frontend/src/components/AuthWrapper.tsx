@@ -65,9 +65,9 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
     try {
       const token = localStorage.getItem('token')
       
-      // Asiento Nomina erfordert monatlichen Export
+      // Asiento Nomina requiere exportación mensual
       if (exportFormat === 'asiento_nomina' && (!currentMonth || exportType !== 'monthly')) {
-        alert('Asiento Nomina Export erfordert monatliche Auswahl')
+        alert('La exportación de Asiento Nomina requiere selección mensual')
         return
       }
       
@@ -124,7 +124,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
       document.body.removeChild(a)
     } catch (error) {
       console.error('Export error:', error)
-      alert('Export fehlgeschlagen. Bitte versuchen Sie es erneut.')
+      alert('Error en la exportación. Por favor, inténtelo de nuevo.')
     }
   }
 
@@ -135,11 +135,11 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
           <div className="flex items-center gap-4">
             <Button variant="outline" className="flex items-center gap-2" onClick={handleBack}>
               <ArrowLeft className="w-4 h-4" />
-              Zurück
+              Atrás
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Mitarbeiter Dashboard</h1>
-              <p className="text-gray-600">Angemeldet als: {user?.nombre_usuario} ({user?.rol})</p>
+              <h1 className="text-3xl font-bold text-gray-900">Panel de Empleados</h1>
+              <p className="text-gray-600">Conectado como: {user?.nombre_usuario} ({user?.rol})</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -148,7 +148,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
               onChange={(e) => {
                 setExportFormat(e.target.value as 'nomina_total' | 'asiento_nomina')
                 setExportExtra(false)
-                // Asiento Nomina erfordert monatlichen Export
+                // Asiento Nomina requiere exportación mensual
                 if (e.target.value === 'asiento_nomina') {
                   setExportType('monthly')
                   if (!currentMonth) {
@@ -176,8 +176,8 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
                 }}
                 className="px-3 py-2 border border-gray-300 rounded-md"
               >
-                <option value="yearly">Jährlich</option>
-                <option value="monthly">Monatlich</option>
+                <option value="yearly">Anual</option>
+                <option value="monthly">Mensual</option>
               </select>
             )}
             
@@ -203,20 +203,20 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
                 }}
                 className="px-3 py-2 border border-gray-300 rounded-md"
               >
-                <option value="">Monat wählen...</option>
+                <option value="">Seleccionar mes...</option>
                 {[
-                  { value: 1, label: 'Januar' },
-                  { value: 2, label: 'Februar' },
-                  { value: 3, label: 'März' },
-                  { value: 4, label: 'April' },
-                  { value: 5, label: 'Mai' },
-                  { value: 6, label: 'Juni' },
-                  { value: 7, label: 'Juli' },
-                  { value: 8, label: 'August' },
-                  { value: 9, label: 'September' },
-                  { value: 10, label: 'Oktober' },
-                  { value: 11, label: 'November' },
-                  { value: 12, label: 'Dezember' }
+                  { value: 1, label: 'Enero' },
+                  { value: 2, label: 'Febrero' },
+                  { value: 3, label: 'Marzo' },
+                  { value: 4, label: 'Abril' },
+                  { value: 5, label: 'Mayo' },
+                  { value: 6, label: 'Junio' },
+                  { value: 7, label: 'Julio' },
+                  { value: 8, label: 'Agosto' },
+                  { value: 9, label: 'Septiembre' },
+                  { value: 10, label: 'Octubre' },
+                  { value: 11, label: 'Noviembre' },
+                  { value: 12, label: 'Diciembre' }
                 ].map(month => (
                   <option key={month.value} value={month.value}>
                     {month.label}
@@ -243,11 +243,11 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
               disabled={(exportFormat === 'asiento_nomina' || exportType === 'monthly') && !currentMonth}
             >
               <Download className="w-4 h-4" />
-              Excel Export
+              Exportación Excel
             </Button>
             <Button variant="destructive" className="flex items-center gap-2" onClick={handleLogout}>
               <LogOut className="w-4 h-4" />
-              Abmelden
+              Cerrar sesión
             </Button>
           </div>
         </div>
@@ -257,31 +257,31 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-blue-600">
                 <Users className="w-8 h-8" />
-                <h3 className="text-lg font-semibold">Mitarbeiter</h3>
+                <h3 className="text-lg font-semibold">Empleados</h3>
               </div>
               <div className="text-2xl font-bold text-gray-900">{employeeStats.total}</div>
             </div>
-            <p className="text-gray-600">Gesamtzahl der Mitarbeiter</p>
+            <p className="text-gray-600">Número total de empleados</p>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-green-600">
                 <FileText className="w-8 h-8" />
-                <h3 className="text-lg font-semibold">Aktive Mitarbeiter</h3>
+                <h3 className="text-lg font-semibold">Empleados Activos</h3>
               </div>
               <div className="text-2xl font-bold text-gray-900">{employeeStats.active}</div>
             </div>
-            <p className="text-gray-600">Aktive Mitarbeiter im System</p>
+            <p className="text-gray-600">Empleados activos en el sistema</p>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-orange-600">
                 <FileText className="w-8 h-8" />
-                <h3 className="text-lg font-semibold">Inaktive Mitarbeiter</h3>
+                <h3 className="text-lg font-semibold">Empleados Inactivos</h3>
               </div>
               <div className="text-2xl font-bold text-gray-900">{employeeStats.inactive}</div>
             </div>
-            <p className="text-gray-600">Inaktive Mitarbeiter im System</p>
+            <p className="text-gray-600">Empleados inactivos en el sistema</p>
           </div>
         </div>
 
@@ -340,7 +340,7 @@ export default function AuthWrapper() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-lg text-gray-600">Lade...</div>
+        <div className="text-lg text-gray-600">Cargando...</div>
       </div>
     )
   }

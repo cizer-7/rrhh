@@ -28,7 +28,7 @@ export default function Login({ onLogin }: LoginProps) {
       const response = await apiClient.login(username, password)
       onLogin(response.user, response.access_token)
     } catch (err: any) {
-      setError(err.message || 'Anmeldung fehlgeschlagen')
+      setError(err.message || 'Error de inicio de sesión')
     } finally {
       setLoading(false)
     }
@@ -36,7 +36,7 @@ export default function Login({ onLogin }: LoginProps) {
 
   const handleForgotPassword = async () => {
     if (!username.trim()) {
-      setError('Bitte geben Sie zuerst Ihren Benutzernamen ein')
+      setError('Por favor, ingrese su nombre de usuario primero')
       return
     }
 
@@ -46,9 +46,9 @@ export default function Login({ onLogin }: LoginProps) {
     try {
       await apiClient.forgotPassword(username)
       setError('')
-      alert('Wenn der Benutzer existiert, wurde eine Reset-Email gesendet')
+      alert('Si el usuario existe, se ha enviado un correo electrónico de restablecimiento')
     } catch (err: any) {
-      setError(err.message || 'Fehler beim Senden der Reset-Email')
+      setError(err.message || 'Error al enviar correo electrónico de restablecimiento')
     } finally {
       setLoading(false)
     }
@@ -58,15 +58,15 @@ export default function Login({ onLogin }: LoginProps) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">🏢 Mitarbeiter Gehaltsabrechnung</CardTitle>
+          <CardTitle className="text-2xl font-bold">🏢 Nómina de Empleados</CardTitle>
           <CardDescription>
-            Bitte melden Sie sich an, um fortzufahren
+             Por favor, inicie sesión para continuar.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Benutzername</Label>
+              <Label htmlFor="username">Nombre de Usuario</Label>
               <Input
                 id="username"
                 type="text"
@@ -77,7 +77,7 @@ export default function Login({ onLogin }: LoginProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Passwort</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 type="password"
@@ -93,7 +93,7 @@ export default function Login({ onLogin }: LoginProps) {
               </Alert>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Anmelden...' : 'Anmelden'}
+              {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </Button>
             <div className="text-center">
               <Button
@@ -103,7 +103,7 @@ export default function Login({ onLogin }: LoginProps) {
                 disabled={loading}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >
-                Passwort vergessen?
+                ¿Olvidó su contraseña?
               </Button>
             </div>
           </form>

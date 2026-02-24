@@ -24,7 +24,7 @@ export default function ResetPassword() {
   useEffect(() => {
     const validateToken = async () => {
       if (!token) {
-        setError('Kein Reset-Token gefunden')
+        setError('No se encontró token de restablecimiento')
         setValidatingToken(false)
         return
       }
@@ -34,7 +34,7 @@ export default function ResetPassword() {
         setTokenValid(true)
         setError('')
       } catch (err: any) {
-        setError(err.message || 'Ungültiger oder abgelaufener Token')
+        setError(err.message ||'Token inválido o expirado')
         setTokenValid(false)
       } finally {
         setValidatingToken(false)
@@ -50,13 +50,13 @@ export default function ResetPassword() {
     setError('')
 
     if (newPassword !== confirmPassword) {
-      setError('Passwörter stimmen nicht überein')
+      setError('Las contraseñas no coinciden')
       setLoading(false)
       return
     }
 
     if (newPassword.length < 6) {
-      setError('Passwort muss mindestens 6 Zeichen lang sein')
+      setError('La contraseña debe tener al menos 6 caracteres')
       setLoading(false)
       return
     }
@@ -66,7 +66,7 @@ export default function ResetPassword() {
       setSuccess(true)
       setError('')
     } catch (err: any) {
-      setError(err.message || 'Fehler beim Zurücksetzen des Passworts')
+      setError(err.message ||'Error al restablecer contraseña')
     } finally {
       setLoading(false)
     }
@@ -79,7 +79,7 @@ export default function ResetPassword() {
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Token wird validiert...</p>
+              <p className="mt-2 text-gray-600">Validando token...</p>
             </div>
           </CardContent>
         </Card>
@@ -92,9 +92,9 @@ export default function ResetPassword() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-red-600">❌ Ungültiger Link</CardTitle>
+            <CardTitle className="text-2xl font-bold text-red-600">Enlace Inválido</CardTitle>
             <CardDescription>
-              Dieser Passwort-Reset-Link ist ungültig oder abgelaufen.
+              Este enlace de restablecimiento de contraseña es inválido o ha expirado.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -108,7 +108,7 @@ export default function ResetPassword() {
                 onClick={() => window.location.href = '/'}
                 className="w-full"
               >
-                Zurück zum Login
+                Volver al Inicio de Sesión
               </Button>
             </div>
           </CardContent>
@@ -122,9 +122,9 @@ export default function ResetPassword() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-green-600">✅ Passwort zurückgesetzt</CardTitle>
+            <CardTitle className="text-2xl font-bold text-green-600">✅ Contraseña Restablecida</CardTitle>
             <CardDescription>
-              Ihr Passwort wurde erfolgreich aktualisiert.
+              Su contraseña ha sido actualizada exitosamente.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -133,7 +133,7 @@ export default function ResetPassword() {
                 onClick={() => window.location.href = '/'}
                 className="w-full"
               >
-                Zum Login
+                Ir al Inicio de Sesión
               </Button>
             </div>
           </CardContent>
@@ -146,15 +146,15 @@ export default function ResetPassword() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">🔐 Neues Passwort festlegen</CardTitle>
+          <CardTitle className="text-2xl font-bold">🔐 Establecer Nueva Contraseña</CardTitle>
           <CardDescription>
-            Bitte geben Sie Ihr neues Passwort ein
+            Por favor, ingrese su nueva contraseña.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="newPassword">Neues Passwort</Label>
+              <Label htmlFor="newPassword">Nueva Contraseña</Label>
               <Input
                 id="newPassword"
                 type="password"
@@ -166,7 +166,7 @@ export default function ResetPassword() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
+              <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -183,7 +183,7 @@ export default function ResetPassword() {
               </Alert>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Wird verarbeitet...' : 'Passwort aktualisieren'}
+              {loading ? 'Procesando...' : 'Actualizar Contraseña'}
             </Button>
           </form>
         </CardContent>

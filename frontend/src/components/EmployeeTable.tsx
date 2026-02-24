@@ -90,6 +90,12 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
   const [overviewLoading, setOverviewLoading] = useState(false)
 
+  // Sorting state for overview
+  const [overviewSortConfig, setOverviewSortConfig] = useState<{
+    key: 'name' | 'salary' | null;
+    direction: 'asc' | 'desc' | null;
+  }>({ key: null, direction: null })
+
 
 
 
@@ -300,7 +306,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
     if (enabledIngresosKeys.length === 0 && enabledDeduccionesKeys.length === 0) {
 
-      alert('Bitte wähle mindestens ein Feld aus (Checkbox), das gespeichert werden soll.')
+      alert('Por favor, seleccione al menos un campo (casilla) que desee guardar.')
 
       return
 
@@ -308,9 +314,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
 
 
-    const scopeLabel = bulkKategorie === 'all' ? 'alle aktiven Mitarbeiter' : `alle aktiven ${bulkKategorie} Mitarbeiter`
+    const scopeLabel = bulkKategorie === 'all' ? 'todos los empleados activos' : `todos los empleados activos ${bulkKategorie}`
 
-    if (!confirm(`Möchten Sie wirklich Zulagen/Abzüge für das Jahr ${bulkYear} für ${scopeLabel} setzen? Dies überschreibt bestehende Werte für alle Monate des Jahres.`)) {
+    if (!confirm(`¿Realmente desea establecer bonificaciones/deducciones para el año ${bulkYear} para ${scopeLabel}? Esto sobrescribirá los valores existentes para todos los meses del año.`)) {
 
       return
 
@@ -378,13 +384,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
         success: false,
 
-        message: error?.message || 'Netzwerkfehler',
+        message: error?.message || 'Error de red',
 
         updated_count: 0,
 
         total_count: 0,
 
-        errors: [error?.message || 'Netzwerkfehler']
+        errors: [error?.message || 'Error de red']
 
       })
 
@@ -416,7 +422,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       console.error('Error saving payout month:', e)
 
-      alert('Auszahlungsmonat konnte nicht gespeichert werden')
+      alert('No se pudo guardar el mes de pago')
 
     } finally {
 
@@ -430,7 +436,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
   const handleRecalculateAtrasos = async () => {
 
-    if (!confirm(`Möchten Sie wirklich alle Atrasos für das Jahr ${recalcYear} neu berechnen? Dies aktualisiert die Werte für alle Mitarbeiter.`)) {
+    if (!confirm(`¿Realmente desea recalcular todos los atrasos para el año ${recalcYear}? Esto actualizará los valores para todos los empleados.`)) {
 
       return
 
@@ -472,7 +478,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       if (result.success) {
 
-        // Aktualisiere die Mitarbeiterdaten nach erfolgreicher Neuberechnung
+        // Actualizar los datos de los empleados después del recálculo exitoso
 
         fetchEmployees()
 
@@ -486,13 +492,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
         success: false,
 
-        message: 'Fehler bei der Neuberechnung der Atrasos',
+        message: 'Error al recalcular los atrasos',
 
         updated_count: 0,
 
         total_count: 0,
 
-        errors: ['Netzwerkfehler']
+        errors: ['Error de red']
 
       })
 
@@ -718,7 +724,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
   const handleDeleteEmployee = async (id: number) => {
 
-    if (!confirm('Möchten Sie diesen Mitarbeiter wirklich löschen?')) return
+    if (!confirm('¿Realmente desea eliminar este empleado?')) return
 
     
 
@@ -748,7 +754,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       } else {
 
-        console.error('Fehler beim Löschen des Mitarbeiters')
+        console.error('Error al eliminar el empleado')
 
       }
 
@@ -770,7 +776,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
     if (!increaseYear || (increaseType === 'percentage' && !increasePercentage) || (increaseType === 'absolute' && !absoluteAmount)) {
 
-      alert('Bitte geben Sie Jahr und Prozentsatz oder Betrag ein')
+      alert('Por favor, ingrese año y porcentaje o monto')
 
       return
 
@@ -790,7 +796,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       if (!token) {
 
-        console.error('Kein Token gefunden')
+        console.error('No se encontró token')
 
         return
 
@@ -852,17 +858,17 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       if (response.ok) {
 
-        console.log('Globale Gehaltserhöhung erfolgreich:', result)
+        console.log('Aumento global de salario exitoso:', result)
 
         setIncreaseResult(result)
 
-        // Refresh employee data to show updated salaries
+        // Actualizar datos de empleados para mostrar salarios actualizados
 
         fetchEmployees()
 
       } else {
 
-        console.error('Fehler bei globaler Gehaltserhöhung:', result)
+        console.error('Error en aumento global de salario:', result)
 
         setIncreaseResult(result)
 
@@ -872,7 +878,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       console.error('Error applying global salary increase:', error)
 
-      setIncreaseResult({ success: false, message: 'Netzwerkfehler' })
+      setIncreaseResult({ success: false, message: 'Error de red' })
 
     } finally {
 
@@ -948,7 +954,62 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
   ) : []
 
-  // Sorting handler
+  // Sorting handler for overview
+  const handleOverviewSort = (key: 'name' | 'salary') => {
+    let direction: 'asc' | 'desc' | null = 'asc'
+    
+    if (overviewSortConfig.key === key) {
+      if (overviewSortConfig.direction === 'asc') {
+        direction = 'desc'
+      } else if (overviewSortConfig.direction === 'desc') {
+        direction = null
+      } else {
+        direction = 'asc'
+      }
+    }
+    
+    setOverviewSortConfig({ key, direction })
+  }
+
+  // Apply sorting to overview data
+  const sortedOverviewData = React.useMemo(() => {
+    if (!overviewSortConfig.key || !overviewSortConfig.direction) {
+      return overviewData
+    }
+
+    return [...overviewData].sort((a, b) => {
+      let aValue: any
+      let bValue: any
+
+      if (overviewSortConfig.key === 'name') {
+        aValue = a.name
+        bValue = b.name
+      } else if (overviewSortConfig.key === 'salary') {
+        // Convert salary to number for proper numeric sorting
+        aValue = parseFloat(a.salary) || 0
+        bValue = parseFloat(b.salary) || 0
+      }
+
+      if (aValue === null || aValue === undefined) return 1
+      if (bValue === null || bValue === undefined) return -1
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return overviewSortConfig.direction === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue)
+      }
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return overviewSortConfig.direction === 'asc' 
+          ? aValue - bValue
+          : bValue - aValue
+      }
+
+      return 0
+    })
+  }, [overviewData, overviewSortConfig])
+
+  // Sorting handler for employees
   const handleSort = (key: keyof Employee) => {
     let direction: 'asc' | 'desc' | null = 'asc'
     
@@ -1033,7 +1094,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       <div className="flex items-center justify-center h-64">
 
-        <div className="text-lg text-gray-600">Lade Mitarbeiter...</div>
+        <div className="text-lg text-gray-600">Cargando empleados...</div>
 
       </div>
 
@@ -1051,7 +1112,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
         <div className="flex items-center justify-between mb-6">
 
-          <h2 className="text-2xl font-bold text-gray-800">Mitarbeiterverwaltung</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Gestión de Empleados</h2>
 
         </div>
 
@@ -1083,7 +1144,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               >
 
-                {tab === 'employees' ? 'Mitarbeiter' : tab === 'increase' ? 'Erhöhung' : tab === 'salary-copy' ? 'Gehaltskopie' : tab === 'overview' ? 'Gehaltsübersicht' : tab === 'settings' ? 'Settings' : tab === 'bulk-ingresos-deducciones' ? 'Zulagen/Abzüge (Jahr)' : tab === 'bearbeitungshistorie' ? 'Bearbeitungshistorie' : tab === 'import' ? 'Import' : 'Carry Over'}
+                {tab === 'employees' ? 'Empleados' : tab === 'increase' ? 'Aumento' : tab === 'salary-copy' ? 'Copia de Salario' : tab === 'overview' ? 'Resumen de Salario' : tab === 'settings' ? 'Configuración' : tab === 'bulk-ingresos-deducciones' ? 'Bonificaciones/Deducciones (Año)' : tab === 'bearbeitungshistorie' ? 'Historial de Procesamiento' : tab === 'import' ? 'Importar' : 'Carry Over'}
 
               </button>
 
@@ -1103,13 +1164,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div className="flex items-center justify-between mb-6">
 
-              <h3 className="text-lg font-medium text-gray-900">Mitarbeiterliste</h3>
+              <h3 className="text-lg font-medium text-gray-900">Lista de Empleados</h3>
 
               <Button className="flex items-center gap-2" onClick={handleAddEmployee}>
 
                 <Plus className="w-4 h-4" />
 
-                Neuer Mitarbeiter
+                Nuevo Empleado
 
               </Button>
 
@@ -1127,7 +1188,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 type="text"
 
-                placeholder="Mitarbeiter suchen..."
+                placeholder="Buscar empleado..."
 
                 value={searchTerm}
 
@@ -1167,7 +1228,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                       onClick={() => handleSort('nombre')}
                     >
                       <div className="flex items-center gap-1">
-                        Name
+                        Nombre
                         {sortConfig.key === 'nombre' && (
                           sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
                           sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
@@ -1206,7 +1267,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                       onClick={() => handleSort('kategorie')}
                     >
                       <div className="flex items-center gap-1">
-                        Kategorie
+                        Categoría
                         {sortConfig.key === 'kategorie' && (
                           sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
                           sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
@@ -1214,7 +1275,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                       </div>
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktionen</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
 
                   </tr>
 
@@ -1248,7 +1309,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${employee.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
 
-                          {employee.activo ? 'Aktiv' : 'Inaktiv'}
+                          {employee.activo ? 'Activo' : 'Inactivo'}
 
                         </span>
 
@@ -1278,7 +1339,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                             <Eye className="w-4 h-4" />
 
-                            Details
+                            Detalles
 
                           </Button>
 
@@ -1296,7 +1357,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                             <Edit className="w-4 h-4" />
 
-                            Bearbeiten
+                            Editar
 
                           </Button>
 
@@ -1314,7 +1375,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                             <Trash2 className="w-4 h-4" />
 
-                            Löschen
+                            Eliminar
 
                           </Button>
 
@@ -1338,7 +1399,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               <div className="text-center py-8 text-gray-500">
 
-                {searchTerm ? 'Keine Mitarbeiter gefunden' : 'Keine Mitarbeiter vorhanden'}
+                {searchTerm ? 'No se encontraron empleados' : 'No hay empleados disponibles'}
 
               </div>
 
@@ -1360,11 +1421,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div>
 
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Zulagen & Abzüge (Jahreswerte)</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Bonificaciones & Deducciones (Valores Anuales)</h3>
 
               <p className="text-sm text-gray-600">
 
-                Setzt die Werte für alle aktiven Mitarbeiter (optional gefiltert nach Kategorie) für alle Monate des ausgewählten Jahres.
+                Establece los valores para todos los empleados activos (opcionalmente filtrado por categoría) para todos los meses del año seleccionado.
 
               </p>
 
@@ -1378,7 +1439,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div>
 
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Jahr</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
 
                   <select
 
@@ -1406,7 +1467,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div>
 
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Gilt für</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Válido para</label>
 
                   <select
 
@@ -1420,11 +1481,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   >
 
-                    <option value="all">Alle</option>
+                    <option value="all">Todos</option>
 
-                    <option value="Techniker">Techniker</option>
+                    <option value="Techniker">Técnicos</option>
 
-                    <option value="Office">Office</option>
+                    <option value="Office">Oficina</option>
 
                   </select>
 
@@ -1438,7 +1499,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div className="border border-gray-200 rounded-lg p-4">
 
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Zulagen</h4>
+                  <h4 className="text-md font-medium text-gray-900 mb-4">Bonificaciones</h4>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -1474,7 +1535,10 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                           value={value as any}
 
-                          onChange={(e) => setBulkIngresos({ ...bulkIngresos, [key]: parseFloat(e.target.value) })}
+                          onChange={(e) => {
+                            const parsed = parseFloat(e.target.value)
+                            setBulkIngresos({ ...bulkIngresos, [key]: isNaN(parsed) ? 0 : parsed })
+                          }}
 
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
 
@@ -1494,7 +1558,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div className="border border-gray-200 rounded-lg p-4">
 
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Abzüge</h4>
+                  <h4 className="text-md font-medium text-gray-900 mb-4">Deducciones</h4>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -1530,7 +1594,10 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                           value={value as any}
 
-                          onChange={(e) => setBulkDeducciones({ ...bulkDeducciones, [key]: parseFloat(e.target.value) })}
+                          onChange={(e) => {
+                            const parsed = parseFloat(e.target.value)
+                            setBulkDeducciones({ ...bulkDeducciones, [key]: isNaN(parsed) ? 0 : parsed })
+                          }}
 
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
 
@@ -1554,7 +1621,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <TrendingUp className="w-4 h-4" />
 
-                {bulkLoading ? 'Wird verarbeitet...' : 'Für alle aktiven Mitarbeiter speichern'}
+                {bulkLoading ? 'Procesando...' : 'Guardar para todos los empleados activos'}
 
               </Button>
 
@@ -1604,7 +1671,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   <div className="text-sm text-gray-700">
 
-                    Erfolgreich aktualisiert: {bulkResult.updated_count} von {bulkResult.total_count} Mitarbeitern
+                    Actualizado exitosamente: {bulkResult.updated_count} de {bulkResult.total_count} empleados
 
                   </div>
 
@@ -1628,7 +1695,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       {bulkResult.errors.length > 3 && (
 
-                        <li>... und {bulkResult.errors.length - 3} weitere Fehler</li>
+                        <li>... y {bulkResult.errors.length - 3} errores más</li>
 
                       )}
 
@@ -1658,11 +1725,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div>
 
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Settings</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Configuración</h3>
 
               <p className="text-sm text-gray-600">
 
-                Globale Einstellungen, die nur selten geändert werden.
+                Configuraciones globales que rara vez se modifican.
 
               </p>
 
@@ -1674,11 +1741,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               <div>
 
-                <div className="text-sm font-medium text-gray-900">Auszahlungsmonat (global)</div>
+                <div className="text-sm font-medium text-gray-900">Mes de Pago (global)</div>
 
                 <div className="text-xs text-gray-600">
 
-                  Steuert, bis zu welchem Monat das alte Jahresgehalt gilt und in welchem Monat die atrasos ausgezahlt werden.
+                  Controla hasta qué mes se aplica el salario anual anterior y en qué mes se pagan los atrasos.
 
                 </div>
 
@@ -1708,7 +1775,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <Button onClick={handleSavePayoutMonth} disabled={payoutMonthLoading}>
 
-                  Speichern
+                  Guardar
 
                 </Button>
 
@@ -1722,11 +1789,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               <div>
 
-                <div className="text-sm font-medium text-gray-900">Atrasos Neuberechnung</div>
+                <div className="text-sm font-medium text-gray-900">Recálculo de Atrasos</div>
 
                 <div className="text-xs text-gray-600">
 
-                  Berechnet alle Atrasos für das ausgewählte Jahr neu basierend auf dem aktuellen Auszahlungsmonat.
+                  Recalcula todos los atrasos para el año seleccionado basado en el mes de pago actual.
 
                 </div>
 
@@ -1772,7 +1839,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
 
-                      Berechne...
+                      Calculando...
 
                     </>
 
@@ -1782,7 +1849,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       <TrendingUp className="w-4 h-4" />
 
-                      Neuberechnen
+                      Recalcular
 
                     </>
 
@@ -1796,7 +1863,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
 
 
-            {/* Ergebnis der Atrasos-Neuberechnung */}
+            {/* Resultado del Recálculo de Atrasos */}
 
             {recalcResult && (
 
@@ -1840,7 +1907,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   <div className="text-sm text-gray-700">
 
-                    <p>Erfolgreich aktualisiert: {recalcResult.updated_count} von {recalcResult.total_count} Mitarbeitern</p>
+                    <p>Actualizado exitosamente: {recalcResult.updated_count} de {recalcResult.total_count} empleados</p>
 
                   </div>
 
@@ -1852,7 +1919,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   <div className="mt-2">
 
-                    <p className="text-sm font-medium text-red-700">Fehler:</p>
+                    <p className="text-sm font-medium text-red-700">Errores:</p>
 
                     <ul className="text-sm text-red-600 list-disc list-inside">
 
@@ -1864,7 +1931,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       {recalcResult.errors.length > 3 && (
 
-                        <li>... und {recalcResult.errors.length - 3} weitere Fehler</li>
+                        <li>... y {recalcResult.errors.length - 3} errores más</li>
 
                       )}
 
@@ -1890,13 +1957,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div>
 
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Gehaltserhöhung für ausgewählte Mitarbeiter</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Aumento de Salario para Empleados Seleccionados</h3>
 
               <p className="text-sm text-gray-600 mb-6">
 
-                Wendet eine Gehaltserhöhung auf ausgewählte aktive Mitarbeiter an. 
+                Aplica un aumento de salario a los empleados activos seleccionados.
 
-                Die Erhöhung wird erst im April des Zieljahres wirksam mit Nachzahlung für Januar-März.
+                El aumento se hará efectivo en abril del año objetivo con pago retroactivo de enero a marzo.
 
               </p>
 
@@ -1910,7 +1977,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div>
 
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Zieljahr</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Año Objetivo</label>
 
                   <input
 
@@ -1924,7 +1991,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     onChange={(e) => setIncreaseYear(e.target.value)}
 
-                    placeholder="z.B. 2026"
+                    placeholder="ej. 2026"
 
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
 
@@ -1936,7 +2003,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div>
 
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Erhöhungstyp</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Aumento</label>
 
                   <select
 
@@ -1948,9 +2015,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   >
 
-                    <option value="percentage">Prozentual (%)</option>
+                    <option value="percentage">Porcentual (%)</option>
 
-                    <option value="absolute">Absoluter Betrag (€)</option>
+                    <option value="absolute">Monto Absoluto (€)</option>
 
                   </select>
 
@@ -1966,7 +2033,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   <label className="block text-sm font-medium text-gray-700 mb-1">
 
-                    {increaseType === 'percentage' ? 'Prozentsatz (%)' : 'Absoluter Betrag (€)'}
+                    {increaseType === 'percentage' ? 'Porcentaje (%)' : 'Monto Absoluto (€)'}
 
                   </label>
 
@@ -1984,7 +2051,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     onChange={(e) => increaseType === 'percentage' ? setIncreasePercentage(e.target.value) : setAbsoluteAmount(e.target.value)}
 
-                    placeholder={increaseType === 'percentage' ? 'z.B. 10.0' : 'z.B. 5000'}
+                    placeholder={increaseType === 'percentage' ? 'ej. 10.0' : 'ej. 5000'}
 
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
 
@@ -1996,7 +2063,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div>
 
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Suche (Mitarbeiter)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Buscar (Empleado)</label>
 
                   <input
 
@@ -2006,7 +2073,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     onChange={(e) => setSearchTermIncrease(e.target.value)}
 
-                    placeholder="Mitarbeiter suchen..."
+                    placeholder="Buscar empleado..."
 
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
 
@@ -2018,7 +2085,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
 
 
-              {/* Mitarbeiter-Auswahl */}
+              {/* Selección de Empleados */}
 
               <div>
 
@@ -2026,7 +2093,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   <h4 className="text-md font-medium text-gray-900">
 
-                    Mitarbeiter für Gehaltserhöhung ({filteredEmployeesForIncrease.filter(emp => !excludedEmployees.has(emp.id_empleado)).length} von {filteredEmployeesForIncrease.length} ausgewählt)
+                    Empleados para aumento de salario ({filteredEmployeesForIncrease.filter(emp => !excludedEmployees.has(emp.id_empleado)).length} de {filteredEmployeesForIncrease.length} seleccionados)
 
                   </h4>
 
@@ -2044,7 +2111,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     />
 
-                    Alle auswählen/abwählen
+                    Seleccionar todo/deseleccionar todo
 
                   </label>
 
@@ -2092,7 +2159,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                           }`}>
 
-                            {employee.activo ? 'Aktiv' : 'Inaktiv'}
+                            {employee.activo ? 'Activo' : 'Inactivo'}
 
                           </span>
 
@@ -2122,7 +2189,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <TrendingUp className="w-4 h-4" />
 
-                {increaseLoading ? 'Wird verarbeitet...' : `Gehaltserhöhung für ${filteredEmployeesForIncrease.filter(emp => !excludedEmployees.has(emp.id_empleado)).length} Mitarbeiter anwenden`}
+                {increaseLoading ? 'Procesando...' : `Aplicar aumento de salario a ${filteredEmployeesForIncrease.filter(emp => !excludedEmployees.has(emp.id_empleado)).length} empleados`}
 
               </Button>
 
@@ -2144,7 +2211,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 }`}>
 
-                  {increaseResult.success ? '✅ Erfolg' : '❌ Fehler'}
+                  {increaseResult.success ? '✅ Éxito' : '❌ Error'}
 
                 </h4>
 
@@ -2166,7 +2233,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     <p className="text-sm font-medium text-green-800 mb-2">
 
-                      {increaseResult.updated_count} Mitarbeiter aktualisiert:
+                      {increaseResult.updated_count} empleados actualizados:
 
                     </p>
 
@@ -2196,7 +2263,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   <div className="mt-3">
 
-                    <p className="text-sm font-medium text-red-800 mb-2">Fehler:</p>
+                    <p className="text-sm font-medium text-red-800 mb-2">Errores:</p>
 
                     <div className="max-h-40 overflow-y-auto">
 
@@ -2240,11 +2307,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div>
 
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Gehaltsübersicht</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Resumen de Salario</h3>
 
               <p className="text-sm text-gray-600 mb-6">
 
-                Zeigt alle Mitarbeiter mit ihren Jahresgehältern für das ausgewählte Jahr an.
+                Muestra todos los empleados con sus salarios anuales para el año seleccionado.
 
               </p>
 
@@ -2256,7 +2323,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">Jahr</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
 
                 <select
 
@@ -2286,7 +2353,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               <div className="flex items-center justify-center h-32">
 
-                <div className="text-lg text-gray-600">Lade Gehaltsdaten...</div>
+                <div className="text-lg text-gray-600">Cargando datos salariales...</div>
 
               </div>
 
@@ -2300,10 +2367,17 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     <tr>
 
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-
-                        Mitarbeiter
-
+                      <th 
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleOverviewSort('name')}
+                      >
+                        <div className="flex items-center gap-1">
+                          Empleado
+                          {overviewSortConfig.key === 'name' && (
+                            overviewSortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
+                            overviewSortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                          )}
+                        </div>
                       </th>
 
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -2312,10 +2386,17 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       </th>
 
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-
-                        Jahresgehalt
-
+                      <th 
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleOverviewSort('salary')}
+                      >
+                        <div className="flex items-center gap-1">
+                          Salario Anual
+                          {overviewSortConfig.key === 'salary' && (
+                            overviewSortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
+                            overviewSortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                          )}
+                        </div>
                       </th>
 
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -2330,7 +2411,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   <tbody className="bg-white divide-y divide-gray-200">
 
-                    {overviewData.map((employee) => (
+                    {sortedOverviewData.map((employee) => (
 
                       <tr key={employee.id}>
 
@@ -2364,7 +2445,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                           }`}>
 
-                            {employee.has_salary ? 'Gehalt vorhanden' : 'Kein Gehalt'}
+                            {employee.has_salary ? 'Salario disponible' : 'Sin salario'}
 
                           </span>
 
@@ -2380,11 +2461,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 
 
-                {overviewData.length === 0 && (
+                {sortedOverviewData.length === 0 && (
 
                   <div className="text-center py-8 text-gray-500">
 
-                    Keine Mitarbeiter gefunden
+                    No se encontraron empleados
 
                   </div>
 
@@ -2406,11 +2487,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div>
 
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Bearbeitungshistorie</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Historial de Procesamiento</h3>
 
               <p className="text-sm text-gray-600 mb-6">
 
-                Zeigt alle Bearbeitungsvorgänge chronologisch geordnet an.
+                Muestra todos los procesos de edición ordenados cronológicamente.
 
               </p>
 

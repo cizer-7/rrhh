@@ -17,6 +17,22 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
   const [customYear, setCustomYear] = useState<string>('')
   const [showCustomInput, setShowCustomInput] = useState(false)
   const [loading, setLoading] = useState(false)
+  // Helper function to format date for input field
+  const formatDateForInput = (date: any): string => {
+    if (!date) return ''
+    try {
+      const d = new Date(date)
+      if (isNaN(d.getTime())) return ''
+      // Format as YYYY-MM-DD
+      const year = d.getFullYear()
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    } catch {
+      return ''
+    }
+  }
+
   // State for employee form (Stammdaten)
   const [showEmployeeForm, setShowEmployeeForm] = useState(false)
   const [employeeFormData, setEmployeeFormData] = useState({
@@ -24,7 +40,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     apellido: employee.apellido || '',
     ceco: employee.ceco || '',
     kategorie: (employee as any).kategorie ?? undefined,
-    fecha_alta: (employee as any).fecha_alta || '',
+    fecha_alta: formatDateForInput((employee as any).fecha_alta),
     activo: employee.activo ?? true
   })
   // State for salary increase
@@ -291,7 +307,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       apellido: employee.apellido || '',
       ceco: employee.ceco || '',
       kategorie: (employee as any).kategorie ?? undefined,
-      fecha_alta: (employee as any).fecha_alta || '',
+      fecha_alta: formatDateForInput((employee as any).fecha_alta),
       activo: employee.activo ?? true
     })
   }, [employee])
@@ -384,7 +400,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
           nombre: data?.nombre ?? employee.nombre ?? '',
           apellido: data?.apellido ?? employee.apellido ?? '',
           ceco: data?.ceco ?? employee.ceco ?? '',
-          fecha_alta: (data as any)?.fecha_alta ?? (employee as any)?.fecha_alta ?? '',
+          fecha_alta: formatDateForInput((data as any)?.fecha_alta ?? (employee as any)?.fecha_alta),
           kategorie: (data as any)?.kategorie ?? (employee as any)?.kategorie ?? undefined,
           activo: data?.activo ?? employee.activo ?? true
         },
@@ -653,7 +669,10 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       if (Number.isNaN(d.getTime())) return baseSalary
       const hireYear = d.getFullYear()
       const hireMonth = d.getMonth() + 1
-      if (hireYear !== year || hireMonth !== selectedMonth) return baseSalary
+      const targetYear = year
+      const targetMonth = selectedMonth
+      if ((targetYear < hireYear) || (targetYear === hireYear && targetMonth < hireMonth)) return 0
+      if (hireYear !== targetYear || hireMonth !== targetMonth) return baseSalary
       const day = d.getDate()
       const employedDays = Math.max(0, 30 - (day - 1))
       return (baseSalary / 30) * employedDays
@@ -708,7 +727,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-gray-600">Lade Daten...</div>
+        <div className="text-lg text-gray-600">Cargando datos...</div>
       </div>
     )
   }
@@ -718,21 +737,21 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl">
             <div className="border-b border-gray-200 px-6 py-4">
-              <div className="text-lg font-semibold text-gray-900">Ungespeicherte Änderungen</div>
-              <div className="mt-1 text-sm text-gray-600">Du hast Änderungen, die noch nicht gespeichert wurden.</div>
+              <div className="text-lg font-semibold text-gray-900">Cambios no guardados</div>
+              <div className="mt-1 text-sm text-gray-600">Tienes cambios que aún no han sido guardados.</div>
             </div>
             <div className="px-6 py-4">
               <div className="max-h-72 overflow-y-auto rounded-md border border-gray-200">
                 {getUnsavedChanges().length === 0 ? (
-                  <div className="px-4 py-3 text-sm text-gray-600">Keine Änderungen gefunden.</div>
+                  <div className="px-4 py-3 text-sm text-gray-600">No se encontraron cambios.</div>
                 ) : (
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bereich</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feld</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alt</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Neu</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campo</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anterior</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nuevo</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
@@ -756,7 +775,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 onClick={() => setShowUnsavedChangesModal(false)}
                 disabled={unsavedChangesSaving}
               >
-                Schließen
+                Cerrar
               </Button>
               <Button
                 type="button"
@@ -767,14 +786,14 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 }}
                 disabled={unsavedChangesSaving}
               >
-                Nicht speichern
+                No guardar
               </Button>
               <Button
                 type="button"
                 onClick={saveAllUnsavedChanges}
                 disabled={unsavedChangesSaving}
               >
-                {unsavedChangesSaving ? 'Speichern...' : 'Speichern'}
+                {unsavedChangesSaving ? 'Guardando...' : 'Guardar'}
               </Button>
             </div>
           </div>
@@ -785,7 +804,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
           <div className="flex items-center gap-4">
             <Button variant="outline" onClick={handleBackClick}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Zurück
+              Atrás
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
@@ -805,8 +824,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
               }}
               className="px-3 py-2 border border-gray-300 rounded-md"
             >
-              <option value="yearly">Jährlich</option>
-              <option value="monthly">Monatlich</option>
+              <option value="yearly">Anual</option>
+              <option value="monthly">Mensual</option>
             </select>
             
             <select 
@@ -822,7 +841,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
               }}
               className="px-3 py-2 border border-gray-300 rounded-md"
             >
-              <option value="">Jahr wählen...</option>
+              <option value="">Seleccionar año...</option>
               {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + 5 - i).map(y => {
                 const currentYear = new Date().getFullYear()
                 const isCurrentYear = y === currentYear
@@ -835,17 +854,17 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                       color: isCurrentYear ? '#2563eb' : 'inherit'
                     }}
                   >
-                    {y}{isCurrentYear ? ' (aktuell)' : ''}
+                    {y}{isCurrentYear ? ' (actual)' : ''}
                   </option>
                 )
               })}
-              <option value="custom">Anderes Jahr...</option>
+              <option value="custom">Otro año...</option>
             </select>
             
             {showCustomInput && (
               <input
                 type="number"
-                placeholder="Jahr eingeben"
+                placeholder="Ingresar año"
                 value={customYear}
                 onChange={(e) => {
                   setCustomYear(e.target.value)
@@ -877,20 +896,20 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 onChange={(e) => setMonth(e.target.value ? parseInt(e.target.value) : null)}
                 className="px-3 py-2 border border-gray-300 rounded-md"
               >
-                <option value="">Monat wählen...</option>
+                <option value="">Seleccionar mes...</option>
                 {[
-                  { value: 1, label: 'Januar' },
-                  { value: 2, label: 'Februar' },
-                  { value: 3, label: 'März' },
-                  { value: 4, label: 'April' },
-                  { value: 5, label: 'Mai' },
-                  { value: 6, label: 'Juni' },
-                  { value: 7, label: 'Juli' },
-                  { value: 8, label: 'August' },
-                  { value: 9, label: 'September' },
-                  { value: 10, label: 'Oktober' },
-                  { value: 11, label: 'November' },
-                  { value: 12, label: 'Dezember' }
+                  { value: 1, label: 'Enero' },
+                  { value: 2, label: 'Febrero' },
+                  { value: 3, label: 'Marzo' },
+                  { value: 4, label: 'Abril' },
+                  { value: 5, label: 'Mayo' },
+                  { value: 6, label: 'Junio' },
+                  { value: 7, label: 'Julio' },
+                  { value: 8, label: 'Agosto' },
+                  { value: 9, label: 'Septiembre' },
+                  { value: 10, label: 'Octubre' },
+                  { value: 11, label: 'Noviembre' },
+                  { value: 12, label: 'Diciembre' }
                 ].map(month => (
                   <option key={month.value} value={month.value}>
                     {month.label}
@@ -905,21 +924,21 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
           <div className="bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center gap-2 text-blue-600 mb-2">
               <Euro className="w-6 h-6" />
-              <h3 className="font-semibold">Monatsgehalt</h3>
+              <h3 className="font-semibold">Salario Mensual</h3>
             </div>
             <div className="text-2xl font-bold text-gray-900">
               €{prorateSalaryForHireMonth(calculateMonthlySalary(month), month).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             {hireMonthProrationInfo.applied && (
               <div className="mt-2 text-xs text-gray-600">
-                Anteilig wegen Einstellungsdatum ({hireMonthProrationInfo.employedDays}/30 Tage)
+                Prorrateado por fecha de contratación ({hireMonthProrationInfo.employedDays}/30 días)
               </div>
             )}
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center gap-2 text-purple-600 mb-2">
               <TrendingUp className="w-6 h-6" />
-              <h3 className="font-semibold">Jahresgehalt</h3>
+              <h3 className="font-semibold">Salario Anual</h3>
             </div>
             <div className="text-2xl font-bold text-gray-900">
               €{calculateAnnualSalaryWithFTE().toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -928,7 +947,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
           <div className="bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center gap-2 text-orange-600 mb-2">
               <Calendar className="w-6 h-6" />
-              <h3 className="font-semibold">{dataMode === 'monthly' ? 'Monat/Jahr' : 'Jahr'}</h3>
+              <h3 className="font-semibold">{dataMode === 'monthly' ? 'Mes/Año' : 'Año'}</h3>
             </div>
             <div className="text-2xl font-bold text-gray-900">
               {dataMode === 'monthly' && month 
@@ -952,7 +971,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  {tab === 'salary' ? 'Gehalt' : tab === 'ingresos' ? 'Zulagen' : tab === 'deducciones' ? 'Abzüge' : tab === 'stundenreduzierung' ? 'Stundenreduzierung' : tab === 'bearbeitungslog' ? 'Bearbeitungslog' : tab === 'gehaltserhoehung' ? 'Gehaltserhöhung' : 'Stammdaten'}
+                  {tab === 'salary' ? 'Salario' : tab === 'ingresos' ? 'Bonificaciones' : tab === 'deducciones' ? 'Deducciones' : tab === 'stundenreduzierung' ? 'Reducción de Horas' : tab === 'bearbeitungslog' ? 'Historial de Procesamiento' : tab === 'gehaltserhoehung' ? 'Aumento de Salario' : 'Datos Maestros'}
                 </button>
               ))}
             </nav>
@@ -973,7 +992,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Antigüedad (Jahre)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Antigüedad (Años)</label>
                     <input
                       id="antiguedad"
                       type="number"
@@ -983,7 +1002,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Jahresgehalt (Brutto)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Salario Anual (Bruto)</label>
                     <input
                       id="salario-anual-bruto"
                       type="number"
@@ -1008,7 +1027,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 </div>
                 <Button type="submit" className="flex items-center gap-2">
                   <Save className="w-4 h-4" />
-                  Speichern
+                  Guardar
                 </Button>
               </form>
             )}
@@ -1033,7 +1052,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 </div>
                 <Button type="submit" className="flex items-center gap-2">
                   <Save className="w-4 h-4" />
-                  Speichern
+                  Guardar
                 </Button>
               </form>
             )}
@@ -1058,22 +1077,22 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 </div>
                 <Button type="submit" className="flex items-center gap-2">
                   <Save className="w-4 h-4" />
-                  Speichern
+                  Guardar
                 </Button>
               </form>
             )}
             {activeTab === 'stundenreduzierung' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Stundenreduzierung</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Reducción de Horas</h3>
                   <p className="text-sm text-gray-600">
-                    Hinterlege Änderungen als "Reduktion um %" ab einem Monat. Im Export wird nur das Grundgehalt (SALARIO MES) entsprechend reduziert.
+                    Registre cambios como "Reducción por %" a partir de un mes. En la exportación, solo el salario base (SALARIO MES) se reducirá correspondientemente.
                   </p>
                 </div>
                 <form onSubmit={handleSaveFte} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Gültig ab Jahr</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Válido desde Año</label>
                       <input
                         type="number"
                         min="2000"
@@ -1085,7 +1104,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Gültig ab Monat</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Válido desde Mes</label>
                       <select
                         value={fteMonth}
                         onChange={(e) => setFteMonth(parseInt(e.target.value))}
@@ -1098,7 +1117,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Reduktion um (%)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Reducción por (%)</label>
                       <input
                         type="number"
                         min="0"
@@ -1106,41 +1125,41 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         step="0.01"
                         value={fteReduction}
                         onChange={(e) => setFteReduction(e.target.value)}
-                        placeholder="z.B. 20"
+                        placeholder="ej. 20"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         required
                       />
                     </div>
                   </div>
                   <div className="text-sm text-gray-600">
-                    Aktuell gültig (für {fteMonth}/{fteYear}):{' '}
+                    Válido actualmente (para {fteMonth}/{fteYear}):{' '}
                     <span className="font-medium text-gray-900">
                       {getEffectiveFtePercent(fteItems, fteYear, fteMonth, { anio: fteYear, mes: fteMonth }).toFixed(2)}%
                     </span>
-                    {' '}→ Neu:{' '}
+                    {' '}→ Nuevo:{' '}
                     <span className="font-medium text-gray-900">
                       {Math.max(0, Math.min(100, getEffectiveFtePercent(fteItems, fteYear, fteMonth, { anio: fteYear, mes: fteMonth }) - (parseFloat(fteReduction) || 0))).toFixed(2)}%
                     </span>
                   </div>
                   <Button type="submit" disabled={fteLoading} className="flex items-center gap-2">
                     <Save className="w-4 h-4" />
-                    {fteLoading ? 'Speichern...' : 'Speichern'}
+                    {fteLoading ? 'Guardando...' : 'Guardar'}
                   </Button>
                 </form>
                 <div className="overflow-x-auto border border-gray-200 rounded-md">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ab</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Beschäftigungsgrad (%)</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Letzte Änderung</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Desde</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grado de Empleo (%)</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Último Cambio</th>
                         <th className="px-4 py-2"></th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {fteItems.length === 0 ? (
                         <tr>
-                          <td className="px-4 py-3 text-sm text-gray-600" colSpan={4}>Keine Einträge vorhanden.</td>
+                          <td className="px-4 py-3 text-sm text-gray-600" colSpan={4}>No hay entradas disponibles.</td>
                         </tr>
                       ) : (
                         [...fteItems]
@@ -1167,7 +1186,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                                   disabled={fteLoading}
                                   onClick={() => handleDeleteFte(it.anio, it.mes)}
                                 >
-                                  Löschen
+                                  Eliminar
                                 </Button>
                               </td>
                             </tr>
@@ -1181,30 +1200,30 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
             {activeTab === 'bearbeitungslog' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">Bearbeitungslog</h3>
+                  <h3 className="text-lg font-medium text-gray-900">Historial de Procesamiento</h3>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => fetchBearbeitungslog()}
                     disabled={bearbeitungslogLoading}
                   >
-                    Aktualisieren
+                    Actualizar
                   </Button>
                 </div>
                 {bearbeitungslogLoading ? (
-                  <div className="text-gray-600">Lade Bearbeitungslog...</div>
+                  <div className="text-gray-600">Cargando historial de procesamiento...</div>
                 ) : bearbeitungslogItems.length === 0 ? (
-                  <div className="text-gray-600">Keine Einträge vorhanden.</div>
+                  <div className="text-gray-600">No hay entradas disponibles.</div>
                 ) : (
                   <div className="overflow-x-auto border border-gray-200 rounded-md">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zeitpunkt</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Benutzer</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktion</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Objekt</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Momento</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Objeto</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detalles</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -1233,13 +1252,13 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
             {activeTab === 'stammdaten' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">Mitarbeiter Stammdaten</h3>
+                  <h3 className="text-lg font-medium text-gray-900">Datos Maestros del Empleado</h3>
                   <Button 
                     onClick={() => setShowEmployeeForm(!showEmployeeForm)}
                     className="flex items-center gap-2"
                   >
                     <Save className="w-4 h-4" />
-                    {showEmployeeForm ? 'Abbrechen' : 'Bearbeiten'}
+                    {showEmployeeForm ? 'Cancelar' : 'Editar'}
                   </Button>
                 </div>
                 {!showEmployeeForm ? (
@@ -1269,9 +1288,9 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                       <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md">
-                        {employee.activo ? 'Aktiv' : 'Inaktiv'}
+                        {employee.activo ? 'Activo' : 'Inactivo'}
                       </div>
                     </div>
                   </div>
@@ -1279,7 +1298,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                   <form onSubmit={handleSaveEmployee} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Vorname</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
                         <input
                           type="text"
                           name="nombre"
@@ -1303,7 +1322,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Nachname</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
                         <input
                           type="text"
                           name="apellido"
@@ -1314,7 +1333,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">CECO (optional)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">CECO (opcional)</label>
                         <input
                           type="text"
                           name="ceco"
@@ -1324,7 +1343,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Einstellungsdatum</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Contratación</label>
                         <input
                           type="date"
                           name="fecha_alta"
@@ -1342,17 +1361,17 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                             onChange={(e) => setEmployeeFormData({...employeeFormData, activo: e.target.checked})}
                             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
-                          <span className="text-sm font-medium text-gray-700">Aktiv</span>
+                          <span className="text-sm font-medium text-gray-700">Activo</span>
                         </label>
                       </div>
                     </div>
                     <div className="flex justify-end space-x-2 pt-4">
                       <Button type="button" variant="outline" onClick={() => setShowEmployeeForm(false)}>
-                        Abbrechen
+                        Cancelar
                       </Button>
                       <Button type="submit" className="flex items-center gap-2">
                         <Save className="w-4 h-4" />
-                        Speichern
+                        Guardar
                       </Button>
                     </div>
                   </form>
@@ -1362,41 +1381,41 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
             {activeTab === 'gehaltserhoehung' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Gehaltserhöhung für {employee.nombre} {employee.apellido}</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Aumento de Salario para {employee.nombre} {employee.apellido}</h3>
                   <p className="text-sm text-gray-600 mb-6">
-                    Wendet eine Gehaltserhöhung (prozentual oder absolut) für diesen Mitarbeiter an. 
-                    Die Erhöhung wird erst im April des Zieljahres wirksam mit Nachzahlung für Januar-März.
+                    Aplica un aumento de salario (porcentual o absoluto) para este empleado.
+                    El aumento se hará efectivo en abril del año objetivo con pago retroactivo de enero a marzo.
                   </p>
                 </div>
                 <form onSubmit={handleSalaryIncrease} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Zieljahr</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Año Objetivo</label>
                       <input
                         type="number"
                         min="2020"
                         max="2030"
                         value={increaseYear}
                         onChange={(e) => setIncreaseYear(e.target.value)}
-                        placeholder="z.B. 2026"
+                        placeholder="ej. 2026"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Erhöhungstyp</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Aumento</label>
                       <select
                         value={increaseType}
                         onChange={(e) => setIncreaseType(e.target.value as 'percentage' | 'absolute')}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       >
-                        <option value="percentage">Prozentual (%)</option>
-                        <option value="absolute">Absolut (€)</option>
+                        <option value="percentage">Porcentual (%)</option>
+                        <option value="absolute">Absoluto (€)</option>
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {increaseType === 'percentage' ? 'Prozentsatz (%)' : 'Absoluter Betrag (€)'}
+                        {increaseType === 'percentage' ? 'Porcentaje (%)' : 'Monto Absoluto (€)'}
                       </label>
                       <input
                         type="number"
@@ -1405,7 +1424,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         step={increaseType === 'percentage' ? '0.1' : '1'}
                         value={increaseType === 'percentage' ? increasePercentage : increaseAbsolute}
                         onChange={(e) => increaseType === 'percentage' ? setIncreasePercentage(e.target.value) : setIncreaseAbsolute(e.target.value)}
-                        placeholder={increaseType === 'percentage' ? 'z.B. 10.0' : 'z.B. 5000'}
+                        placeholder={increaseType === 'percentage' ? 'ej. 10.0' : 'ej. 5000'}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         required
                       />
@@ -1417,7 +1436,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                     className="flex items-center gap-2"
                   >
                     <TrendingUp className="w-4 h-4" />
-                    {increaseLoading ? 'Wird verarbeitet...' : `Gehaltserhöhung für Mitarbeiter anwenden`}
+                    {increaseLoading ? 'Procesando...' : `Aplicar Aumento de Salario para Empleado`}
                   </Button>
                 </form>
                 {increaseResult && (
@@ -1427,7 +1446,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                     <h4 className={`font-medium mb-2 ${
                       increaseResult.success ? 'text-green-800' : 'text-red-800'
                     }`}>
-                      {increaseResult.success ? '✅ Erfolg' : '❌ Fehler'}
+                      {increaseResult.success ? '✅ Éxito' : '❌ Error'}
                     </h4>
                     <p className={`text-sm mb-2 ${
                       increaseResult.success ? 'text-green-700' : 'text-red-700'
@@ -1438,7 +1457,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                     {increaseResult.success && increaseResult.employees && (
                       <div className="mt-3">
                         <p className="text-sm font-medium text-green-800 mb-2">
-                          Gehaltserhöhung erfolgreich durchgeführt:
+                          Aumento de salario aplicado exitosamente:
                         </p>
                         <div className="max-h-40 overflow-y-auto">
                           {increaseResult.employees.map((emp: any, index: number) => (
@@ -1455,7 +1474,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                     
                     {increaseResult.errors && increaseResult.errors.length > 0 && (
                       <div className="mt-3">
-                        <p className="text-sm font-medium text-red-800 mb-2">Fehler:</p>
+                        <p className="text-sm font-medium text-red-800 mb-2">Errores:</p>
                         <div className="max-h-40 overflow-y-auto">
                           {increaseResult.errors.map((error: string, index: number) => (
                             <div key={index} className="text-xs text-red-700 py-1">{error}</div>

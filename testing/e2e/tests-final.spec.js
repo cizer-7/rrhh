@@ -67,7 +67,7 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     // Harte Assertions für Login-Formular
     await expect(page.locator('input[id="username"], input[name="username"], input[type="text"]')).toBeVisible()
     await expect(page.locator('input[id="password"], input[name="password"], input[type="password"]')).toBeVisible()
-    await expect(page.locator('button:has-text("Anmelden")')).toBeVisible()
+    await expect(page.locator('button:has-text("Iniciar sesión")')).toBeVisible()
   })
 
   test('successful login workflow', async ({ page }) => {
@@ -79,14 +79,14 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     // Login mit gültigen Credentials
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
     // Warte kurz auf Verarbeitung
     await page.waitForTimeout(3000)
     
     // Warte auf successful login Indikator mit längeren Timeouts und mehr Fallbacks
     await Promise.race([
-      page.waitForSelector('button:has-text("Abmelden")', { timeout: 20000 }),
+      page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 20000 }),
       page.waitForSelector('table', { timeout: 20000 }),
       page.waitForSelector('text=Mitarbeiter Dashboard', { timeout: 20000 }),
       page.waitForSelector('text=Dashboard', { timeout: 20000 }),
@@ -95,7 +95,7 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     ])
     
     // Überprüfe successful Login mit mehreren Indikatoren
-    const logoutButton = page.locator('button:has-text("Abmelden")')
+    const logoutButton = page.locator('button:has-text("Cerrar sesión")')
     const table = page.locator('table')
     const dashboardTitle = page.locator('text=Mitarbeiter Dashboard')
     const genericDashboard = page.locator('text=Dashboard')
@@ -135,7 +135,7 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     // Fülle ungültige Credentials
     await page.fill('input[id="username"]', 'invalid_user')
     await page.fill('input[id="password"]', 'invalid_pass')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
     // Warte kurz für Verarbeitung
     await page.waitForTimeout(3000)
@@ -145,7 +145,7 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await expect(page.locator('input[id="password"]')).toBeVisible()
     
     // Sollte NICHT eingeloggt sein - prüfe mehrere Indikatoren
-    const logoutButton = page.locator('button:has-text("Abmelden")')
+    const logoutButton = page.locator('button:has-text("Cerrar sesión")')
     const table = page.locator('table')
     
     await expect(logoutButton).not.toBeVisible({ timeout: 2000 })
@@ -158,10 +158,10 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.waitForSelector('input[id="username"]', { timeout: 15000 })
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
     // Warte auf successful Login
-    await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
+    await page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 15000 })
     
     // Warte auf Tabelle mit längerem Timeout
     await page.waitForSelector('table', { timeout: 15000 })
@@ -187,9 +187,9 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.waitForSelector('input[id="username"]', { timeout: 15000 })
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
-    await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
+    await page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 15000 })
     await page.waitForSelector('table', { timeout: 15000 })
     
     // Öffne Mitarbeiter-Formular
@@ -228,12 +228,12 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.waitForSelector('input[id="username"]', { timeout: 15000 })
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
-    await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
+    await page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 15000 })
     
     // Logout
-    await page.click('button:has-text("Abmelden")')
+    await page.click('button:has-text("Cerrar sesión")')
     
     // Warte kurz auf Verarbeitung
     await page.waitForTimeout(2000)
@@ -244,21 +244,21 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await expect(page.locator('input[id="password"]')).toBeVisible()
     
     // Sollte NICHT mehr eingeloggt sein
-    await expect(page.locator('button:has-text("Abmelden")')).not.toBeVisible({ timeout: 3000 })
+    await expect(page.locator('button:has-text("Cerrar sesión")')).not.toBeVisible({ timeout: 3000 })
   })
 
   test('form validation - empty fields', async ({ page }) => {
     await page.goto('http://localhost:3000/dashboard', { timeout: 30000 })
     
     // Klicke auf Anmelden ohne Eingaben
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
     // Sollte noch auf Login-Seite sein
     await expect(page.locator('input[id="username"]')).toBeVisible()
     await expect(page.locator('input[id="password"]')).toBeVisible()
     
     // Sollte nicht eingeloggt sein
-    await expect(page.locator('button:has-text("Abmelden")')).not.toBeVisible()
+    await expect(page.locator('button:has-text("Cerrar sesión")')).not.toBeVisible()
   })
 
   test('responsive design', async ({ page }) => {
@@ -299,11 +299,11 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.goto('http://localhost:3000/dashboard', { timeout: 30000 })
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
     // Warte auf successful Login
     await Promise.race([
-      page.waitForSelector('button:has-text("Abmelden")', { timeout: 10000 }),
+      page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 10000 }),
       page.waitForSelector('table', { timeout: 10000 })
     ])
     
@@ -325,14 +325,14 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     if (rowCount === 0) {
       console.log('Keine Mitarbeiter in der Tabelle gefunden - überspringe Detail-Test')
       // Teste nur die grundlegende Funktionalität ohne Mitarbeiter
-      await expect(page.locator('button:has-text("Abmelden")')).toBeVisible()
+      await expect(page.locator('button:has-text("Cerrar sesión")')).toBeVisible()
       return
     }
     
     // Klicke auf den "Details"-Button des ersten Mitarbeiters
     
     // Der Details-Button befindet sich in der letzten Zelle der Zeile
-    await page.click('table tbody tr:first-child button:has-text("Details")', { timeout: 5000 })
+    await page.click('table tbody tr:first-child button:has-text("Detalles"), table tbody tr:first-child button:has-text("Details")', { timeout: 5000 })
     
     // Warte auf Mitarbeiter-Detailseite
     await Promise.race([
@@ -427,9 +427,9 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.waitForSelector('input[id="username"]', { timeout: 15000 })
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
-    await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
+    await page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 15000 })
     await page.waitForSelector('table', { timeout: 15000 })
     
     const table = page.locator('table')
@@ -509,9 +509,9 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.waitForSelector('input[id="username"]', { timeout: 15000 })
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
-    await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
+    await page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 15000 })
     await page.waitForSelector('table', { timeout: 15000 })
     
     // Suche nach Suchfeld mit erweiterten Selektoren
@@ -551,13 +551,13 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
     await page.waitForTimeout(500) // Warte für CSS-Animationen
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
-    await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
+    await page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 15000 })
     await page.waitForSelector('table', { timeout: 15000 })
     
     // TEST 1: Mitarbeiter erstellen
-    const addButton = page.locator('button:has-text("Neuer Mitarbeiter"), button:has-text("Hinzufügen"), button:has-text("+")')
+    const addButton = page.locator('button:has-text("Nuevo Empleado"), button:has-text("Neuer Mitarbeiter"), button:has-text("Hinzufügen"), button:has-text("+")')
     
     if (await addButton.isVisible({ timeout: 5000 })) {
       await addButton.click()
@@ -703,9 +703,9 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.waitForSelector('input[id="username"]', { timeout: 15000 })
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
-    await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
+    await page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 15000 })
     await page.waitForSelector('table', { timeout: 15000 })
     
     const rows = page.locator('table tbody tr')
@@ -717,7 +717,7 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     }
     
     // Klicke auf Details des ersten Mitarbeiters
-    await page.click('table tbody tr:first-child button:has-text("Details")', { timeout: 5000 })
+    await page.click('table tbody tr:first-child button:has-text("Detalles"), table tbody tr:first-child button:has-text("Details")', { timeout: 5000 })
     
     // Warte auf Detailseite
     await Promise.race([
@@ -792,9 +792,9 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.waitForSelector('input[id="username"]', { timeout: 15000 })
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
-    await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
+    await page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 15000 })
     
     // Teste Loading States
     const loadingIndicators = [
@@ -853,9 +853,9 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.waitForSelector('input[id="username"]', { timeout: 15000 })
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
-    await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
+    await page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 15000 })
     
     // Suche nach Import/Export Buttons mit erweiterten Selektoren
     const importButton = page.locator('button:has-text("Import"), button:has-text("Importieren"), button:has-text("Datei importieren")')
@@ -936,9 +936,9 @@ test.describe('Mitarbeiter Gehaltsabrechnung E2E Tests', () => {
     await page.waitForSelector('input[id="username"]', { timeout: 15000 })
     await page.fill('input[id="username"]', 'test')
     await page.fill('input[id="password"]', 'test')
-    await page.click('button:has-text("Anmelden")')
+    await page.click('button:has-text("Iniciar sesión")')
     
-    await page.waitForSelector('button:has-text("Abmelden")', { timeout: 15000 })
+    await page.waitForSelector('button:has-text("Cerrar sesión")', { timeout: 15000 })
     
     // Teste Tab-Navigation
     await page.keyboard.press('Tab')

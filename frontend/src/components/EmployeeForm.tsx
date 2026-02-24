@@ -24,7 +24,20 @@ interface EmployeeFormProps {
 
 }
 
-
+const formatDateForInput = (date: any): string => {
+  if (!date) return ''
+  try {
+    const d = new Date(date)
+    if (isNaN(d.getTime())) return ''
+    // Format as YYYY-MM-DD
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  } catch {
+    return ''
+  }
+}
 
 export default function EmployeeForm({ employee, isOpen, onClose, onSave }: EmployeeFormProps) {
 
@@ -36,7 +49,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
     ceco: employee?.ceco || '',
     kategorie: (employee as any)?.kategorie || '',
-    fecha_alta: employee?.fecha_alta || '',
+    fecha_alta: formatDateForInput(employee?.fecha_alta),
     activo: employee?.activo ?? true
   })
 
@@ -46,7 +59,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
       apellido: employee?.apellido || '',
       ceco: employee?.ceco || '',
       kategorie: (employee as any)?.kategorie || '',
-      fecha_alta: employee?.fecha_alta || '',
+      fecha_alta: formatDateForInput(employee?.fecha_alta),
       activo: employee?.activo ?? true
     })
   }, [employee])
@@ -95,7 +108,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
           <h2 className="text-xl font-bold text-gray-900">
 
-            {employee ? 'Mitarbeiter bearbeiten' : 'Neuer Mitarbeiter'}
+            {employee ? 'Editar Empleado' : 'Nuevo Empleado'}
 
           </h2>
 
@@ -115,7 +128,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
             <label className="block text-sm font-medium text-gray-700 mb-1">
 
-              Vorname
+              Nombre
 
             </label>
 
@@ -143,7 +156,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
             <label className="block text-sm font-medium text-gray-700 mb-1">
 
-              Kategorie
+              Categoría
 
             </label>
 
@@ -175,7 +188,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
             <label className="block text-sm font-medium text-gray-700 mb-1">
 
-              Nachname
+              Apellido
 
             </label>
 
@@ -203,7 +216,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
             <label className="block text-sm font-medium text-gray-700 mb-1">
 
-              CECO (optional)
+              CECO (opcional)
 
             </label>
 
@@ -229,7 +242,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
             <label className="block text-sm font-medium text-gray-700 mb-1">
 
-              Einstellungsdatum
+              Fecha de Contratación
 
             </label>
 
@@ -281,7 +294,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
             <Button type="button" variant="outline" onClick={onClose}>
 
-              Abbrechen
+              Cancelar
 
             </Button>
 
@@ -289,7 +302,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
               <Save className="w-4 h-4" />
 
-              Speichern
+              Guardar
 
             </Button>
 

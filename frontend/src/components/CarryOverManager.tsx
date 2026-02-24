@@ -92,7 +92,7 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
       const res = await apiClient.getCarryOverBySource(employeeId, year, month)
       setItems(Array.isArray(res?.items) ? res.items : [])
     } catch (e: any) {
-      setError(e?.message || 'Fehler beim Laden')
+      setError(e?.message || 'Error al cargar')
       setItems([])
     } finally {
       setLoading(false)
@@ -118,7 +118,7 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
     setError(null)
 
     if (employeeId === '') {
-      setError('Bitte wähle einen Mitarbeiter aus.')
+      setError('Por favor, seleccione un empleado.')
       return
     }
 
@@ -139,7 +139,7 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
     }
 
     if (payloadItems.length === 0) {
-      setError('Bitte wähle mindestens ein Konzept und gib einen Betrag ein.')
+      setError('Por favor, seleccione al menos un concepto e ingrese un monto.')
       return
     }
 
@@ -152,10 +152,10 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
         items: payloadItems,
       })
 
-      setSuccess(`Carry Over gespeichert für ${selectedEmployeeName || employeeId} (${month}.${year}). Wirkt im Folgemonat.`)
+      setSuccess(`Carry Over guardado para ${selectedEmployeeName || employeeId} (${month}.${year}). Aplicará el mes siguiente.`)
       await load()
     } catch (e: any) {
-      setError(e?.message || 'Fehler beim Speichern')
+      setError(e?.message || 'Error al guardar')
     } finally {
       setSaving(false)
     }
@@ -169,7 +169,7 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
       await apiClient.deleteCarryOver(id)
       await load()
     } catch (e: any) {
-      setError(e?.message || 'Fehler beim Löschen')
+      setError(e?.message || 'Error al eliminar')
     } finally {
       setSaving(false)
     }
@@ -180,14 +180,13 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">Carry Over</h3>
         <p className="text-sm text-gray-600">
-          Speichert Beträge pro Mitarbeiter und Monat, die automatisch im Folgemonat addiert werden. Bereits ankommende Carry Overs aus
-          dem Vormonat werden beim Speichern automatisch in den nächsten Monat weitergetragen.
+          Guarda montos por empleado y mes que se sumarán automáticamente al mes siguiente. Los Carry Overs entrantes del mes anterior se transfieren automáticamente al siguiente mes al guardar.
         </p>
       </div>
 
       {error && (
         <Alert variant="destructive">
-          <AlertTitle>Fehler</AlertTitle>
+          <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -201,14 +200,14 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Mitarbeiter</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Empleado</label>
           <select
             value={employeeId}
             onChange={(e) => setEmployeeId(e.target.value ? parseInt(e.target.value, 10) : '')}
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
             disabled={saving}
           >
-            <option value="">Bitte auswählen</option>
+            <option value="">Por favor seleccione</option>
             {employees
               .slice()
               .sort((a, b) => `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`))
@@ -221,7 +220,7 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Jahr</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
           <select
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value, 10))}
@@ -237,7 +236,7 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Monat (Quelle)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Mes (Fuente)</label>
           <select
             value={month}
             onChange={(e) => setMonth(parseInt(e.target.value, 10))}
@@ -255,9 +254,9 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
 
       <div className="border border-gray-200 rounded-lg p-4 space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-          <div className="md:col-span-4 text-sm font-medium text-gray-700">Konzept</div>
-          <div className="md:col-span-2 text-sm font-medium text-gray-700">Aktiv</div>
-          <div className="md:col-span-6 text-sm font-medium text-gray-700">Betrag (€)</div>
+          <div className="md:col-span-4 text-sm font-medium text-gray-700">Concepto</div>
+          <div className="md:col-span-2 text-sm font-medium text-gray-700">Activo</div>
+          <div className="md:col-span-6 text-sm font-medium text-gray-700">Monto (€)</div>
         </div>
 
         {CONCEPTS.map((c) => {
@@ -302,7 +301,7 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
 
         <div className="pt-2">
           <Button onClick={doSave} disabled={saving}>
-            {saving ? 'Speichern...' : 'Speichern'}
+            {saving ? 'Guardando...' : 'Guardar'}
           </Button>
         </div>
       </div>
@@ -311,23 +310,23 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
 
       <div className="space-y-3">
         <div>
-          <h4 className="text-md font-semibold text-gray-900">Gespeicherte Carry Overs (Quelle {month}.{year})</h4>
-          <p className="text-sm text-gray-600">Diese Einträge wirken im Monat {month === 12 ? `1.${year + 1}` : `${month + 1}.${year}`}</p>
+          <h4 className="text-md font-semibold text-gray-900">Carry Overs Guardados (Fuente {month}.{year})</h4>
+          <p className="text-sm text-gray-600">Estas entradas aplicarán en el mes {month === 12 ? `1.${year + 1}` : `${month + 1}.${year}`}</p>
         </div>
 
         {loading ? (
-          <div className="text-sm text-gray-600">Lade...</div>
+          <div className="text-sm text-gray-600">Cargando...</div>
         ) : items.length === 0 ? (
-          <div className="text-sm text-gray-600">Keine Einträge vorhanden.</div>
+          <div className="text-sm text-gray-600">No hay entradas disponibles.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Konzept</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Betrag</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Apply</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Aktion</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Concepto</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Monto</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aplicar</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Acción</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -340,7 +339,7 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
                     </td>
                     <td className="px-4 py-2 text-right">
                       <Button variant="destructive" size="sm" onClick={() => doDelete(it.id_carry_over)} disabled={saving}>
-                        Löschen
+                        Eliminar
                       </Button>
                     </td>
                   </tr>
