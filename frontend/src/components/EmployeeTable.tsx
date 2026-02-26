@@ -128,7 +128,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
   const [bulkYear, setBulkYear] = useState<string>(new Date().getFullYear().toString())
 
-  const [bulkKategorie, setBulkKategorie] = useState<'all' | 'Techniker' | 'Office'>('all')
+  const [bulkCategoria, setBulkCategoria] = useState<'all' | 'Técnico' | 'Oficina'>('all')
 
   const [bulkLoading, setBulkLoading] = useState(false)
 
@@ -314,7 +314,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
 
 
-    const scopeLabel = bulkKategorie === 'all' ? 'todos los empleados activos' : `todos los empleados activos ${bulkKategorie}`
+    const scopeLabel = bulkCategoria === 'all' ? 'todos los empleados activos' : `todos los empleados activos ${bulkCategoria}`
 
     if (!confirm(`¿Realmente desea establecer bonificaciones/deducciones para el año ${bulkYear} para ${scopeLabel}? Esto sobrescribirá los valores existentes para todos los meses del año.`)) {
 
@@ -362,7 +362,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
         ...(deduccionesPayload ? { deducciones: deduccionesPayload } : {}),
 
-        ...(bulkKategorie !== 'all' ? { kategorie: bulkKategorie } : {}),
+        ...(bulkCategoria !== 'all' ? { categoria: bulkCategoria } : {}),
 
       })
 
@@ -936,7 +936,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
     employee.ceco?.toLowerCase().includes(searchTerm.toLowerCase()) ||
 
-    employee.kategorie?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    employee.categoria?.toLowerCase().includes(searchTerm.toLowerCase()) ||
 
     employee.id_empleado.toString().includes(searchTerm)
 
@@ -1264,11 +1264,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     <th 
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort('kategorie')}
+                      onClick={() => handleSort('categoria')}
                     >
                       <div className="flex items-center gap-1">
                         Categoría
-                        {sortConfig.key === 'kategorie' && (
+                        {sortConfig.key === 'categoria' && (
                           sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
                           sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
                         )}
@@ -1317,7 +1317,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
 
-                        {employee.kategorie || '-'}
+                        {employee.categoria || '-'}
 
                       </td>
 
@@ -1471,9 +1471,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   <select
 
-                    value={bulkKategorie}
+                    value={bulkCategoria}
 
-                    onChange={(e) => setBulkKategorie(e.target.value as any)}
+                    onChange={(e) => setBulkCategoria(e.target.value as any)}
 
                     className="px-3 py-2 border border-gray-300 rounded-md"
 
@@ -1483,9 +1483,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     <option value="all">Todos</option>
 
-                    <option value="Techniker">Técnicos</option>
+                    <option value="Técnico">Técnicos</option>
 
-                    <option value="Office">Oficina</option>
+                    <option value="Oficina">Oficina</option>
 
                   </select>
 

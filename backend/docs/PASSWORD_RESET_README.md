@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS t009_password_reset_tokens (
     expires_at TIMESTAMP NOT NULL,
     used BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (nombre_usuario) REFERENCES t005_benutzer(nombre_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (nombre_usuario) REFERENCES t005_usuarios(nombre_usuario) ON DELETE CASCADE,
     INDEX idx_token (token),
     INDEX idx_usuario (nombre_usuario),
     INDEX idx_expires (expires_at)

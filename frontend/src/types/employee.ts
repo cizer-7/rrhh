@@ -16,7 +16,11 @@ export interface Employee {
 
   ceco?: string;
 
-  kategorie?: 'Techniker' | 'Office' | string;
+  categoria?: 'Técnico' | 'Oficina' | string;
+
+  declaracion?: '111' | '216' | 'EXTERNO' | string;
+
+  dni?: string;
 
 
 

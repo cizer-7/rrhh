@@ -124,7 +124,7 @@ export default function ImportHorasDietas() {
 
       setResult(data)
     } catch (e: any) {
-      setError(e?.message || 'Upload fehlgeschlagen')
+      setError(e?.message || 'La carga falló')
     } finally {
       setLoading(false)
     }
@@ -159,7 +159,7 @@ export default function ImportHorasDietas() {
 
       setCotizacionEspecieResult(data)
     } catch (e: any) {
-      setCotizacionEspecieError(e?.message || 'Upload fehlgeschlagen')
+      setCotizacionEspecieError(e?.message || 'La carga falló')
     } finally {
       setLoading(false)
     }
@@ -194,7 +194,7 @@ export default function ImportHorasDietas() {
 
       setGasolinaResult(data)
     } catch (e: any) {
-      setGasolinaError(e?.message || 'Upload fehlgeschlagen')
+      setGasolinaError(e?.message || 'La carga falló')
     } finally {
       setLoading(false)
     }

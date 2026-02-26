@@ -716,6 +716,41 @@ def export_asiento_nomina(current_user, year, month):
         return jsonify({"error": "Interner Serverfehler"}), 500
 
 
+# IRPF Export Endpunkt
+@app.route('/export/irpf/<int:year>', methods=['GET'])
+@app.route('/export/irpf/<int:year>/<int:month>', methods=['GET'])
+@token_required
+def export_irpf(current_user, year, month=None):
+    try:
+        extra_raw = request.args.get('extra', '').strip().lower()
+        extra = extra_raw in {'1', 'true', 'yes', 'on'}
+
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        if month:
+            download_filename = f"IRPF_EXTRA_{year}_{month}.xlsx" if extra else f"IRPF_{year}_{month}.xlsx"
+            temp_filename = f"irpf_{year}_{month}_{timestamp}.xlsx"
+        else:
+            download_filename = f"IRPF_{year}.xlsx"
+            temp_filename = f"irpf_{year}_{timestamp}.xlsx"
+        filepath = f"C:/temp/{temp_filename}"
+
+        os.makedirs("C:/temp", exist_ok=True)
+
+        success = db_manager.export_irpf_excel(year=year, output_path=filepath, month=month, extra=extra)
+        if not success:
+            return jsonify({"error": "Fehler beim IRPF Export"}), 400
+
+        return send_file(
+            filepath,
+            as_attachment=True,
+            download_name=download_filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    except Exception as e:
+        logger.error(f"Fehler beim IRPF Export für Jahr {year}, Monat {month}: {e}")
+        return jsonify({"error": "Interner Serverfehler"}), 500
+
+
 
 # Carry Over Endpunkte
 @app.route('/carry-over/<int:employee_id>/<int:year>/<int:month>', methods=['GET'])
@@ -1143,7 +1178,7 @@ def apply_ingresos_deducciones_to_all_active(current_user):
         year = data.get('year')
         ingresos = data.get('ingresos')
         deducciones = data.get('deducciones')
-        kategorie = data.get('kategorie')
+        categoria = data.get('categoria')
 
         if year is None or not isinstance(year, int) or year < 2020 or year > 2030:
             return jsonify({"error": "year muss eine gültige Jahreszahl zwischen 2020 und 2030 sein"}), 400
@@ -1155,7 +1190,7 @@ def apply_ingresos_deducciones_to_all_active(current_user):
             year=year,
             ingresos=ingresos,
             deducciones=deducciones,
-            kategorie=kategorie,
+            categoria=categoria,
         )
 
         if result.get('success'):

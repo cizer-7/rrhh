@@ -39,7 +39,9 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     nombre: employee.nombre || '',
     apellido: employee.apellido || '',
     ceco: employee.ceco || '',
-    kategorie: (employee as any).kategorie ?? undefined,
+    categoria: (employee as any).categoria ?? undefined,
+    declaracion: (employee as any).declaracion ?? '',
+    dni: (employee as any).dni ?? '',
     fecha_alta: formatDateForInput((employee as any).fecha_alta),
     activo: employee.activo ?? true
   })
@@ -306,7 +308,9 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       nombre: employee.nombre || '',
       apellido: employee.apellido || '',
       ceco: employee.ceco || '',
-      kategorie: (employee as any).kategorie ?? undefined,
+      categoria: (employee as any).categoria ?? undefined,
+      declaracion: (employee as any).declaracion ?? '',
+      dni: (employee as any).dni ?? '',
       fecha_alta: formatDateForInput((employee as any).fecha_alta),
       activo: employee.activo ?? true
     })
@@ -401,7 +405,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
           apellido: data?.apellido ?? employee.apellido ?? '',
           ceco: data?.ceco ?? employee.ceco ?? '',
           fecha_alta: formatDateForInput((data as any)?.fecha_alta ?? (employee as any)?.fecha_alta),
-          kategorie: (data as any)?.kategorie ?? (employee as any)?.kategorie ?? undefined,
+          categoria: (data as any)?.categoria ?? (employee as any).categoria ?? undefined,
           activo: data?.activo ?? employee.activo ?? true
         },
         fteReduction: ''
@@ -1264,13 +1268,13 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 {!showEmployeeForm ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Vorname</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
                       <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md">
                         {employee.nombre || '-'}
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nachname</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
                       <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md">
                         {employee.apellido || '-'}
                       </div>
@@ -1282,9 +1286,9 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Kategorie</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
                       <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md">
-                        {(employee as any).kategorie || '-'}
+                        {(employee as any).categoria || '-'}
                       </div>
                     </div>
                     <div>
@@ -1309,16 +1313,30 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Kategorie</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Declaración</label>
                         <select
-                          name="kategorie"
-                          value={(employeeFormData as any).kategorie ?? ''}
-                          onChange={(e) => setEmployeeFormData({ ...(employeeFormData as any), kategorie: e.target.value })}
+                          name="declaracion"
+                          value={(employeeFormData as any).declaracion ?? ''}
+                          onChange={(e) => setEmployeeFormData({ ...(employeeFormData as any), declaracion: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">-</option>
-                          <option value="Techniker">Techniker</option>
-                          <option value="Office">Office</option>
+                          <option value="111">111</option>
+                          <option value="216">216</option>
+                          <option value="EXTERNO">EXTERNO</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                        <select
+                          name="categoria"
+                          value={(employeeFormData as any).categoria ?? ''}
+                          onChange={(e) => setEmployeeFormData({ ...(employeeFormData as any), categoria: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">-</option>
+                          <option value="Técnico">Técnico</option>
+                          <option value="Oficina">Oficina</option>
                         </select>
                       </div>
                       <div>
@@ -1329,6 +1347,16 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                           value={employeeFormData.apellido}
                           onChange={(e) => setEmployeeFormData({...employeeFormData, apellido: e.target.value})}
                           required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">DNI (solo EXTERNO)</label>
+                        <input
+                          type="text"
+                          name="dni"
+                          value={(employeeFormData as any).dni ?? ''}
+                          onChange={(e) => setEmployeeFormData({ ...(employeeFormData as any), dni: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>

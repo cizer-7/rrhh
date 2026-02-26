@@ -699,3 +699,213 @@ class DatabaseManagerExportsMixin:
         except Exception as e:
             self.logger.error(f"Fehler beim Asiento Nomina Excel-Export: {e}")
             return False
+
+    def export_irpf_excel(self, year: int, month: Optional[int], output_path: str, extra: bool = False) -> bool:
+
+        try:
+            if month is not None and (int(month) < 1 or int(month) > 12):
+                return False
+
+            month_names = [
+                '',
+                'ENERO',
+                'FEBRERO',
+                'MARZO',
+                'ABRIL',
+                'MAYO',
+                'JUNIO',
+                'JULIO',
+                'AGOSTO',
+                'SEPTIEMBRE',
+                'OCTUBRE',
+                'NOVIEMBRE',
+                'DICIEMBRE',
+            ]
+
+            export_months: List[Dict[str, Any]] = []
+            if month is None:
+                for m in range(1, 13):
+                    export_months.append({'mes': int(m), 'label': month_names[int(m)], 'extra': False})
+                export_months.append({'mes': 6, 'label': 'EXTRA VERANO', 'extra': True})
+                export_months.append({'mes': 12, 'label': 'EXTRA NAVIDAD', 'extra': True})
+            else:
+                m_i = int(month)
+                if extra and m_i == 6:
+                    export_months.append({'mes': 6, 'label': 'EXTRA VERANO', 'extra': True})
+                elif extra and m_i == 12:
+                    export_months.append({'mes': 12, 'label': 'EXTRA NAVIDAD', 'extra': True})
+                else:
+                    export_months.append({'mes': m_i, 'label': month_names[m_i], 'extra': False})
+
+            payout_month = self.get_payout_month() if hasattr(self, "get_payout_month") else 4
+
+            all_rows: List[Dict[str, Any]] = []
+
+            for mdef in export_months:
+                m = int(mdef['mes'])
+                is_extra = bool(mdef.get('extra'))
+
+                extra_where = "AND s.modalidad = 14" if is_extra else ""
+
+                query = f"""
+                SELECT
+                    e.id_empleado,
+                    CONCAT(e.apellido, ' ', e.nombre) as nombre_completo,
+                    e.fecha_alta,
+                    e.declaracion,
+                    e.dni,
+                    COALESCE(s.salario_mensual_bruto, 0) as salario_mensual_bruto,
+                    COALESCE(s.atrasos, 0) as atrasos,
+                    COALESCE(s.antiguedad, 0) as antiguedad,
+                    COALESCE(sp.salario_mensual_bruto, 0) as salario_mensual_bruto_prev,
+                    COALESCE((
+                        SELECT f.porcentaje
+                        FROM t008_empleado_fte f
+                        WHERE f.id_empleado = e.id_empleado
+                          AND (f.anio < %s OR (f.anio = %s AND f.mes <= %s))
+                        ORDER BY f.anio DESC, f.mes DESC
+                        LIMIT 1
+                    ), 100) as fte_porcentaje,
+                    COALESCE(i.ticket_restaurant, 0) as ticket_restaurant,
+                    COALESCE(i.dietas_cotizables, 0) as dietas_cotizables,
+                    COALESCE(i.dietas_exentas, 0) as dietas_exentas,
+                    COALESCE(i.formacion, 0) as formacion,
+                    COALESCE(d.cotizacion_especie, 0) as cotizacion_especie,
+                    COALESCE(d.seguro_accidentes, 0) as seguro_accidentes,
+                    COALESCE(i.seguro_pensiones, 0) as seguro_pensiones,
+                    COALESCE(d.adelas, 0) as adelas,
+                    COALESCE(d.sanitas, 0) as sanitas
+                FROM t001_empleados e
+                LEFT JOIN t002_salarios s ON e.id_empleado = s.id_empleado AND s.anio = %s
+                LEFT JOIN t002_salarios sp ON e.id_empleado = sp.id_empleado AND sp.anio = %s
+                LEFT JOIN t003_ingresos_brutos_mensuales i ON e.id_empleado = i.id_empleado AND i.anio = %s AND i.mes = %s
+                LEFT JOIN t004_deducciones_mensuales d ON e.id_empleado = d.id_empleado AND d.anio = %s AND d.mes = %s
+                WHERE e.activo = TRUE
+                {extra_where}
+                ORDER BY e.apellido, e.nombre
+                """
+
+                data = self.execute_query(query, (year, year, m, year, year - 1, year, m, year, m))
+                if not data:
+                    continue
+
+                df = pd.DataFrame(data)
+
+                numeric_columns = [
+                    'salario_mensual_bruto', 'atrasos', 'antiguedad', 'salario_mensual_bruto_prev',
+                    'fte_porcentaje',
+                    'ticket_restaurant', 'dietas_cotizables', 'dietas_exentas', 'formacion',
+                    'cotizacion_especie', 'seguro_accidentes', 'seguro_pensiones', 'adelas', 'sanitas'
+                ]
+                for col in numeric_columns:
+                    if col in df.columns:
+                        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(float)
+
+                df['salario_mes'] = df.apply(
+                    lambda r: self._calculate_salario_mes_for_export(
+                        month=m,
+                        payout_month=payout_month,
+                        salario_mensual_bruto=r.get('salario_mensual_bruto', 0),
+                        atrasos=r.get('atrasos', 0),
+                        salario_mensual_bruto_prev=r.get('salario_mensual_bruto_prev', 0),
+                        antiguedad=r.get('antiguedad', 0),
+                        fte_porcentaje=r.get('fte_porcentaje', 100),
+                    ),
+                    axis=1,
+                )
+                df['salario_mes'] = df.apply(
+                    lambda r: self._prorate_salary_for_hire_month(
+                        year=year,
+                        month=m,
+                        fecha_alta=r.get('fecha_alta'),
+                        salario_mes=r.get('salario_mes', 0),
+                    ),
+                    axis=1,
+                )
+
+                df['seguro_medico'] = df['adelas'] + df['sanitas']
+                df['total_especie'] = df['cotizacion_especie'] + df['seguro_pensiones'] + df['seguro_accidentes']
+
+                for _, r in df.iterrows():
+                    decl = str(r.get('declaracion') or '').strip().upper() or None
+                    dni = r.get('dni')
+                    dni_out = dni if decl == 'EXTERNO' else None
+
+                    sueldo = float(r.get('salario_mes') or 0)
+                    dietas_cot = float(r.get('dietas_cotizables') or 0)
+                    dietas_ex = float(r.get('dietas_exentas') or 0)
+                    ticket = float(r.get('ticket_restaurant') or 0)
+                    especie = float(r.get('total_especie') or 0)
+                    seguro_medico = float(r.get('seguro_medico') or 0)
+                    formacion = float(r.get('formacion') or 0)
+
+                    perceptor_val = 0 if decl == 'EXTERNO' else 1
+                    perceptor_especie_val = 0 if decl == 'EXTERNO' else 1
+
+                    # For EXTRA months: I, J, N, Q must be 0
+                    if mdef.get('label') in ('EXTRA VERANO', 'EXTRA NAVIDAD'):
+                        ticket = 0
+                        especie = 0
+                        seguro_medico = 0
+                        perceptor_especie_val = 0
+
+                    all_rows.append(
+                        {
+                            'NOMBRE': r.get('nombre_completo'),
+                            'DECLARACION': decl,
+                            'MES': str(mdef.get('label') or ''),
+                            'DNI': dni_out,
+                            'sueldo cotiz.': sueldo,
+                            'sueldo no cot.': None,
+                            'dietas cot.': dietas_cot,
+                            'dietas no cot.': dietas_ex,
+                            'ticket': ticket,
+                            'retrib.especie': especie,
+                            'I.R.P.F.': None,
+                            'RETENC.ESPECIE': None,
+                            'SEG.SOC': None,
+                            'SEGURO MEDICO': seguro_medico,
+                            'FORMACION': formacion,
+                            'PERCEPTOR': perceptor_val,
+                            'PERCEPTOR ESPECIE': perceptor_especie_val,
+                            'BASE IMPONIBLE': sueldo + dietas_cot + especie,
+                            'NO SOMETIDAS A RETENCION': dietas_ex + ticket,
+                        }
+                    )
+
+            if not all_rows:
+                return False
+
+            out_df = pd.DataFrame(all_rows)
+
+            ordered_columns = [
+                'NOMBRE',
+                'DECLARACION',
+                'MES',
+                'DNI',
+                'sueldo cotiz.',
+                'sueldo no cot.',
+                'dietas cot.',
+                'dietas no cot.',
+                'ticket',
+                'retrib.especie',
+                'I.R.P.F.',
+                'RETENC.ESPECIE',
+                'SEG.SOC',
+                'SEGURO MEDICO',
+                'FORMACION',
+                'PERCEPTOR',
+                'PERCEPTOR ESPECIE',
+                'BASE IMPONIBLE',
+                'NO SOMETIDAS A RETENCION',
+            ]
+            out_df = out_df[ordered_columns]
+
+            with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+                out_df.to_excel(writer, sheet_name='RETENCIONES IRPF', index=False)
+
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Fehler beim IRPF Excel-Export: {e}")
+            return False

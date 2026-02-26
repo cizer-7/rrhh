@@ -10,15 +10,12 @@ module.exports = defineConfig({
   expect: {
     timeout: 20000, // Erhöht auf 20 Sekunden
   },
-  reporter: [
-    ['json', { outputFile: 'test-results.json' }],
-    ['junit', { outputFile: 'test-results.xml' }]
-  ],
+  // reporter: 'html', // Komplett deaktiviert
   use: {
     baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    trace: 'off',
+    screenshot: 'off',
+    video: 'off',
     actionTimeout: 15000, // Erhöht für Firefox mit slowMo
   },
 

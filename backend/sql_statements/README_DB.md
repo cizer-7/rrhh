@@ -19,7 +19,7 @@ Dieses Dokument beschreibt die vollständige Datenbankstruktur und SQL-Skripte f
 **Beschreibung:** Enthält alle CREATE TABLE Anweisungen für die Datenbankstruktur.
 
 **Dateien:**
-- `01_schema.sql` - Alle Tabellen: t001_empleados, t002_salarios, t003_ingresos_brutos, t004_deducciones, t005_benutzer, t006_valores_calculados_mensuales, t007_bearbeitungslog, t008_empleado_fte, t009_password_reset_tokens
+- `01_schema.sql` - Alle Tabellen: t001_empleados, t002_salarios, t003_ingresos_brutos, t004_deducciones, t005_usuarios, t006_valores_calculados_mensuales, t007_bearbeitungslog, t008_empleado_fte, t009_password_reset_tokens
 
 ### `02_triggers/` - Datenbank-Trigger
 **Beschreibung:** Enthält alle Trigger für automatische Berechnungen und Datenintegrität.

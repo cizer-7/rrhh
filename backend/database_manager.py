@@ -92,6 +92,38 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Sicherstellen von fecha_alta Spalte: {e}")
 
+    def _ensure_employee_irpf_columns(self) -> None:
+        try:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(
+                """
+                SELECT COLUMN_NAME
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = %s
+                  AND TABLE_NAME = 't001_empleados'
+                  AND COLUMN_NAME IN ('declaracion', 'dni')
+                """,
+                (self.database,),
+            )
+            rows = cursor.fetchall() or []
+            cursor.close()
+
+            existing = {str(r.get('COLUMN_NAME', '')).strip().lower() for r in rows}
+
+            if 'declaracion' not in existing:
+                cursor = self.connection.cursor()
+                cursor.execute(
+                    "ALTER TABLE t001_empleados ADD COLUMN declaracion VARCHAR(20) NULL DEFAULT NULL"
+                )
+                cursor.close()
+
+            if 'dni' not in existing:
+                cursor = self.connection.cursor()
+                cursor.execute("ALTER TABLE t001_empleados ADD COLUMN dni VARCHAR(50) NULL DEFAULT NULL")
+                cursor.close()
+        except Exception as e:
+            self.logger.error(f"Fehler beim Sicherstellen von declaracion/dni Spalten: {e}")
+
     def _ensure_deducciones_gasolina_column(self) -> None:
         """Ensures t004_deducciones_mensuales has a single 'gasolina' column.
 
@@ -201,7 +233,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 l.objekt,
                 l.details
             FROM t007_bearbeitungslog l
-            LEFT JOIN t005_benutzer u ON u.nombre_usuario = l.usuario_login
+            LEFT JOIN t005_usuarios u ON u.nombre_usuario = l.usuario_login
             WHERE l.id_empleado = %s
             """
             params: List[Any] = [id_empleado]
@@ -254,7 +286,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 l.objekt,
                 l.details
             FROM t007_bearbeitungslog l
-            LEFT JOIN t005_benutzer u ON u.nombre_usuario = l.usuario_login
+            LEFT JOIN t005_usuarios u ON u.nombre_usuario = l.usuario_login
             LEFT JOIN t001_empleados e ON e.id_empleado = l.id_empleado
             WHERE 1=1
             """
@@ -363,12 +395,13 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             or "EOF occurred" in msg
         )
 
-    def connect(self) -> bool:
+    def connect(self):
         try:
             self.connection = self._create_connection()
             if self.connection.is_connected():
                 self.logger.info(f"Erfolgreich verbunden mit MySQL Datenbank {self.database}")
                 self._ensure_employee_hire_date_column()
+                self._ensure_employee_irpf_columns()
                 self._ensure_deducciones_gasolina_column()
                 self._ensure_carry_over_table()
                 return True
@@ -397,9 +430,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         Behavior:
         - The user enters carry over values for the selected source month.
         - These values are applied in the following month.
-        - If there are already carry over values that are applied in the selected source
-          month (i.e., coming from the previous month), they are automatically carried
-          forward into the next month as well.
+        - Only the current user input is used; previous months' carry overs are not carried forward.
 
         Notes:
         - The save operation is idempotent for a given (employee, source_year, source_month):
@@ -415,8 +446,8 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             source_month_i = int(source_month)
             apply_year, apply_month = self._next_year_month(source_year_i, source_month_i)
 
-            # Collect carry overs that are applied in the selected source month.
-            # These will be carried forward into the next month automatically.
+            # Don't collect carry overs from previous months anymore
+            # Only use the current user input for carry over
             carry_forward: Dict[str, float] = {}
 
             connection = self._create_connection()
@@ -433,29 +464,6 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 (int(employee_id), source_year_i, source_month_i),
             )
 
-            # Sum incoming carry overs (those applied in the selected source month)
-            cursor.execute(
-                """
-                SELECT concept, COALESCE(SUM(amount), 0) as amount
-                FROM t010_carry_over
-                WHERE id_empleado = %s
-                  AND apply_anio = %s
-                  AND apply_mes = %s
-                GROUP BY concept
-                """,
-                (int(employee_id), source_year_i, source_month_i),
-            )
-            for row in cursor.fetchall() or []:
-                concept = str(row[0] if isinstance(row, (list, tuple)) else row.get('concept', '')).strip()
-                if not concept:
-                    continue
-                try:
-                    amt = float(row[1] if isinstance(row, (list, tuple)) else row.get('amount', 0) or 0)
-                except Exception:
-                    amt = 0.0
-                if amt != 0:
-                    carry_forward[concept] = carry_forward.get(concept, 0.0) + amt
-
             # Insert new entries
             insert_query = """
             INSERT INTO t010_carry_over
@@ -464,8 +472,8 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 (%s, %s, %s, %s, %s, %s, %s)
             """
 
-            # Combine (carry forward) + (user input) per concept
-            combined: Dict[str, float] = dict(carry_forward)
+            # Only use user input for carry over (no carry forward from previous months)
+            combined: Dict[str, float] = {}
             for it in items or []:
                 concept = str(it.get('concept', '')).strip()
                 if not concept:
@@ -476,7 +484,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 except Exception:
                     amount_f = 0.0
 
-                combined[concept] = combined.get(concept, 0.0) + amount_f
+                combined[concept] = amount_f
 
             for concept, amount_f in combined.items():
                 if not concept:
@@ -704,7 +712,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
 
     def get_all_employees(self) -> List[Dict]:
         query = """
-        SELECT id_empleado, nombre, apellido, ceco, kategorie, activo, fecha_alta
+        SELECT id_empleado, nombre, apellido, ceco, categoria, activo, fecha_alta, declaracion, dni
         FROM t001_empleados 
         ORDER BY apellido, nombre
         """
@@ -713,7 +721,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def get_all_employees_with_salaries(self) -> List[Dict]:
         """Hole alle Mitarbeiter mit ihren Gehaltsdaten"""
         query = """
-        SELECT e.id_empleado, e.nombre, e.apellido, e.ceco, e.kategorie, e.activo, e.fecha_alta,
+        SELECT e.id_empleado, e.nombre, e.apellido, e.ceco, e.categoria, e.activo, e.fecha_alta,
                s.anio, s.salario_anual_bruto, s.salario_mensual_bruto, 
                s.modalidad, s.atrasos, s.antiguedad
         FROM t001_empleados e
@@ -731,7 +739,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     'nombre': row['nombre'],
                     'apellido': row['apellido'],
                     'ceco': row['ceco'],
-                    'kategorie': row['kategorie'],
+                    'categoria': row['categoria'],
                     'activo': row['activo'],
                     'fecha_alta': row.get('fecha_alta'),
                     'salaries': []
@@ -752,7 +760,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         """Hole einen Mitarbeiter anhand seiner ID"""
         try:
             query = """
-            SELECT id_empleado, nombre, apellido, ceco, kategorie, activo, fecha_alta
+            SELECT id_empleado, nombre, apellido, ceco, categoria, activo, fecha_alta, declaracion, dni
             FROM t001_empleados 
             WHERE id_empleado = %s
             """
@@ -765,7 +773,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def get_employee_complete_info(self, employee_id: int) -> Dict:
         # Mitarbeiterstammdaten
         employee_query = """
-        SELECT id_empleado, nombre, apellido, ceco, kategorie, activo, fecha_alta
+        SELECT id_empleado, nombre, apellido, ceco, categoria, activo, fecha_alta, declaracion, dni
         FROM t001_empleados 
         WHERE id_empleado = %s
         """
@@ -928,15 +936,17 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def update_employee(self, employee_id: int, table: str, data: Dict[str, Any]) -> bool:
         if table == 't001_empleados':
             # Nur updatable Felder erlauben
-            allowed_fields = ['nombre', 'apellido', 'ceco', 'kategorie', 'activo', 'fecha_alta']
+            allowed_fields = ['nombre', 'apellido', 'ceco', 'categoria', 'activo', 'fecha_alta', 'declaracion', 'dni']
             update_fields = []
             update_values = []
             for field, value in data.items():
                 if field in allowed_fields:
-                    if field == 'kategorie' and not self._is_valid_employee_category(value):
+                    if field == 'categoria' and not self._is_valid_employee_category(value):
                         continue
-                    if field == 'kategorie':
+                    if field == 'categoria':
                         value = self._normalize_employee_category(value)
+                    if field == 'declaracion' and value is not None:
+                        value = str(value).strip().upper()
                     update_fields.append(f"{field} = %s")
                     update_values.append(value)
             if not update_fields:
@@ -1044,20 +1054,24 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             result = self.execute_query(max_id_query)
             new_id = result[0]['max_id'] + 1 if result else 1
             # Mitarbeiter einfügen
-            if not self._is_valid_employee_category(employee_data.get('kategorie')):
+            if not self._is_valid_employee_category(employee_data.get('categoria')):
                 return -1
             insert_query = """
-            INSERT INTO t001_empleados (id_empleado, nombre, apellido, ceco, kategorie, activo, fecha_alta)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO t001_empleados (id_empleado, nombre, apellido, ceco, categoria, activo, fecha_alta, declaracion, dni)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
+            declaracion = employee_data.get('declaracion')
+            declaracion = str(declaracion).strip().upper() if declaracion is not None and str(declaracion).strip() != '' else None
             params = (
                 new_id,
                 employee_data.get('nombre', ''),
                 employee_data.get('apellido', ''),
                 employee_data.get('ceco', ''),
-                self._normalize_employee_category(employee_data.get('kategorie')),
+                self._normalize_employee_category(employee_data.get('categoria')),
                 employee_data.get('activo', True),
-                employee_data.get('fecha_alta')
+                employee_data.get('fecha_alta'),
+                declaracion,
+                employee_data.get('dni'),
             )
             if self.execute_update(insert_query, params):
                 # Standard-Datensätze für neuen Mitarbeiter erstellen
@@ -1686,9 +1700,9 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Laden aktiver Mitarbeiter-IDs: {e}")
             return []
-    def get_active_employee_ids_filtered(self, kategorie: Optional[str] = None) -> List[int]:
+    def get_active_employee_ids_filtered(self, categoria: Optional[str] = None) -> List[int]:
         try:
-            category_norm = self._normalize_employee_category(kategorie)
+            category_norm = self._normalize_employee_category(categoria)
             if category_norm is not None and not self._is_valid_employee_category(category_norm):
                 return []
             if category_norm is None:
@@ -1696,7 +1710,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             query = """
             SELECT id_empleado
             FROM t001_empleados
-            WHERE activo = TRUE AND kategorie = %s
+            WHERE activo = TRUE AND categoria = %s
             ORDER BY id_empleado
             """
             rows = self.execute_query(query, (category_norm,))
@@ -1711,7 +1725,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         year: int,
         ingresos: Optional[Dict[str, Any]] = None,
         deducciones: Optional[Dict[str, Any]] = None,
-        kategorie: Optional[str] = None,
+        categoria: Optional[str] = None,
     ) -> Dict[str, Any]:
         try:
             if ingresos is None and deducciones is None:
@@ -1722,7 +1736,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     "total_count": 0,
                     "errors": ["Keine Daten übergeben"],
                 }
-            employee_ids = self.get_active_employee_ids_filtered(kategorie=kategorie)
+            employee_ids = self.get_active_employee_ids_filtered(categoria=categoria)
             total_count = len(employee_ids)
             if total_count == 0:
                 return {
@@ -1889,7 +1903,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             password_hash = self.hash_password(password)
             query = """
             SELECT id_usuario, nombre_usuario, nombre_completo, rol, activo
-            FROM t005_benutzer 
+            FROM t005_usuarios 
             WHERE nombre_usuario = %s AND hash_contraseña = %s AND activo = TRUE
             """
             users = self.execute_query(query, (username, password_hash))
@@ -1903,7 +1917,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         """Create a new user"""
         try:
             # Check if user already exists
-            check_query = "SELECT id_usuario FROM t005_benutzer WHERE nombre_usuario = %s"
+            check_query = "SELECT id_usuario FROM t005_usuarios WHERE nombre_usuario = %s"
             existing = self.execute_query(check_query, (username,))
             if existing:
                 self.logger.error(f"Benutzer {username} existiert bereits")
@@ -1911,7 +1925,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             # Create new user
             password_hash = self.hash_password(password)
             insert_query = """
-            INSERT INTO t005_benutzer (nombre_usuario, hash_contraseña, nombre_completo, rol) 
+            INSERT INTO t005_usuarios (nombre_usuario, hash_contraseña, nombre_completo, rol) 
             VALUES (%s, %s, %s, %s)
             """
             return self.execute_update(insert_query, (username, password_hash, voller_name, rolle))
@@ -1930,11 +1944,20 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def export_asiento_nomina_excel(self, year: int, month: int, output_path: str) -> bool:
         """Exportiert Gehaltsdaten im Asiento Nomina Excel-Format"""
         return DatabaseManagerExportsMixin.export_asiento_nomina_excel(self, year, month, output_path)
+
+    def export_irpf_excel(
+        self,
+        year: int,
+        output_path: str,
+        month: int = None,
+        extra: bool = False,
+    ) -> bool:
+        return DatabaseManagerExportsMixin.export_irpf_excel(self, year, month, output_path, extra=extra)
     
     def get_user_email(self, username: str) -> Optional[str]:
         """Holt die Email-Adresse eines Benutzers (angenommen als nombre_usuario)"""
         try:
-            query = "SELECT nombre_usuario FROM t005_benutzer WHERE nombre_usuario = %s AND activo = TRUE"
+            query = "SELECT nombre_usuario FROM t005_usuarios WHERE nombre_usuario = %s AND activo = TRUE"
             users = self.execute_query(query, (username,))
             if users:
                 # Da nombre_usuario als Email verwendet wird, geben wir diesen zurück
@@ -2015,7 +2038,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         try:
             password_hash = self.hash_password(new_password)
             query = """
-            UPDATE t005_benutzer 
+            UPDATE t005_usuarios 
             SET hash_contraseña = %s, fecha_modificacion = CURRENT_TIMESTAMP
             WHERE nombre_usuario = %s
             """

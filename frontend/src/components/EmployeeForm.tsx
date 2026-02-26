@@ -48,7 +48,9 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
     apellido: employee?.apellido || '',
 
     ceco: employee?.ceco || '',
-    kategorie: (employee as any)?.kategorie || '',
+    categoria: (employee as any)?.categoria || '',
+    declaracion: (employee as any)?.declaracion || '',
+    dni: (employee as any)?.dni || '',
     fecha_alta: formatDateForInput(employee?.fecha_alta),
     activo: employee?.activo ?? true
   })
@@ -58,7 +60,9 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
       nombre: employee?.nombre || '',
       apellido: employee?.apellido || '',
       ceco: employee?.ceco || '',
-      kategorie: (employee as any)?.kategorie || '',
+      categoria: (employee as any)?.categoria || '',
+      declaracion: (employee as any)?.declaracion || '',
+      dni: (employee as any)?.dni || '',
       fecha_alta: formatDateForInput(employee?.fecha_alta),
       activo: employee?.activo ?? true
     })
@@ -156,15 +160,15 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
             <label className="block text-sm font-medium text-gray-700 mb-1">
 
-              Categoría
+              Declaración
 
             </label>
 
             <select
 
-              name="kategorie"
+              name="declaracion"
 
-              value={(formData as any).kategorie}
+              value={(formData as any).declaracion}
 
               onChange={handleChange}
 
@@ -174,9 +178,69 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
               <option value="">-</option>
 
-              <option value="Techniker">Techniker</option>
+              <option value="111">111</option>
 
-              <option value="Office">Office</option>
+              <option value="216">216</option>
+
+              <option value="EXTERNO">EXTERNO</option>
+
+            </select>
+
+          </div>
+
+
+
+          <div>
+
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+
+              DNI (solo EXTERNO)
+
+            </label>
+
+            <input
+
+              type="text"
+
+              name="dni"
+
+              value={(formData as any).dni}
+
+              onChange={handleChange}
+
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+
+            />
+
+          </div>
+
+
+
+          <div>
+
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+
+              Categoría
+
+            </label>
+
+            <select
+
+              name="categoria"
+
+              value={(formData as any).categoria}
+
+              onChange={handleChange}
+
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+
+            >
+
+              <option value="">-</option>
+
+              <option value="Técnico">Técnico</option>
+
+              <option value="Oficina">Oficina</option>
 
             </select>
 
@@ -282,7 +346,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
               />
 
-              <span className="text-sm font-medium text-gray-700">Aktiv</span>
+              <span className="text-sm font-medium text-gray-700">Activo</span>
 
             </label>
 

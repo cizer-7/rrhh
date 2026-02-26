@@ -21,7 +21,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
   const [currentMonth, setCurrentMonth] = useState<number | null>(null)
   const [exportType, setExportType] = useState<'yearly' | 'monthly'>('yearly')
-  const [exportFormat, setExportFormat] = useState<'nomina_total' | 'asiento_nomina'>('nomina_total')
+  const [exportFormat, setExportFormat] = useState<'nomina_total' | 'asiento_nomina' | 'irpf'>('nomina_total')
   const [exportExtra, setExportExtra] = useState(false)
   
   const router = useRouter()
@@ -75,6 +75,12 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
       if (exportFormat === 'asiento_nomina') {
         // Asiento Nomina API Endpunkt
         url = `http://localhost:8000/export/asiento_nomina/${currentYear}/${currentMonth}`
+      } else if (exportFormat === 'irpf') {
+        const isExtraEligible = exportType === 'monthly' && (currentMonth === 6 || currentMonth === 12)
+        const extraQuery = exportExtra && isExtraEligible ? '?extra=1' : ''
+        url = exportType === 'monthly' && currentMonth
+          ? `http://localhost:8000/export/irpf/${currentYear}/${currentMonth}${extraQuery}`
+          : `http://localhost:8000/export/irpf/${currentYear}`
       } else {
         const isExtraEligible = exportType === 'monthly' && (currentMonth === 6 || currentMonth === 12)
         const extraQuery = exportExtra && isExtraEligible ? '?extra=1' : ''
@@ -105,6 +111,16 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
       let filename: string
       if (exportFormat === 'asiento_nomina') {
         filename = `ASIENTO_NOMINA_${currentYear}_${currentMonth}.xlsx`
+      } else if (exportFormat === 'irpf') {
+        if (exportType === 'monthly' && currentMonth) {
+          const isExtraEligible = currentMonth === 6 || currentMonth === 12
+          const isExtra = exportExtra && isExtraEligible
+          filename = isExtra
+            ? `IRPF_EXTRA_${currentYear}_${currentMonth}.xlsx`
+            : `IRPF_${currentYear}_${currentMonth}.xlsx`
+        } else {
+          filename = `IRPF_${currentYear}.xlsx`
+        }
       } else {
         if (exportType === 'monthly' && currentMonth) {
           const isExtraEligible = currentMonth === 6 || currentMonth === 12
@@ -146,7 +162,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
             <select 
               value={exportFormat} 
               onChange={(e) => {
-                setExportFormat(e.target.value as 'nomina_total' | 'asiento_nomina')
+                setExportFormat(e.target.value as 'nomina_total' | 'asiento_nomina' | 'irpf')
                 setExportExtra(false)
                 // Asiento Nomina requiere exportación mensual
                 if (e.target.value === 'asiento_nomina') {
@@ -155,14 +171,18 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
                     setCurrentMonth(new Date().getMonth() + 1)
                   }
                 }
+                if (e.target.value === 'irpf' && exportType === 'monthly' && !currentMonth) {
+                  setCurrentMonth(new Date().getMonth() + 1)
+                }
               }}
               className="px-3 py-2 border border-gray-300 rounded-md"
             >
               <option value="nomina_total">Nomina Total</option>
               <option value="asiento_nomina">Asiento Nomina</option>
+              <option value="irpf">IRPF</option>
             </select>
             
-            {exportFormat === 'nomina_total' && (
+            {(exportFormat === 'nomina_total' || exportFormat === 'irpf') && (
               <select 
                 value={exportType} 
                 onChange={(e) => {
@@ -225,7 +245,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
               </select>
             )}
 
-            {exportFormat === 'nomina_total' && exportType === 'monthly' && (currentMonth === 6 || currentMonth === 12) && (
+            {(exportFormat === 'nomina_total' || exportFormat === 'irpf') && exportType === 'monthly' && (currentMonth === 6 || currentMonth === 12) && (
               <label className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md bg-white">
                 <input
                   type="checkbox"

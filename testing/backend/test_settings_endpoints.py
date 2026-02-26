@@ -110,7 +110,7 @@ class TestSettingsEndpoints:
             'year': 2025,
             'ingresos': 1000.0,
             'deducciones': 200.0,
-            'kategorie': 'Techniker'
+            'categoria': 'Techniker'
         }
         
         response = client.post('/settings/apply-ingresos-deducciones',

@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS t001_empleados (
     nombre VARCHAR(200) NOT NULL,
     apellido VARCHAR(200) NOT NULL,
     ceco VARCHAR(10),
-    kategorie VARCHAR(20),
+    categoria VARCHAR(20),
+    declaracion VARCHAR(20),
+    dni VARCHAR(50),
     fecha_alta  DATE,
     activo BOOLEAN DEFAULT TRUE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -199,10 +201,10 @@ CREATE TABLE IF NOT EXISTS t004_deducciones_mensuales (
 );
 
 -- ============================================================================
--- TABLA 5: benutzer (Benutzer)
+-- TABLA 5: usuarios (Benutzer)
 -- Benutzer für die Anwendungsanmeldung
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS t005_benutzer (
+CREATE TABLE IF NOT EXISTS t005_usuarios (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
     hash_contraseña VARCHAR(256) NOT NULL,
@@ -244,7 +246,7 @@ CREATE TABLE IF NOT EXISTS t007_bearbeitungslog (
     INDEX idx_t007_empleado_fecha (id_empleado, fecha),
     INDEX idx_t007_usuario_fecha (usuario_login, fecha),
     FOREIGN KEY (id_empleado) REFERENCES t001_empleados(id_empleado) ON DELETE SET NULL,
-    FOREIGN KEY (usuario_login) REFERENCES t005_benutzer(nombre_usuario)
+    FOREIGN KEY (usuario_login) REFERENCES t005_usuarios(nombre_usuario)
  );
 
  CREATE TABLE IF NOT EXISTS t008_empleado_fte (
@@ -271,7 +273,7 @@ CREATE TABLE IF NOT EXISTS t009_password_reset_tokens (
     expires_at TIMESTAMP NOT NULL,
     used BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (nombre_usuario) REFERENCES t005_benutzer(nombre_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (nombre_usuario) REFERENCES t005_usuarios(nombre_usuario) ON DELETE CASCADE,
     INDEX idx_token (token),
     INDEX idx_usuario (nombre_usuario),
     INDEX idx_expires (expires_at)
