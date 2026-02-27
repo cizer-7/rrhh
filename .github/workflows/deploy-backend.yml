@@ -36,9 +36,13 @@ jobs:
         cd ../deploy-package
         zip -r ../backend-complete.zip .
         
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'salary-management'
         package: './backend-complete.zip'
-        publish-profile: ${{ secrets.AZURE_CREDENTIALS }}
