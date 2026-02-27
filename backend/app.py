@@ -24,16 +24,28 @@ app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
 
 # Security
-SECRET_KEY = "dein-geheimer-schlüssel-hier-ändern"
+SECRET_KEY = os.getenv("SECRET_KEY", "dein-geheimer-schlüssel-hier-ändern")
 ALGORITHM = "HS256"
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    v = str(raw).strip().lower()
+    if v in {"1", "true", "yes", "y", "on"}:
+        return True
+    if v in {"0", "false", "no", "n", "off"}:
+        return False
+    return default
 
 # Database Manager Initialisierung
 db_manager = DatabaseManager(
-    host='localhost',
-    database='nomina',
-    user='root',
-    password='Niklas-10',
-    port=3307
+    host=os.getenv("DB_HOST", "localhost"),
+    database=os.getenv("DB_NAME", "nomina"),
+    user=os.getenv("DB_USER", "root"),
+    password=os.getenv("DB_PASSWORD", ""),
+    port=int(os.getenv("DB_PORT", "3307")),
+    ssl_disabled=_env_bool("DB_SSL_DISABLED", default=False),
 )
 
 # JWT Token Funktionen

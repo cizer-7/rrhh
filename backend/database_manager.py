@@ -12,12 +12,13 @@ from decimal import Decimal
 from openpyxl.worksheet.worksheet import Worksheet
 
 class DatabaseManager(DatabaseManagerExportsMixin):
-    def __init__(self, host: str, database: str, user: str, password: str, port: int = 3307):
+    def __init__(self, host: str, database: str, user: str, password: str, port: int = 3307, ssl_disabled: Optional[bool] = None):
         self.host = host
         self.database = database
         self.user = user
         self.password = password
         self.port = port
+        self.ssl_disabled = ssl_disabled
         self.connection = None
         self._pool = None
         self.logger = logging.getLogger(__name__)
@@ -369,7 +370,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
 
     def _create_connection(self):
         if self._pool is None:
-            self._pool = pooling.MySQLConnectionPool(
+            pool_kwargs: Dict[str, Any] = {
                 pool_name="nomina_pool",
                 pool_size=10,
                 pool_reset_session=True,
@@ -379,7 +380,10 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 password=self.password,
                 port=self.port,
                 connection_timeout=10,
-            )
+            }
+            if self.ssl_disabled is not None:
+                pool_kwargs["ssl_disabled"] = bool(self.ssl_disabled)
+            self._pool = pooling.MySQLConnectionPool(**pool_kwargs)
         return self._pool.get_connection()
 
     def _is_transient_connection_error(self, err: Exception) -> bool:

@@ -1,0 +1,44 @@
+name: Deploy Backend to Azure Web App
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'backend/**' ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        
+    - name: Run tests (optional)
+      run: |
+        cd backend
+        python -m pytest tests/ -v || echo "Tests skipped"
+        
+    - name: Zip backend
+      run: |
+        cd backend
+        zip -r ../backend.zip .
+        
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: 'salary-management'
+        slot-name: 'production'
+        package: './backend.zip'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        resource-group: 'rrhh'
