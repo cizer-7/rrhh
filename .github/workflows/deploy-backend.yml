@@ -3,7 +3,7 @@ name: Deploy Backend to Azure Web App
 on:
   push:
     branches: [ main ]
-    paths: [ 'backend/**' ]
+    paths: [ 'backend/**', '.github/workflows/deploy-backend.yml' ]
   workflow_dispatch:
 
 jobs:
@@ -23,6 +23,7 @@ jobs:
       run: |
         cd backend
         pip install -r requirements.txt
+        pip install flask-cors
         
     - name: Zip backend
       run: |
