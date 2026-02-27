@@ -22,7 +22,9 @@ jobs:
     - name: Install dependencies
       run: |
         cd backend
-        pip install -r requirements-deploy.txt
+        pip install -r requirements.txt
+        pip install --upgrade pip
+        pip install flask-cors
         
     - name: Zip backend
       run: |
