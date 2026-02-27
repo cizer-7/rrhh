@@ -371,12 +371,12 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     def _create_connection(self):
         if self._pool is None:
             pool_kwargs: Dict[str, Any] = {
-                pool_name="nomina_pool",
-                pool_size=10,
-                pool_reset_session=True,
-                host=self.host,
-                database=self.database,
-                user=self.user,
+                "pool_name": "nomina_pool",
+                "pool_size": 10,
+                "pool_reset_session": True,
+                "host": self.host,
+                "database": self.database,
+                "user": self.user,
                 password=self.password,
                 port=self.port,
                 connection_timeout=10,
