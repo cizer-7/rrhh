@@ -23,22 +23,22 @@ jobs:
       run: |
         cd backend
         pip install -r requirements.txt
-        pip install --upgrade pip
         pip install flask-cors
+        pip list --format=freeze > requirements-freeze.txt
         
-    - name: Zip backend
+    - name: Create deployment package
       run: |
         cd backend
-        zip -r ../backend.zip .
-        
-    - name: Login to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        mkdir -p deploy-package
+        cp -r * deploy-package/
+        pip install -r requirements.txt -t deploy-package/
+        pip install flask-cors -t deploy-package/
+        cd deploy-package
+        zip -r ../backend-complete.zip .
         
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'salary-management'
-        package: './backend.zip'
+        package: './backend-complete.zip'
         resource-group: 'rrhh'
