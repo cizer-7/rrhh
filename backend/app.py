@@ -310,10 +310,10 @@ def create_employee(current_user):
                 new_data=employee
             )
             
-            db_manager.insert_bearbeitungslog(
+            db_manager.insert_registro_procesamiento(
                 usuario_login=current_user,
-                aktion="create",
-                objekt="employee",
+                accion="create",
+                objeto="employee",
                 id_empleado=new_id,
                 details=change_details,
             )
@@ -357,10 +357,10 @@ def update_employee(current_user, employee_id):
             new_data=employee_data
         )
 
-        db_manager.insert_bearbeitungslog(
+        db_manager.insert_registro_procesamiento(
             usuario_login=current_user,
-            aktion="update",
-            objekt="employee",
+            accion="update",
+            objeto="employee",
             id_empleado=employee_id,
             details=change_details,
         )
@@ -412,10 +412,10 @@ def add_salary(current_user, employee_id):
                 new_data=salary
             )
             
-            db_manager.insert_bearbeitungslog(
+            db_manager.insert_registro_procesamiento(
                 usuario_login=current_user,
-                aktion="create",
-                objekt="salary",
+                accion="create",
+                objeto="salary",
                 id_empleado=employee_id,
                 anio=salary.get('anio'),
                 details=change_details,
@@ -468,10 +468,10 @@ def update_salary(current_user, employee_id, year):
                 # Debug: log what we're comparing
                 logger.info(f"Salary update comparison - old: {old_salary}, new: {new_salary}, details: {change_details}")
 
-            db_manager.insert_bearbeitungslog(
+            db_manager.insert_registro_procesamiento(
                 usuario_login=current_user,
-                aktion=action,
-                objekt="salary",
+                accion=action,
+                objeto="salary",
                 id_empleado=employee_id,
                 anio=year,
                 details=change_details,
@@ -538,10 +538,10 @@ def upsert_employee_fte(current_user, employee_id):
         try:
             new_value = {"anio": int(year), "mes": int(month), "porcentaje": float(porcentaje)}
             change_details = db_manager.create_change_details(old_data=old_value, new_data=new_value)
-            db_manager.insert_bearbeitungslog(
+            db_manager.insert_registro_procesamiento(
                 usuario_login=current_user,
-                aktion="update" if old_value else "create",
-                objekt="fte",
+                accion="update" if old_value else "create",
+                objeto="fte",
                 id_empleado=employee_id,
                 anio=int(year),
                 mes=int(month),
@@ -574,10 +574,10 @@ def delete_employee_fte(current_user, employee_id, year, month):
 
         try:
             change_details = db_manager.create_change_details(old_data=old_value, new_data=None)
-            db_manager.insert_bearbeitungslog(
+            db_manager.insert_registro_procesamiento(
                 usuario_login=current_user,
-                aktion="delete",
-                objekt="fte",
+                accion="delete",
+                objeto="fte",
                 id_empleado=employee_id,
                 anio=int(year),
                 mes=int(month),
@@ -603,10 +603,10 @@ def update_ingresos(current_user, employee_id, year):
             return jsonify({"error": "Fehler beim Aktualisieren der Bruttoeinkünfte"}), 400
 
         try:
-            db_manager.insert_bearbeitungslog(
+            db_manager.insert_registro_procesamiento(
                 usuario_login=current_user,
-                aktion="update",
-                objekt="ingresos",
+                accion="update",
+                objeto="ingresos",
                 id_empleado=employee_id,
                 anio=year,
                 details=ingresos,
@@ -631,10 +631,10 @@ def update_deducciones(current_user, employee_id, year):
             return jsonify({"error": "Fehler beim Aktualisieren der Abzüge"}), 400
 
         try:
-            db_manager.insert_bearbeitungslog(
+            db_manager.insert_registro_procesamiento(
                 usuario_login=current_user,
-                aktion="update",
-                objekt="deducciones",
+                accion="update",
+                objeto="deducciones",
                 id_empleado=employee_id,
                 anio=year,
                 details=deducciones,
@@ -805,10 +805,10 @@ def create_carry_over(current_user):
             return jsonify({"error": "Fehler beim Speichern Carry Over"}), 400
 
         try:
-            db_manager.insert_bearbeitungslog(
+            db_manager.insert_registro_procesamiento(
                 usuario_login=current_user,
-                aktion="create",
-                objekt="carry_over",
+                accion="create",
+                objeto="carry_over",
                 id_empleado=employee_id_i,
                 anio=year_i,
                 mes=month_i,
@@ -994,10 +994,10 @@ def update_ingresos_mensuales(current_user, employee_id, year, month):
             return jsonify({"error": "Fehler beim Aktualisieren der monatlichen Bruttoeinkünfte"}), 400
 
         try:
-            db_manager.insert_bearbeitungslog(
+            db_manager.insert_registro_procesamiento(
                 usuario_login=current_user,
-                aktion="update",
-                objekt="ingresos_mensuales",
+                accion="update",
+                objeto="ingresos_mensuales",
                 id_empleado=employee_id,
                 anio=year,
                 mes=month,
@@ -1024,10 +1024,10 @@ def update_deducciones_mensuales(current_user, employee_id, year, month):
             return jsonify({"error": result.get("error", "Fehler beim Aktualisieren der monatlichen Abzüge")}), 400
 
         try:
-            db_manager.insert_bearbeitungslog(
+            db_manager.insert_registro_procesamiento(
                 usuario_login=current_user,
-                aktion="update",
-                objekt="deducciones_mensuales",
+                accion="update",
+                objeto="deducciones_mensuales",
                 id_empleado=employee_id,
                 anio=year,
                 mes=month,
@@ -1052,33 +1052,33 @@ def update_deducciones_mensuales(current_user, employee_id, year, month):
 
 
 
-@app.route('/employees/<int:employee_id>/bearbeitungslog', methods=['GET'])
+@app.route('/employees/<int:employee_id>/registro_procesamiento', methods=['GET'])
 @token_required
-def get_bearbeitungslog(current_user, employee_id):
-    """Bearbeitungslog für einen Mitarbeiter abrufen"""
+def get_registro_procesamiento(current_user, employee_id):
+    """Registro de procesamiento für einen Mitarbeiter abrufen"""
     try:
         anio = request.args.get('anio', default=None, type=int)
         mes = request.args.get('mes', default=None, type=int)
         limit = request.args.get('limit', default=200, type=int)
 
-        rows = db_manager.get_bearbeitungslog(employee_id, anio=anio, mes=mes, limit=limit)
+        rows = db_manager.get_registro_procesamiento(employee_id, anio=anio, mes=mes, limit=limit)
         return jsonify({"items": rows})
 
     except Exception as e:
-        logger.error(f"Fehler beim Abrufen bearbeitungslog für Mitarbeiter {employee_id}: {e}")
+        logger.error(f"Fehler beim Abrufen registro_procesamiento für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
 
-@app.route('/bearbeitungslog', methods=['GET'])
+@app.route('/registro_procesamiento', methods=['GET'])
 @token_required
-def get_global_bearbeitungslog(current_user):
-    """Globale Bearbeitungslog abrufen"""
+def get_global_registro_procesamiento(current_user):
+    """Globale Registro de procesamiento abrufen"""
     try:
         id_empleado = request.args.get('id_empleado', default=None, type=int)
         anio = request.args.get('anio', default=None, type=int)
         mes = request.args.get('mes', default=None, type=int)
         limit = request.args.get('limit', default=200, type=int)
 
-        rows = db_manager.get_global_bearbeitungslog(
+        rows = db_manager.get_global_registro_procesamiento(
             id_empleado=id_empleado, 
             anio=anio, 
             mes=mes, 
@@ -1087,7 +1087,7 @@ def get_global_bearbeitungslog(current_user):
         return jsonify({"items": rows})
 
     except Exception as e:
-        logger.error(f"Fehler beim Abrufen global bearbeitungslog: {e}")
+        logger.error(f"Fehler beim Abrufen global registro_procesamiento: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
 
 # Health Check

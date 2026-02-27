@@ -645,14 +645,14 @@ class TestDatabaseManagerCore:
         assert len(result[0]['salaries']) == 1
         assert result[0]['salaries'][0]['salario_anual_bruto'] == 36000.0
 
-    def test_get_bearbeitungslog_without_connection(self, db_manager):
-        """Test get_bearbeitungslog ohne Verbindung"""
-        result = db_manager.get_bearbeitungslog(1)
+    def test_get_registro_procesamiento_without_connection(self, db_manager):
+        """Test get_registro_procesamiento ohne Verbindung"""
+        result = db_manager.get_registro_procesamiento(1)
         assert result == []
 
     @patch('database_manager.DatabaseManager._create_connection')
-    def test_get_bearbeitungslog_success(self, mock_create_connection, db_manager):
-        """Test erfolgreiche get_bearbeitungslog Abfrage"""
+    def test_get_registro_procesamiento_success(self, mock_create_connection, db_manager):
+        """Test erfolgreiche get_registro_procesamiento Abfrage"""
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_create_connection.return_value = mock_connection
@@ -660,41 +660,41 @@ class TestDatabaseManagerCore:
         
         mock_cursor.fetchall.return_value = [
             {
-                'id_log': 1,
+                'id_registro': 1,
                 'fecha': '2024-01-01 10:00:00',
                 'usuario_login': 'testuser',
                 'nombre_completo': 'Test User',
                 'id_empleado': 1,
                 'anio': 2024,
                 'mes': 1,
-                'aktion': 'UPDATE',
-                'objekt': 'salary',
-                'details': '{"old": 3000, "new": 3500}'
+                'accion': 'UPDATE',
+                'objeto': 'salary',
+                'detalles': '{"old": 3000, "new": 3500}'
             }
         ]
         
-        result = db_manager.get_bearbeitungslog(1, 2024, 1, 50)
+        result = db_manager.get_registro_procesamiento(1, 2024, 1, 50)
         assert len(result) == 1
         assert result[0]['id_empleado'] == 1
         assert result[0]['usuario_login'] == 'testuser'
-        assert result[0]['aktion'] == 'UPDATE'
+        assert result[0]['accion'] == 'UPDATE'
 
-    def test_get_bearbeitungslog_invalid_employee_id(self, db_manager):
-        """Test get_bearbeitungslog mit ungültiger employee_id"""
-        result = db_manager.get_bearbeitungslog(None)
+    def test_get_registro_procesamiento_invalid_employee_id(self, db_manager):
+        """Test get_registro_procesamiento mit ungültiger employee_id"""
+        result = db_manager.get_registro_procesamiento(None)
         assert result == []
         
-        result = db_manager.get_bearbeitungslog(0)
+        result = db_manager.get_registro_procesamiento(0)
         assert result == []
 
-    def test_get_global_bearbeitungslog_without_connection(self, db_manager):
-        """Test get_global_bearbeitungslog ohne Verbindung"""
-        result = db_manager.get_global_bearbeitungslog()
+    def test_get_global_registro_procesamiento_without_connection(self, db_manager):
+        """Test get_global_registro_procesamiento ohne Verbindung"""
+        result = db_manager.get_global_registro_procesamiento()
         assert result == []
 
     @patch('database_manager.DatabaseManager._create_connection')
-    def test_get_global_bearbeitungslog_success(self, mock_create_connection, db_manager):
-        """Test erfolgreiche get_global_bearbeitungslog Abfrage"""
+    def test_get_global_registro_procesamiento_success(self, mock_create_connection, db_manager):
+        """Test erfolgreiche get_global_registro_procesamiento Abfrage"""
         mock_connection = Mock()
         mock_cursor = Mock()
         mock_create_connection.return_value = mock_connection
@@ -702,23 +702,23 @@ class TestDatabaseManagerCore:
         
         mock_cursor.fetchall.return_value = [
             {
-                'id_log': 1,
+                'id_registro': 1,
                 'fecha': '2024-01-01 10:00:00',
                 'usuario_login': 'admin',
                 'nombre_completo': 'Admin User',
                 'id_empleado': None,
                 'anio': None,
                 'mes': None,
-                'aktion': 'SYSTEM',
-                'objekt': 'backup',
-                'details': '{"status": "completed"}'
+                'accion': 'SYSTEM',
+                'objeto': 'backup',
+                'detalles': '{"status": "completed"}'
             }
         ]
         
-        result = db_manager.get_global_bearbeitungslog(50)
+        result = db_manager.get_global_registro_procesamiento(50)
         assert len(result) == 1
         assert result[0]['usuario_login'] == 'admin'
-        assert result[0]['aktion'] == 'SYSTEM'
+        assert result[0]['accion'] == 'SYSTEM'
 
     def test_get_employee_complete_info_without_connection(self, db_manager):
         """Test get_employee_complete_info ohne Verbindung"""

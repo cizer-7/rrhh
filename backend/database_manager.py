@@ -165,27 +165,27 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         except Exception as e:
             self.logger.error(f"Fehler beim Sicherstellen von gasolina Spalte: {e}")
 
-    def insert_bearbeitungslog(
+    def insert_registro_procesamiento(
         self,
         usuario_login: str,
-        aktion: str,
-        objekt: str = None,
+        accion: str,
+        objeto: str = None,
         id_empleado: int = None,
         anio: int = None,
         mes: int = None,
-        details: Dict[str, Any] = None,
+        detalles: Dict[str, Any] = None,
     ) -> bool:
         try:
-            if not usuario_login or not aktion:
+            if not usuario_login or not accion:
                 return False
-            details_json = None
-            if details is not None:
+            detalles_json = None
+            if detalles is not None:
                 try:
-                    details_json = json.dumps(details, ensure_ascii=False)
+                    detalles_json = json.dumps(detalles, ensure_ascii=False)
                 except Exception:
-                    details_json = None
+                    detalles_json = None
             query = """
-            INSERT INTO t007_bearbeitungslog (usuario_login, id_empleado, anio, mes, aktion, objekt, details)
+            INSERT INTO t007_registro_procesamiento (usuario_login, id_empleado, anio, mes, accion, objeto, detalles)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
             return self.execute_update(
@@ -195,16 +195,16 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     id_empleado,
                     anio,
                     mes,
-                    aktion,
-                    objekt,
-                    details_json,
+                    accion,
+                    objeto,
+                    detalles_json,
                 ),
             )
         except Exception as e:
-            self.logger.error(f"Fehler beim Schreiben in t007_bearbeitungslog: {e}")
+            self.logger.error(f"Fehler beim Schreiben in t007_registro_procesamiento: {e}")
             return False
 
-    def get_bearbeitungslog(
+    def get_registro_procesamiento(
         self,
         id_empleado: int,
         anio: int = None,
@@ -222,17 +222,17 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 limit_value = 200
             query = """
             SELECT
-                l.id_log,
+                l.id_registro,
                 l.fecha,
                 l.usuario_login,
                 u.nombre_completo,
                 l.id_empleado,
                 l.anio,
                 l.mes,
-                l.aktion,
-                l.objekt,
-                l.details
-            FROM t007_bearbeitungslog l
+                l.accion,
+                l.objeto,
+                l.detalles
+            FROM t007_registro_procesamiento l
             LEFT JOIN t005_usuarios u ON u.nombre_usuario = l.usuario_login
             WHERE l.id_empleado = %s
             """
@@ -243,21 +243,21 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             if mes is not None:
                 query += " AND l.mes = %s"
                 params.append(mes)
-            query += " ORDER BY l.fecha DESC, l.id_log DESC LIMIT %s"
+            query += " ORDER BY l.fecha DESC, l.id_registro DESC LIMIT %s"
             params.append(limit_value)
             rows = self.execute_query(query, tuple(params))
             for r in rows:
-                if isinstance(r.get('details'), str):
+                if isinstance(r.get('detalles'), str):
                     try:
-                        r['details'] = json.loads(r['details'])
+                        r['detalles'] = json.loads(r['detalles'])
                     except Exception:
                         pass
             return rows
         except Exception as e:
-            self.logger.error(f"Fehler beim Lesen von t007_bearbeitungslog: {e}")
+            self.logger.error(f"Fehler beim Lesen von t007_registro_procesamiento: {e}")
             return []
 
-    def get_global_bearbeitungslog(
+    def get_global_registro_procesamiento(
         self,
         id_empleado: int = None,
         anio: int = None,
@@ -273,7 +273,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 limit_value = 200
             query = """
             SELECT
-                l.id_log,
+                l.id_registro,
                 l.fecha,
                 l.usuario_login,
                 u.nombre_completo,
@@ -282,10 +282,10 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 e.apellido as empleado_apellido,
                 l.anio,
                 l.mes,
-                l.aktion,
-                l.objekt,
-                l.details
-            FROM t007_bearbeitungslog l
+                l.accion,
+                l.objeto,
+                l.detalles
+            FROM t007_registro_procesamiento l
             LEFT JOIN t005_usuarios u ON u.nombre_usuario = l.usuario_login
             LEFT JOIN t001_empleados e ON e.id_empleado = l.id_empleado
             WHERE 1=1
@@ -300,18 +300,18 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             if mes is not None:
                 query += " AND l.mes = %s"
                 params.append(mes)
-            query += " ORDER BY l.fecha DESC, l.id_log DESC LIMIT %s"
+            query += " ORDER BY l.fecha DESC, l.id_registro DESC LIMIT %s"
             params.append(limit_value)
             rows = self.execute_query(query, tuple(params))
             for r in rows:
-                if isinstance(r.get('details'), str):
+                if isinstance(r.get('detalles'), str):
                     try:
-                        r['details'] = json.loads(r['details'])
+                        r['detalles'] = json.loads(r['detalles'])
                     except Exception:
                         pass
             return rows
         except Exception as e:
-            self.logger.error(f"Fehler beim Lesen von global t007_bearbeitungslog: {e}")
+            self.logger.error(f"Fehler beim Lesen von global t007_registro_procesamiento: {e}")
             return []
 
     def create_change_details(self, old_data: dict = None, new_data: dict = None, changed_fields: list = None) -> dict:
@@ -2392,10 +2392,10 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                                 "row": row_idx,
                                 "data": new_data,
                             }
-                        self.insert_bearbeitungslog(
+                        self.insert_registro_procesamiento(
                             usuario_login=usuario_login,
-                            aktion="import",
-                            objekt="ingresos_mensuales",
+                            accion="import",
+                            objeto="ingresos_mensuales",
                             id_empleado=employee_id,
                             anio=year,
                             mes=month,
@@ -2555,10 +2555,10 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                                 "row": row_idx,
                                 "data": new_data,
                             }
-                        self.insert_bearbeitungslog(
+                        self.insert_registro_procesamiento(
                             usuario_login=usuario_login,
-                            aktion="import",
-                            objekt="deducciones_mensuales",
+                            accion="import",
+                            objeto="deducciones_mensuales",
                             id_empleado=employee_id,
                             anio=year,
                             mes=month,
@@ -2721,10 +2721,10 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                                 "row": row_idx,
                                 "data": new_data,
                             }
-                        self.insert_bearbeitungslog(
+                        self.insert_registro_procesamiento(
                             usuario_login=usuario_login,
-                            aktion="import",
-                            objekt="deducciones_mensuales",
+                            accion="import",
+                            objeto="deducciones_mensuales",
                             id_empleado=employee_id,
                             anio=year,
                             mes=month,

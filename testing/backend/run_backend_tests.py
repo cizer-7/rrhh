@@ -93,7 +93,7 @@ def run_unit_tests():
         'test_edge_cases.py',
         'test_auth_endpoints.py',
         'test_fte_endpoints.py',
-        'test_bearbeitungslog.py',
+        'test_registro_procesamiento.py',
         'test_import_export.py',
         'test_settings_endpoints.py',
         'test_salary_management.py'

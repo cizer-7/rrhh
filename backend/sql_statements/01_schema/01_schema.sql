@@ -233,16 +233,16 @@ CREATE TABLE IF NOT EXISTS t006_valores_calculados_mensuales (
     FOREIGN KEY (id_empleado) REFERENCES t001_empleados(id_empleado) ON DELETE CASCADE
  );
 
-CREATE TABLE IF NOT EXISTS t007_bearbeitungslog (
-    id_log INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS t007_registro_procesamiento (
+    id_registro INT AUTO_INCREMENT PRIMARY KEY,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usuario_login VARCHAR(50) NOT NULL,
     id_empleado INT NULL,
     anio INT NULL,
     mes INT NULL,
-    aktion VARCHAR(100) NOT NULL,
-    objekt VARCHAR(100) NULL,
-    details JSON NULL,
+    accion VARCHAR(100) NOT NULL,
+    objeto VARCHAR(100) NULL,
+    detalles JSON NULL,
     INDEX idx_t007_empleado_fecha (id_empleado, fecha),
     INDEX idx_t007_usuario_fecha (usuario_login, fecha),
     FOREIGN KEY (id_empleado) REFERENCES t001_empleados(id_empleado) ON DELETE SET NULL,
