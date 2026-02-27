@@ -377,9 +377,9 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 "host": self.host,
                 "database": self.database,
                 "user": self.user,
-                password=self.password,
-                port=self.port,
-                connection_timeout=10,
+                "password": self.password,
+                "port": self.port,
+                "connection_timeout": 10,
             }
             if self.ssl_disabled is not None:
                 pool_kwargs["ssl_disabled"] = bool(self.ssl_disabled)
