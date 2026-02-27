@@ -41,4 +41,3 @@ jobs:
         slot-name: 'production'
         package: './backend.zip'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        resource-group: 'rrhh'
