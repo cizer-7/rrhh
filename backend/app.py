@@ -21,7 +21,11 @@ logger = logging.getLogger(__name__)
 
 # Flask App
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
+CORS(app, origins=[
+    "http://localhost:3000", 
+    "http://127.0.0.1:3000",
+    "https://digitalisierung-frontend.azurewebsites.net"
+])
 
 # Security
 SECRET_KEY = os.getenv("SECRET_KEY", "dein-geheimer-schlüssel-hier-ändern")
