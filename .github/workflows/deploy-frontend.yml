@@ -31,15 +31,6 @@ jobs:
         cd frontend
         npm run build
         
-    - name: Create deployment package
-      run: |
-        cd frontend
-        mkdir -p ../deploy-package
-        cp -r .next ../deploy-package/
-        cp package.json ../deploy-package/
-        cd ../deploy-package
-        zip -r ../frontend-ssr.zip .
-        
     - name: Login to Azure
       uses: azure/login@v1
       with:
@@ -49,5 +40,4 @@ jobs:
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'digitalisierung-frontend'
-        package: './frontend-ssr.zip'
-        runtime: 'NODE|20-lts'
+        package: 'frontend'
