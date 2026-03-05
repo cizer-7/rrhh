@@ -1085,6 +1085,7 @@ def get_registro_procesamiento(current_user, employee_id):
         return jsonify({"error": "Interner Serverfehler"}), 500
 
 @app.route('/registro_procesamiento', methods=['GET'])
+@app.route('/bearbeitungslog', methods=['GET'])
 @token_required
 def get_global_registro_procesamiento(current_user):
     """Globale Registro de procesamiento abrufen"""
