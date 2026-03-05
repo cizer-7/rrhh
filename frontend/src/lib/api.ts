@@ -116,7 +116,7 @@ class ApiClient {
 
   async login(username: string, password: string) {
 
-    const response = await this.request<any>('/login', {
+    const response = await this.request<any>('/auth/login', {
 
       method: 'POST',
 
