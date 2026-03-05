@@ -40,4 +40,4 @@ jobs:
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'digitalisierung-frontend'
-        package: 'frontend/out'
+        package: 'frontend/.next'

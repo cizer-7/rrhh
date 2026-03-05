@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   swcMinify: false,
-  output: 'export',
+  output: undefined, // Entferne 'export' für SSR
   trailingSlash: true,
   images: {
     unoptimized: true
