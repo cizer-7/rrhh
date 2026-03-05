@@ -1905,12 +1905,16 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         """Verify user credentials and return user data if valid"""
         try:
             password_hash = self.hash_password(password)
+            self.logger.info(f"Login-Versuch: Username={username}, PasswordHash={password_hash}")
+            
             query = """
             SELECT id_usuario, nombre_usuario, nombre_completo, rol, activo
             FROM t005_usuarios 
             WHERE nombre_usuario = %s AND hash_contraseña = %s AND activo = TRUE
             """
             users = self.execute_query(query, (username, password_hash))
+            self.logger.info(f"DB-Abfrage Ergebnis: {users}")
+            
             if users:
                 return users[0]
             return None
