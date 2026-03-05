@@ -36,7 +36,6 @@ jobs:
         cd frontend
         mkdir -p ../deploy-package
         cp -r .next ../deploy-package/
-        cp -r public ../deploy-package/
         cp package.json ../deploy-package/
         cp -r node_modules ../deploy-package/
         cd ../deploy-package
