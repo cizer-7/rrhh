@@ -25,7 +25,7 @@ CORS(app, origins=[
     "http://localhost:3000", 
     "http://127.0.0.1:3000",
     "https://digitalisierung-frontend.azurewebsites.net"
-])
+    ], supports_credentials=True)
 
 # Security
 SECRET_KEY = os.getenv("SECRET_KEY", "dein-geheimer-schlüssel-hier-ändern")
@@ -1106,6 +1106,13 @@ def get_global_registro_procesamiento(current_user):
     except Exception as e:
         logger.error(f"Fehler beim Abrufen global registro_procesamiento: {e}")
         return jsonify({"error": "Interner Serverfehler"}), 500
+
+# OPTIONS-Handler für CORS-Preflight
+@app.route('/registro_procesamiento', methods=['OPTIONS'])
+@app.route('/bearbeitungslog', methods=['OPTIONS'])
+def options_registro_procesamiento():
+    """OPTIONS-Handler für CORS-Preflight-Requests"""
+    return '', 200
 
 # Health Check
 @app.route('/health', methods=['GET'])
