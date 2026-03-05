@@ -1899,7 +1899,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             self.logger.error(f"Fehler beim Löschen des Mitarbeiters {employee_id}: {last_error}")
         return False
     def hash_password(self, password: str) -> str:
-        """Hash a password using SHA-256"""
+        """Hash a password using SHA-256 (compatible with MySQL SHA2)"""
         return hashlib.sha256(password.encode()).hexdigest()
     def verify_user(self, username: str, password: str) -> Optional[Dict[str, Any]]:
         """Verify user credentials and return user data if valid"""
