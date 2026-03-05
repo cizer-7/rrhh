@@ -1905,12 +1905,11 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         """Verify user credentials and return user data if valid"""
         try:
             password_hash = self.hash_password(password)
-            self.logger.info(f"Login-Versuch: Username={username}, PasswordHash={password_hash}")
             
             query = """
             SELECT id_usuario, nombre_usuario, nombre_completo, rol, activo
             FROM t005_usuarios 
-            WHERE nombre_usuario = %s AND hash_contraseña = %s AND activo = TRUE
+            WHERE nombre_usuario = %s AND hash_contrasena = %s AND activo = TRUE
             """
             users = self.execute_query(query, (username, password_hash))
             self.logger.info(f"DB-Abfrage Ergebnis: {users}")
@@ -2047,7 +2046,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             password_hash = self.hash_password(new_password)
             query = """
             UPDATE t005_usuarios 
-            SET hash_contraseña = %s, fecha_modificacion = CURRENT_TIMESTAMP
+            SET hash_contrasena = %s, fecha_modificacion = CURRENT_TIMESTAMP
             WHERE nombre_usuario = %s
             """
             success = self.execute_update(query, (password_hash, username))
