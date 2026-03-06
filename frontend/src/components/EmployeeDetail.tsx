@@ -511,7 +511,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        console.error('Kein Token gefunden')
+        console.error('No se encontró token')
         return
       }
       const headers = { 
@@ -546,7 +546,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         }))
       } else {
         const errorText = await response.text()
-        console.error('Fehler beim Aktualisieren des Mitarbeiters:', response.status, errorText)
+        console.error('Error al actualizar empleado:', response.status, errorText)
       }
     } catch (error) {
       console.error('Error saving employee:', error)
@@ -556,7 +556,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     e.preventDefault()
     
     if (!increaseYear || (increaseType === 'percentage' && !increasePercentage) || (increaseType === 'absolute' && !increaseAbsolute)) {
-      alert('Bitte geben Sie Jahr und Erhöhungswert ein')
+      alert('Por favor ingrese año y valor de aumento')
       return
     }
     
@@ -566,7 +566,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        console.error('Kein Token gefunden')
+        console.error('No se encontró token')
         return
       }
       const headers = { 
@@ -595,17 +595,17 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       const result = await response.json()
       
       if (response.ok) {
-        console.log('Gehaltserhöhung erfolgreich:', result)
+        console.log('Aumento de salario exitoso:', result)
         setIncreaseResult(result)
         // Refresh data to show updated salaries
         fetchData()
       } else {
-        console.error('Fehler bei Gehaltserhöhung:', result)
+        console.error('Error en aumento de salario:', result)
         setIncreaseResult(result)
       }
     } catch (error) {
       console.error('Error applying salary increase:', error)
-      setIncreaseResult({ success: false, message: 'Netzwerkfehler' })
+      setIncreaseResult({ success: false, message: 'Error de red' })
     } finally {
       setIncreaseLoading(false)
     }
@@ -618,11 +618,11 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     return totalAnnualSalary
   }
   const calculateMonthlySalary = (selectedMonth: number | null) => {
-    // FTE-Prozentsatz für den ausgewählten Monat abrufen
+    // Obtener porcentaje FTE para el mes seleccionado
     const salaryYear = year
     const salaryMonth = selectedMonth || month
     const ftePercent = salaryMonth ? getEffectiveFtePercent(fteItems, salaryYear, salaryMonth) / 100 : 1
-    // Wenn kein Monat ausgewählt, Jahresdurchschnitt unter Berücksichtigung von FTE verwenden
+    // Si no se selecciona ningún mes, usar promedio anual considerando FTE
     if (!selectedMonth) {
       return calculateAnnualSalaryWithFTE() / 12
     }
@@ -640,9 +640,9 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       : (salary?.antiguedad || 0)
     const oldMonthlyBase = modality > 0 ? (prevAnnualSalary / modality) : 0
     const newMonthlyBase = modality > 0 ? (currentAnnualSalary / modality) : 0
-    // Für Monate vor dem Auszahlungsmonat: Gehalt vom Vorjahr verwenden, aber nur wenn Vorjahresgehalt > 0
+    // Para meses antes del mes de pago: usar salario del año anterior, pero solo si salario anterior > 0
     if (monthsBeforePayout > 0 && selectedMonth >= 1 && selectedMonth <= monthsBeforePayout) {
-      // Wenn kein Vorjahresgehalt vorhanden, verwendet aktuelles Gehalt
+      // Si no hay salario anterior, usar salario actual
       if (prevAnnualSalary > 0) {
         return (oldMonthlyBase + antiguedad) * ftePercent
       } else {
@@ -650,11 +650,11 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       }
     }
     
-    // Für Monate ab Auszahlungsmonat: neues Gehalt
+    // Para meses a partir del mes de pago: nuevo salario
     let totalSalary = (newMonthlyBase + antiguedad) * ftePercent
-    // Atrasos nur im Auszahlungsmonat: Summe der monatlichen Differenzen (Neu - Alt) für Jan..(payoutMonth-1)
-    // Wichtig: FTE je Monat berücksichtigen (Reduzierung kann mitten im Q1 starten)
-    // Nur berechnen wenn Vorjahresgehalt > 0
+    // Atrasos solo en el mes de pago: Suma de diferencias mensuales (Nuevo - Viejo) para Ene..(payoutMonth-1)
+    // Importante: Considerar FTE por mes (la reducción puede comenzar a mitad del Q1)
+    // Calcular solo si salario anterior > 0
     if (selectedMonth === payoutMonth && monthsBeforePayout > 0 && prevAnnualSalary > 0) {
       const diffBase = newMonthlyBase - oldMonthlyBase
       let atrasosTotal = 0

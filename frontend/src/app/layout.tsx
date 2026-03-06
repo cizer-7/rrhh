@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Gehaltsabrechnung',
-  description: 'Mitarbeiter Gehaltsabrechnung System',
+  title: 'Nómina de Empleados',
+  description: 'Sistema de Gestión de Nóminas de Empleados',
 }
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="de">
+    <html lang="es">
       <body className={inter.className}>
         {children}
       </body>

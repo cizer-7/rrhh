@@ -131,13 +131,13 @@ def login():
         logger.info(f"Login-Versuch für Benutzer: {username}")
         
         if not username or not password:
-            return jsonify({"error": "Username und Password erforderlich"}), 400
+            return jsonify({"error": "Nombre de usuario y contraseña requeridos"}), 400
         
         user_data = db_manager.verify_user(username, password)
         logger.info(f"verify_user Ergebnis: {user_data}")
         
         if not user_data:
-            return jsonify({"error": "Falscher Benutzername oder Passwort"}), 401
+            return jsonify({"error": "Nombre de usuario o contraseña incorrectos"}), 401
         
         access_token = create_access_token(data={"sub": user_data["nombre_usuario"]})
         return jsonify({
@@ -149,7 +149,7 @@ def login():
         logger.error(f"Login Fehler: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 # Passwort-Reset Endpunkte
 @app.route('/auth/forgot-password', methods=['POST'])
@@ -160,13 +160,13 @@ def forgot_password():
         username = data.get("username")
         
         if not username:
-            return jsonify({"error": "Benutzername erforderlich"}), 400
+            return jsonify({"error": "Nombre de usuario requerido"}), 400
         
         # Prüfen ob Benutzer existiert
         email = db_manager.get_user_email(username)
         if not email:
             # Sicherheit: Nicht verraten, ob Benutzer existiert
-            return jsonify({"message": "Wenn der Benutzer existiert, wurde eine Reset-Email gesendet"}), 200
+            return jsonify({"message": "Si el usuario existe, se ha enviado un correo de restablecimiento"}), 200
         
         # Token generieren
         token = email_service.generate_reset_token()
@@ -196,7 +196,7 @@ def forgot_password():
         
     except Exception as e:
         logger.error(f"Fehler bei der Passwort-Reset-Anfrage: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 @app.route('/auth/reset-password', methods=['POST'])
 def reset_password():
@@ -207,29 +207,29 @@ def reset_password():
         new_password = data.get("new_password")
         
         if not token or not new_password:
-            return jsonify({"error": "Token und neues Passwort erforderlich"}), 400
+            return jsonify({"error": "Token y nueva contraseña requeridos"}), 400
         
         if len(new_password) < 6:
-            return jsonify({"error": "Passwort muss mindestens 6 Zeichen lang sein"}), 400
+            return jsonify({"error": "La contraseña debe tener al menos 6 caracteres"}), 400
         
         # Token validieren
         token_data = db_manager.validate_password_reset_token(token)
         if not token_data:
-            return jsonify({"error": "Ungültiger oder abgelaufener Token"}), 400
+            return jsonify({"error": "Token inválido o expirado"}), 400
         
         username = token_data['nombre_usuario']
         
         # Passwort aktualisieren
         success = db_manager.update_password(username, new_password)
         if not success:
-            return jsonify({"error": "Fehler beim Aktualisieren des Passworts"}), 500
+            return jsonify({"error": "Error al actualizar la contraseña"}), 500
         
         logger.info(f"Passwort erfolgreich zurückgesetzt für Benutzer: {username}")
-        return jsonify({"message": "Passwort erfolgreich aktualisiert"}), 200
+        return jsonify({"message": "Contraseña actualizada exitosamente"}), 200
         
     except Exception as e:
         logger.error(f"Fehler beim Passwort-Reset: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 @app.route('/auth/validate-reset-token', methods=['POST'])
 def validate_reset_token():
@@ -247,7 +247,7 @@ def validate_reset_token():
         logger.info(f"Token-Validierung Ergebnis: {token_data}")
         
         if not token_data:
-            return jsonify({"error": "Ungültiger oder abgelaufener Token"}), 400
+            return jsonify({"error": "Token inválido o expirado"}), 400
         
         return jsonify({
             "valid": True,
@@ -256,7 +256,7 @@ def validate_reset_token():
         
     except Exception as e:
         logger.error(f"Fehler bei der Token-Validierung: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 # Mitarbeiter Endpunkte
 @app.route('/employees', methods=['GET'])
@@ -273,7 +273,7 @@ def get_employees(current_user):
         return response
     except Exception as e:
         logger.error(f"Fehler beim Abrufen der Mitarbeiter: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 @app.route('/employees/with-salaries', methods=['GET'])
 @token_required
@@ -289,7 +289,7 @@ def get_employees_with_salaries(current_user):
         return response
     except Exception as e:
         logger.error(f"Fehler beim Abrufen der Mitarbeiter mit Gehältern: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 @app.route('/employees/<int:employee_id>', methods=['GET'])
 @token_required
@@ -307,7 +307,7 @@ def get_employee(current_user, employee_id):
         return response
     except Exception as e:
         logger.error(f"Fehler beim Abrufen des Mitarbeiters {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 @app.route('/employees', methods=['POST'])
 @token_required
@@ -345,7 +345,7 @@ def create_employee(current_user):
         return jsonify({"error": "Neuer Mitarbeiter nicht gefunden"}), 404
     except Exception as e:
         logger.error(f"Fehler beim Erstellen des Mitarbeiters: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 @app.route('/employees/<int:employee_id>', methods=['PUT'])
 @token_required
@@ -384,7 +384,7 @@ def update_employee(current_user, employee_id):
         return jsonify({"message": "Mitarbeiter erfolgreich aktualisiert"})
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren des Mitarbeiters {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 @app.route('/employees/<int:employee_id>', methods=['DELETE'])
 @token_required
@@ -398,7 +398,7 @@ def delete_employee(current_user, employee_id):
         return jsonify({"message": "Mitarbeiter erfolgreich gelöscht"})
     except Exception as e:
         logger.error(f"Fehler beim Löschen des Mitarbeiters {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 @app.route('/employees/search/<search_term>', methods=['GET'])
 @token_required
@@ -409,7 +409,7 @@ def search_employees(current_user, search_term):
         return jsonify(employees)
     except Exception as e:
         logger.error(f"Fehler bei der Mitarbeitersuche: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 # Gehalts Endpunkte
 @app.route('/employees/<int:employee_id>/salaries', methods=['POST'])
@@ -442,7 +442,7 @@ def add_salary(current_user, employee_id):
         return jsonify({"message": "Gehalt erfolgreich hinzugefügt"})
     except Exception as e:
         logger.error(f"Fehler beim Hinzufügen des Gehalts für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 @app.route('/employees/<int:employee_id>/salaries/<int:year>', methods=['PUT'])
 @token_required
@@ -498,7 +498,7 @@ def update_salary(current_user, employee_id, year):
         return jsonify({"message": "Gehalt erfolgreich aktualisiert"})
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren des Gehalts für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 @app.route('/employees/<int:employee_id>/salaries/<int:year>', methods=['DELETE'])
 @token_required
@@ -512,7 +512,7 @@ def delete_salary(current_user, employee_id, year):
         return jsonify({"message": "Gehalt erfolgreich gelöscht"})
     except Exception as e:
         logger.error(f"Fehler beim Löschen des Gehalts für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 
@@ -524,7 +524,7 @@ def get_employee_fte(current_user, employee_id):
         return jsonify({"items": rows})
     except Exception as e:
         logger.error(f"Fehler beim Abrufen FTE für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 
@@ -569,7 +569,7 @@ def upsert_employee_fte(current_user, employee_id):
         return jsonify({"message": "Stundenreduzierung gespeichert"})
     except Exception as e:
         logger.error(f"Fehler beim Speichern FTE für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 
@@ -605,7 +605,7 @@ def delete_employee_fte(current_user, employee_id, year, month):
         return jsonify({"message": "Stundenreduzierung gelöscht"})
     except Exception as e:
         logger.error(f"Fehler beim Löschen FTE für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 # Einkünfte Endpunkte
 @app.route('/employees/<int:employee_id>/ingresos/<int:year>', methods=['PUT'])
@@ -633,7 +633,7 @@ def update_ingresos(current_user, employee_id, year):
         return jsonify({"message": "Bruttoeinkünfte erfolgreich aktualisiert"})
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren der Bruttoeinkünfte für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 # Abzüge Endpunkte
 @app.route('/employees/<int:employee_id>/deducciones/<int:year>', methods=['PUT'])
@@ -661,7 +661,7 @@ def update_deducciones(current_user, employee_id, year):
         return jsonify({"message": "Abzüge erfolgreich aktualisiert"})
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren der Abzüge für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 # Excel Export Endpunkt
 @app.route('/export/excel/<int:year>', methods=['GET'])
@@ -699,7 +699,7 @@ def export_excel(current_user, year, month=None):
         )
     except Exception as e:
         logger.error(f"Fehler beim Excel-Export für Jahr {year}, Monat {month}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 # Asiento Nomina Export Endpunkt
 @app.route('/export/asiento_nomina/<int:year>/<int:month>', methods=['GET'])
@@ -729,7 +729,7 @@ def export_asiento_nomina(current_user, year, month):
         )
     except Exception as e:
         logger.error(f"Fehler beim Asiento Nomina Export für Jahr {year}, Monat {month}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 # IRPF Export Endpunkt
@@ -764,7 +764,7 @@ def export_irpf(current_user, year, month=None):
         )
     except Exception as e:
         logger.error(f"Fehler beim IRPF Export für Jahr {year}, Monat {month}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 
@@ -777,7 +777,7 @@ def list_carry_over(current_user, employee_id, year, month):
         return jsonify({"items": items})
     except Exception as e:
         logger.error(f"Fehler beim Abrufen Carry Over für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 @app.route('/carry-over', methods=['POST'])
@@ -836,7 +836,7 @@ def create_carry_over(current_user):
         return jsonify({"success": True})
     except Exception as e:
         logger.error(f"Fehler beim Speichern Carry Over: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 @app.route('/carry-over/<int:carry_over_id>', methods=['DELETE'])
@@ -849,7 +849,7 @@ def delete_carry_over(current_user, carry_over_id):
         return jsonify({"success": True})
     except Exception as e:
         logger.error(f"Fehler beim Löschen Carry Over {carry_over_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 
@@ -899,7 +899,7 @@ def import_horas_dietas(current_user):
 
     except Exception as e:
         logger.error(f"Fehler beim Import Horas+Dietas: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 @app.route('/imports/gasolina', methods=['POST'])
@@ -948,7 +948,7 @@ def import_gasolina(current_user):
 
     except Exception as e:
         logger.error(f"Fehler beim Import Gasolina: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 @app.route('/imports/cotizacion-especie', methods=['POST'])
@@ -996,7 +996,7 @@ def import_cotizacion_especie(current_user):
 
     except Exception as e:
         logger.error(f"Fehler beim Import Cotizacion Especie: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 # Monatliche Einkünfte Endpunkte
 @app.route('/employees/<int:employee_id>/ingresos/<int:year>/<int:month>', methods=['PUT'])
@@ -1025,7 +1025,7 @@ def update_ingresos_mensuales(current_user, employee_id, year, month):
         return jsonify({"message": "Monatliche Bruttoeinkünfte erfolgreich aktualisiert"})
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren der monatlichen Bruttoeinkünfte für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 # Monatliche Abzüge Endpunkte
 @app.route('/employees/<int:employee_id>/deducciones/<int:year>/<int:month>', methods=['PUT'])
@@ -1064,7 +1064,7 @@ def update_deducciones_mensuales(current_user, employee_id, year, month):
         })
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren der monatlichen Abzüge für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 
@@ -1083,7 +1083,7 @@ def get_registro_procesamiento(current_user, employee_id):
 
     except Exception as e:
         logger.error(f"Fehler beim Abrufen registro_procesamiento für Mitarbeiter {employee_id}: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 @app.route('/registro_procesamiento', methods=['GET'])
 @app.route('/bearbeitungslog', methods=['GET'])
@@ -1106,7 +1106,7 @@ def get_global_registro_procesamiento(current_user):
 
     except Exception as e:
         logger.error(f"Fehler beim Abrufen global registro_procesamiento: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 # OPTIONS-Handler für CORS-Preflight
 @app.route('/registro_procesamiento', methods=['OPTIONS'])
@@ -1138,7 +1138,7 @@ def get_payout_month(current_user):
         return jsonify({"payout_month": payout_month})
     except Exception as e:
         logger.error(f"Fehler beim Lesen von payout_month: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 
@@ -1161,7 +1161,7 @@ def set_payout_month(current_user):
 
     except Exception as e:
         logger.error(f"Fehler beim Setzen von payout_month: {e}")
-        return jsonify({"error": "Interner Serverfehler"}), 500
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 # Atrasos Neuberechnung Endpunkt
 @app.route('/settings/recalculate-atrasos', methods=['POST'])

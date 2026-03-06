@@ -47,10 +47,10 @@ export default function SalaryCopyManager() {
       const data = await response.json()
       if (data.success) {
         setMissingYears(data.missing_years)
-        // Extrahiere verfügbare Jahre für das Dropdown (nur Jahre mit Vorjahresdaten)
+        // Extraer años disponibles para el dropdown (solo años con datos del año anterior)
         const years = data.missing_years.map((y: MissingYear) => y.year)
         setAvailableYears(years)
-        // Setze das erste verfügbare Jahr als Standard, falls das aktuelle nicht verfügbar ist
+        // Establecer el primer año disponible como estándar, si el actual no está disponible
         if (years.length > 0 && !years.includes(newYear)) {
           setNewYear(years[0])
         }

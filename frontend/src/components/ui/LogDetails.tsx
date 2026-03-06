@@ -38,7 +38,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
   // Helper to format value based on key and type
   const formatValue = (value: any, key?: string) => {
     if (value === null || value === undefined) return '-'
-    if (typeof value === 'boolean') return value ? 'Ja' : 'Nein'
+    if (typeof value === 'boolean') return value ? 'Sí' : 'No'
     if (typeof value === 'number') {
       // Check if this is a year field (anio, año, year) or a year-like number (1000-2999)
       const keyLower = (key || '').toLowerCase()
@@ -75,7 +75,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
             <div className="flex items-center gap-2">
               {item.concept && getConceptIcon(item.concept)}
               <span className="text-sm font-medium text-gray-700">
-                {item.concept ? formatConcept(item.concept) : 'Unbekannt'}
+                {item.concept ? formatConcept(item.concept) : 'Desconocido'}
               </span>
             </div>
             {item.amount !== undefined && (
@@ -97,7 +97,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
       <div className="mb-3">
         <div className="flex items-center gap-2 mb-2">
           <AlertCircle className="w-4 h-4 text-orange-500" />
-          <span className="text-sm font-medium text-gray-700">Aufgeschobene Konzepte:</span>
+          <span className="text-sm font-medium text-gray-700">Conceptos Pospuestos:</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {deferConcepts.map((concept, index) => (
@@ -130,7 +130,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {changeObj.old !== undefined && (
                   <div className="bg-red-50 p-2 rounded">
-                    <div className="text-red-600 font-medium mb-1">Vorher:</div>
+                    <div className="text-red-600 font-medium mb-1">Antes:</div>
                     <div className="text-red-800">
                       {formatValue(changeObj.old)}
                     </div>
@@ -138,7 +138,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
                 )}
                 {changeObj.new !== undefined && (
                   <div className="bg-green-50 p-2 rounded">
-                    <div className="text-green-600 font-medium mb-1">Nachher:</div>
+                    <div className="text-green-600 font-medium mb-1">Después:</div>
                     <div className="text-green-800">
                       {formatValue(changeObj.new)}
                     </div>
@@ -212,7 +212,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
             className="mt-2 flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
           >
             {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-            {expanded ? 'Verbergen' : 'Zeigen'} Rohdaten
+            {expanded ? 'Ocultar' : 'Mostrar'} Datos en Bruto
           </button>
           {expanded && (
             <div className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
@@ -223,7 +223,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
           )}
         </div>
       ) : (
-        <span className="text-gray-500">Keine Details verfügbar</span>
+        <span className="text-gray-500">No hay detalles disponibles</span>
       )}
     </div>
   )

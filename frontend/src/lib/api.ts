@@ -1,7 +1,5 @@
 /**
-
- * API Client für die Kommunikation mit dem FastAPI Backend
-
+ * Cliente API para la comunicación con el Backend FastAPI
  */
 
 
@@ -112,7 +110,7 @@ class ApiClient {
 
 
 
-  // Authentifizierung
+  // Autenticación
 
   async login(username: string, password: string) {
 
@@ -176,7 +174,7 @@ class ApiClient {
 
 
 
-  // Mitarbeiter
+  // Empleados
 
   async getEmployees() {
 
@@ -242,7 +240,7 @@ class ApiClient {
 
 
 
-  // Gehälter
+  // Salarios
 
   async addSalary(employeeId: number, salary: any) {
 
@@ -284,7 +282,7 @@ class ApiClient {
 
 
 
-  // Einkünfte
+  // Ingresos
 
   async updateIngresos(employeeId: number, year: number, ingresos: any) {
 
@@ -300,7 +298,7 @@ class ApiClient {
 
 
 
-  // Monatliche Einkünfte
+  // Ingresos Mensuales
 
   async updateIngresosMensuales(employeeId: number, year: number, month: number, ingresos: any) {
 
@@ -316,7 +314,7 @@ class ApiClient {
 
 
 
-  // Abzüge
+  // Deducciones
 
   async updateDeducciones(employeeId: number, year: number, deducciones: any) {
 
@@ -332,7 +330,7 @@ class ApiClient {
 
 
 
-  // Monatliche Abzüge
+  // Deducciones Mensuales
 
   async updateDeduccionesMensuales(employeeId: number, year: number, month: number, deducciones: any) {
 

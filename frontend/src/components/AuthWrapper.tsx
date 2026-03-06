@@ -129,7 +129,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
             ? `NOMINA_TOTAL_EXTRA_${currentYear}_${currentMonth}.xlsx`
             : `NOMINA_TOTAL_${currentYear}_${currentMonth}.xlsx`
         } else {
-          filename = `gehaltsabrechnung_${currentYear}.xlsx`
+          filename = `nomina_${currentYear}.xlsx`
         }
       }
       
