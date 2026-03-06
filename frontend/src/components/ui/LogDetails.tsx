@@ -17,7 +17,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
   const [expanded, setExpanded] = useState(false)
 
   if (!details || typeof details !== 'object') {
-    return <span className="text-gray-500">-</span>
+    return <span className="text-muted-foreground">-</span>
   }
 
   // Helper to get icon for concept
@@ -32,7 +32,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
     if (conceptLower.includes('prima') || conceptLower.includes('bonus')) {
       return <CheckCircle className="w-4 h-4 text-purple-500" />
     }
-    return <FileText className="w-4 h-4 text-gray-500" />
+    return <FileText className="w-4 h-4 text-muted-foreground" />
   }
 
   // Helper to format value based on key and type
@@ -44,11 +44,11 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
       const keyLower = (key || '').toLowerCase()
       const isYearField = keyLower.includes('anio') || keyLower.includes('año') || keyLower.includes('year')
       const isYearNumber = value >= 1000 && value <= 2999 && Number.isInteger(value)
-      
+
       if (isYearField || isYearNumber) {
         return value.toString() // Display years as plain numbers
       }
-      
+
       // For other numbers, use German locale formatting
       return value.toLocaleString('de-DE')
     }
@@ -71,10 +71,10 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
     return (
       <div className="space-y-2">
         {items.map((item, index) => (
-          <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+          <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md border border-border">
             <div className="flex items-center gap-2">
               {item.concept && getConceptIcon(item.concept)}
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-foreground">
                 {item.concept ? formatConcept(item.concept) : 'Desconocido'}
               </span>
             </div>
@@ -96,12 +96,12 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
     return (
       <div className="mb-3">
         <div className="flex items-center gap-2 mb-2">
-          <AlertCircle className="w-4 h-4 text-orange-500" />
-          <span className="text-sm font-medium text-gray-700">Conceptos Pospuestos:</span>
+          <AlertCircle className="w-4 h-4 text-orange-400" />
+          <span className="text-sm font-medium text-foreground">Conceptos Pospuestos:</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {deferConcepts.map((concept, index) => (
-            <span key={index} className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+            <span key={index} className="px-2 py-1 bg-orange-900/20 text-orange-400 text-xs rounded-full border border-orange-800/30">
               {formatConcept(concept)}
             </span>
           ))}
@@ -112,7 +112,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
 
   // Render change details (old/new values)
   const renderChangeDetails = (details: any) => {
-    const changes = Object.entries(details).filter(([_, value]) => 
+    const changes = Object.entries(details).filter(([_, value]) =>
       typeof value === 'object' && value !== null && ('old' in value || 'new' in value)
     )
 
@@ -123,23 +123,23 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
         {changes.map(([field, change]) => {
           const changeObj = change as { old?: any; new?: any }
           return (
-            <div key={field} className="border-l-4 border-blue-400 pl-3">
-              <div className="text-sm font-medium text-gray-700 mb-1">
+            <div key={field} className="border-l-4 border-primary pl-3">
+              <div className="text-sm font-medium text-foreground mb-1">
                 {formatConcept(field)}
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {changeObj.old !== undefined && (
-                  <div className="bg-red-50 p-2 rounded">
-                    <div className="text-red-600 font-medium mb-1">Antes:</div>
-                    <div className="text-red-800">
+                  <div className="bg-red-900/20 p-2 rounded border border-red-800/30">
+                    <div className="text-red-400 font-medium mb-1">Antes:</div>
+                    <div className="text-red-300">
                       {formatValue(changeObj.old)}
                     </div>
                   </div>
                 )}
                 {changeObj.new !== undefined && (
-                  <div className="bg-green-50 p-2 rounded">
-                    <div className="text-green-600 font-medium mb-1">Después:</div>
-                    <div className="text-green-800">
+                  <div className="bg-green-900/20 p-2 rounded border border-green-800/30">
+                    <div className="text-green-400 font-medium mb-1">Después:</div>
+                    <div className="text-green-300">
                       {formatValue(changeObj.new)}
                     </div>
                   </div>
@@ -154,7 +154,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
 
   // Render simple key-value pairs
   const renderKeyValuePairs = (obj: any) => {
-    const entries = Object.entries(obj).filter(([key, value]) => 
+    const entries = Object.entries(obj).filter(([key, value]) =>
       !Array.isArray(value) && typeof value !== 'object'
     )
 
@@ -164,8 +164,8 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
       <div className="space-y-1">
         {entries.map(([key, value]) => (
           <div key={key} className="flex justify-between text-sm">
-            <span className="text-gray-600">{formatConcept(key)}:</span>
-            <span className="font-medium text-gray-900">
+            <span className="text-muted-foreground">{formatConcept(key)}:</span>
+            <span className="font-medium text-foreground">
               {formatValue(value, key)}
             </span>
           </div>
@@ -187,7 +187,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
     }
 
     // Check for change details (old/new structure)
-    if (Object.values(details).some(value => 
+    if (Object.values(details).some(value =>
       typeof value === 'object' && value !== null && ('old' in value || 'new' in value)
     )) {
       return renderChangeDetails(details)
@@ -203,19 +203,19 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
     <div className={`max-w-lg ${className}`}>
       {content ? (
         <div>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-muted-foreground">
             {content}
           </div>
           {/* Always show raw JSON option for debugging */}
           <button
             onClick={() => setExpanded(!expanded)}
-            className="mt-2 flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+            className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             {expanded ? 'Ocultar' : 'Mostrar'} Datos en Bruto
           </button>
           {expanded && (
-            <div className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
+            <div className="mt-2 p-2 bg-muted rounded text-xs overflow-x-auto border border-border">
               <pre className="whitespace-pre-wrap">
                 {JSON.stringify(details, null, 2)}
               </pre>
@@ -223,7 +223,7 @@ export default function LogDetails({ details, className = '' }: LogDetailsProps)
           )}
         </div>
       ) : (
-        <span className="text-gray-500">No hay detalles disponibles</span>
+        <span className="text-muted-foreground">No hay detalles disponibles</span>
       )}
     </div>
   )

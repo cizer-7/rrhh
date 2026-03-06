@@ -37,12 +37,12 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
     try {
       const token = localStorage.getItem('token')
       let url = `https://salary-management.azurewebsites.net/employees/${employee.id_empleado}/bearbeitungslog`
-      
+
       const params = new URLSearchParams()
       if (filterYear) params.append('anio', filterYear)
       if (filterMonth) params.append('mes', filterMonth)
       params.append('limit', '200')
-      
+
       if (params.toString()) {
         url += `?${params.toString()}`
       }
@@ -71,7 +71,7 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
 
   const filteredHistory = history.filter(item => {
     if (!searchTerm) return true
-    
+
     const searchLower = searchTerm.toLowerCase()
     return (
       item.usuario_login?.toLowerCase().includes(searchLower) ||
@@ -117,17 +117,17 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
 
   const renderDetails = (details: any) => {
     if (!details) return null
-    
+
     try {
       const detailsObj = typeof details === 'string' ? JSON.parse(details) : details
-      
+
       return (
-        <div className="mt-2 text-xs text-gray-600">
-          <div className="bg-gray-50 rounded p-2">
+        <div className="mt-2 text-xs text-muted-foreground">
+          <div className="bg-muted/50 rounded p-2">
             {Object.entries(detailsObj).map(([key, value]) => (
               <div key={key} className="mb-1">
-                <span className="font-medium">{key}:</span>{' '}
-                <span>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
+                <span className="font-medium text-foreground">{key}:</span>{' '}
+                <span className="text-muted-foreground">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
               </div>
             ))}
           </div>
@@ -135,7 +135,7 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
       )
     } catch (e) {
       return (
-        <div className="mt-2 text-xs text-gray-600 bg-gray-50 rounded p-2">
+        <div className="mt-2 text-xs text-muted-foreground bg-muted/50 rounded p-2">
           {typeof details === 'string' ? details : JSON.stringify(details)}
         </div>
       )
@@ -145,13 +145,13 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
   return (
     <div className="space-y-4">
       {/* Filter Controls */}
-      <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-lg">
+      <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Año</label>
           <select
             value={filterYear}
             onChange={(e) => setFilterYear(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md"
+            className="px-3 py-2 border border-border bg-background text-foreground rounded-md"
           >
             <option value="">Todos los años</option>
             {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => (
@@ -159,13 +159,13 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
             ))}
           </select>
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Mes</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Mes</label>
           <select
             value={filterMonth}
             onChange={(e) => setFilterMonth(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md"
+            className="px-3 py-2 border border-border bg-background text-foreground rounded-md focus:ring-primary"
           >
             <option value="">Todos los meses</option>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(month => (
@@ -175,15 +175,15 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
         </div>
 
         <div className="flex-1 min-w-64">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Buscar</label>
           <div className="relative">
-            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <Search className="w-5 h-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
             <input
               type="text"
               placeholder="Buscar en historial..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         </div>
@@ -197,29 +197,29 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
       {/* History List */}
       {loading ? (
         <div className="flex items-center justify-center h-32">
-          <div className="text-lg text-gray-600">Cargando historial de procesamiento...</div>
+          <div className="text-lg text-muted-foreground">Cargando historial de procesamiento...</div>
         </div>
       ) : filteredHistory.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground/60">
           {searchTerm || filterYear || filterMonth ? 'No se encontraron entradas' : 'No hay historial de procesamiento disponible'}
         </div>
       ) : (
         <div className="space-y-3">
           {filteredHistory.map((item) => (
-            <div key={item.id_log} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+            <div key={item.id_log} className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors bg-card">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <User className="w-4 h-4 text-gray-400" />
-                    <span className="font-medium text-gray-900">
+                    <User className="w-4 h-4 text-muted-foreground/60" />
+                    <span className="font-medium text-foreground">
                       {item.usuario_nombre || item.usuario_login}
                     </span>
-                    <span className="text-gray-400">•</span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-muted-foreground/40">•</span>
+                    <span className="text-sm text-muted-foreground">
                       {formatDate(item.fecha)}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center gap-4 mb-2">
                     <div className="flex items-center gap-1">
                       <FileText className="w-4 h-4 text-blue-500" />
@@ -227,25 +227,24 @@ export default function Bearbeitungshistorie({ employee }: BearbeitungshistorieP
                         {getObjectText(item.objekt)}
                       </span>
                     </div>
-                    
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      item.aktion === 'create' ? 'bg-green-100 text-green-800' :
-                      item.aktion === 'update' ? 'bg-blue-100 text-blue-800' :
-                      item.aktion === 'delete' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${item.aktion === 'create' ? 'bg-green-500/10 text-green-500' :
+                      item.aktion === 'update' ? 'bg-blue-500/10 text-blue-500' :
+                        item.aktion === 'delete' ? 'bg-red-500/10 text-red-500' :
+                          'bg-muted text-muted-foreground'
+                      }`}>
                       {getActionText(item.aktion)}
                     </span>
-                    
+
                     {(item.anio || item.mes) && (
-                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4" />
                         {item.anio && <span>{item.anio}</span>}
                         {item.mes && <span>/{item.mes.toString().padStart(2, '0')}</span>}
                       </div>
                     )}
                   </div>
-                  
+
                   {item.details && renderDetails(item.details)}
                 </div>
               </div>

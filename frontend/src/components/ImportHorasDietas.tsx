@@ -203,8 +203,8 @@ export default function ImportHorasDietas() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Horas + Dietas</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-medium text-foreground mb-2">Horas + Dietas</h3>
+        <p className="text-sm text-muted-foreground">
           Importa valores de un archivo Excel a bonificaciones y deducciones para el mes seleccionado.
         </p>
       </div>
@@ -227,7 +227,7 @@ export default function ImportHorasDietas() {
                 {result.updated_count ?? 0}, omitido: {result.skipped_count ?? 0}, errores: {result.error_count ?? 0}
               </div>
               {Array.isArray(result.errors) && result.errors.length > 0 && (
-                <div className="mt-2 max-h-40 overflow-y-auto text-xs bg-gray-50 border border-gray-200 rounded p-2">
+                <div className="mt-2 max-h-40 overflow-y-auto text-xs bg-muted/50 border border-border rounded p-2">
                   {result.errors.slice(0, 50).map((err, idx) => (
                     <div key={idx}>{err}</div>
                   ))}
@@ -240,11 +240,11 @@ export default function ImportHorasDietas() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Año</label>
           <select
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value, 10))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-primary"
             disabled={loading}
           >
             {years.map((y) => (
@@ -256,11 +256,11 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Mes</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Mes</label>
           <select
             value={month}
             onChange={(e) => setMonth(parseInt(e.target.value, 10))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-primary"
             disabled={loading}
           >
             {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
@@ -272,15 +272,15 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Archivo</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Archivo</label>
           <input
             type="file"
             accept=".xlsx"
             onChange={(e) => onSelectFile(e.target.files?.[0] || null)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
             disabled={loading}
           />
-          {file && <div className="text-xs text-gray-600 mt-1">{file.name}</div>}
+          {file && <div className="text-xs text-muted-foreground mt-1">{file.name}</div>}
         </div>
       </div>
 
@@ -290,22 +290,22 @@ export default function ImportHorasDietas() {
         </Button>
       </div>
 
-      <div className="border-t border-gray-200 pt-6" />
+      <div className="border-t border-border pt-6" />
 
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Gasolina</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-medium text-foreground mb-2">Gasolina</h3>
+        <p className="text-sm text-muted-foreground">
           Importa valores de un archivo Excel a deducciones (Gasolina) para el mes seleccionado.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Año</label>
           <select
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value, 10))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-primary"
             disabled={loading}
           >
             {years.map((y) => (
@@ -317,11 +317,11 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Mes</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Mes</label>
           <select
             value={month}
             onChange={(e) => setMonth(parseInt(e.target.value, 10))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-primary"
             disabled={loading}
           >
             {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
@@ -333,15 +333,15 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Archivo</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Archivo</label>
           <input
             type="file"
             accept=".xlsx"
             onChange={(e) => onSelectGasolinaFile(e.target.files?.[0] || null)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
             disabled={loading}
           />
-          {gasolinaFile && <div className="text-xs text-gray-600 mt-1">{gasolinaFile.name}</div>}
+          {gasolinaFile && <div className="text-xs text-muted-foreground mt-1">{gasolinaFile.name}</div>}
         </div>
       </div>
 
@@ -356,7 +356,7 @@ export default function ImportHorasDietas() {
                 {gasolinaResult.updated_count ?? 0}, omitido: {gasolinaResult.skipped_count ?? 0}, errores: {gasolinaResult.error_count ?? 0}
               </div>
               {Array.isArray(gasolinaResult.errors) && gasolinaResult.errors.length > 0 && (
-                <div className="mt-2 max-h-40 overflow-y-auto text-xs bg-gray-50 border border-gray-200 rounded p-2">
+                <div className="mt-2 max-h-40 overflow-y-auto text-xs bg-muted/50 border border-border rounded p-2">
                   {gasolinaResult.errors.slice(0, 50).map((err, idx) => (
                     <div key={idx}>{err}</div>
                   ))}
@@ -380,22 +380,22 @@ export default function ImportHorasDietas() {
         </Button>
       </div>
 
-      <div className="border-t border-gray-200 pt-6" />
+      <div className="border-t border-border pt-6" />
 
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Cotización Especie</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-medium text-foreground mb-2">Cotización Especie</h3>
+        <p className="text-sm text-muted-foreground">
           Importa valores de un archivo Excel a deducciones (Cotización Especie) para el mes seleccionado.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Año</label>
           <select
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value, 10))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-primary"
             disabled={loading}
           >
             {years.map((y) => (
@@ -407,11 +407,11 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Mes</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Mes</label>
           <select
             value={month}
             onChange={(e) => setMonth(parseInt(e.target.value, 10))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-primary"
             disabled={loading}
           >
             {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
@@ -423,15 +423,15 @@ export default function ImportHorasDietas() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Archivo</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1">Archivo</label>
           <input
             type="file"
             accept=".xlsx"
             onChange={(e) => onSelectCotizacionEspecieFile(e.target.files?.[0] || null)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
             disabled={loading}
           />
-          {cotizacionEspecieFile && <div className="text-xs text-gray-600 mt-1">{cotizacionEspecieFile.name}</div>}
+          {cotizacionEspecieFile && <div className="text-xs text-muted-foreground mt-1">{cotizacionEspecieFile.name}</div>}
         </div>
       </div>
 
@@ -449,7 +449,7 @@ export default function ImportHorasDietas() {
                 {cotizacionEspecieResult.error_count ?? 0}
               </div>
               {Array.isArray(cotizacionEspecieResult.errors) && cotizacionEspecieResult.errors.length > 0 && (
-                <div className="mt-2 max-h-40 overflow-y-auto text-xs bg-gray-50 border border-gray-200 rounded p-2">
+                <div className="mt-2 max-h-40 overflow-y-auto text-xs bg-muted/50 border border-border rounded p-2">
                   {cotizacionEspecieResult.errors.slice(0, 50).map((err, idx) => (
                     <div key={idx}>{err}</div>
                   ))}
@@ -476,11 +476,11 @@ export default function ImportHorasDietas() {
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => (loading ? null : setConfirmOpen(false))} />
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Confirmar Importación</h4>
-            <p className="text-sm text-gray-700 mb-4">
-              ¿Desea importar el archivo <span className="font-medium">{file?.name}</span> para{' '}
-              <span className="font-medium">
+          <div className="relative bg-card rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 border border-border">
+            <h4 className="text-lg font-semibold text-foreground mb-2">Confirmar Importación</h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              ¿Desea importar el archivo <span className="font-medium text-foreground">{file?.name}</span> para{' '}
+              <span className="font-medium text-foreground">
                 {month}.{year}
               </span>{' '}
               ?
@@ -511,11 +511,11 @@ export default function ImportHorasDietas() {
       {confirmGasolinaOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => (loading ? null : setConfirmGasolinaOpen(false))} />
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Confirmar Importación Gasolina</h4>
-            <p className="text-sm text-gray-700 mb-4">
-              ¿Desea importar el archivo <span className="font-medium">{gasolinaFile?.name}</span> para{' '}
-              <span className="font-medium">
+          <div className="relative bg-card rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 border border-border">
+            <h4 className="text-lg font-semibold text-foreground mb-2">Confirmar Importación Gasolina</h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              ¿Desea importar el archivo <span className="font-medium text-foreground">{gasolinaFile?.name}</span> para{' '}
+              <span className="font-medium text-foreground">
                 {month}.{year}
               </span>{' '}
               ?
@@ -549,9 +549,9 @@ export default function ImportHorasDietas() {
             className="absolute inset-0 bg-black/40"
             onClick={() => (loading ? null : setConfirmCotizacionEspecieOpen(false))}
           />
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Confirmar Importación Cotización Especie</h4>
-            <p className="text-sm text-gray-700 mb-4">
+          <div className="relative bg-card rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 border border-border">
+            <h4 className="text-lg font-semibold text-foreground mb-2">Confirmar Importación Cotización Especie</h4>
+            <p className="text-sm text-muted-foreground mb-4">
               ¿Desea importar el archivo <span className="font-medium">{cotizacionEspecieFile?.name}</span> para{' '}
               <span className="font-medium">
                 {month}.{year}

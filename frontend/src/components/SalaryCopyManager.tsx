@@ -142,10 +142,10 @@ export default function SalaryCopyManager() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="bg-card rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-center h-32">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-          <span className="ml-2 text-gray-600">Cargando información salarial...</span>
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-muted-foreground">Cargando información salarial...</span>
         </div>
       </div>
     )
@@ -156,8 +156,8 @@ export default function SalaryCopyManager() {
 
   if (relevantMissingYears.length === 0 && !copyResult) {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex items-center gap-2 text-green-600">
+      <div className="bg-card rounded-lg shadow-lg p-6">
+        <div className="flex items-center gap-2 text-green-500">
           <CheckCircle className="w-5 h-5" />
           <span className="font-medium">Todos los salarios están actualizados</span>
         </div>
@@ -166,23 +166,23 @@ export default function SalaryCopyManager() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-lg font-bold text-gray-800 mb-6">Gestión Salarial</h3>
-      
+    <div className="bg-card rounded-lg shadow-lg p-6">
+      <h3 className="text-lg font-bold text-foreground mb-6">Gestión Salarial</h3>
+
       {/* Crear Nuevo Año */}
-      <div className="border border-blue-200 bg-blue-50 rounded-lg p-4 mb-6">
+      <div className="border border-primary/20 bg-primary/10 rounded-lg p-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Copy className="w-5 h-5 text-blue-500" />
+            <Copy className="w-5 h-5 text-primary" />
             <div>
-              <span className="font-medium text-gray-800">Crear Nuevo Año</span>
-              <p className="text-sm text-gray-600 mt-1">Copia todos los salarios del año anterior al año seleccionado.
+              <span className="font-medium text-foreground">Crear Nuevo Año</span>
+              <p className="text-sm text-muted-foreground mt-1">Copia todos los salarios del año anterior al año seleccionado.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <select 
-              value={newYear} 
+            <select
+              value={newYear}
               onChange={(e) => setNewYear(parseInt(e.target.value))}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={copying || availableYears.length === 0}
@@ -205,8 +205,8 @@ export default function SalaryCopyManager() {
               ) : (
                 <Copy className="w-4 h-4" />
               )}
-              {copying && selectedYear === newYear 
-                ? 'Copiando...' 
+              {copying && selectedYear === newYear
+                ? 'Copiando...'
                 : availableYears.length === 0
                   ? 'No disponible'
                   : `Crear Año ${newYear}`
@@ -221,13 +221,13 @@ export default function SalaryCopyManager() {
         <div className="space-y-4 mb-6">
           <h4 className="text-md font-medium text-gray-700">Salarios Faltantes:</h4>
           {relevantMissingYears.filter(y => y.missing_count > 0).map((yearInfo) => (
-            <div key={yearInfo.year} className="border border-orange-200 bg-orange-50 rounded-lg p-4">
+            <div key={yearInfo.year} className="border border-orange-500/20 bg-orange-500/10 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <AlertCircle className="w-5 h-5 text-orange-500" />
                   <div>
-                    <span className="font-medium text-gray-800">Año {yearInfo.year}</span>
-                    <span className="text-gray-600 ml-2">
+                    <span className="font-medium text-foreground">Año {yearInfo.year}</span>
+                    <span className="text-muted-foreground ml-2">
                       ({yearInfo.missing_count} empleados sin salario)
                     </span>
                   </div>
@@ -243,16 +243,16 @@ export default function SalaryCopyManager() {
                   ) : (
                     <Copy className="w-4 h-4" />
                   )}
-                  {copying && selectedYear === yearInfo.year 
-                    ? 'Copiando...' 
+                  {copying && selectedYear === yearInfo.year
+                    ? 'Copiando...'
                     : `Copiar salarios de ${yearInfo.year - 1}`
                   }
                 </Button>
               </div>
-              
+
               {yearInfo.missing_count <= 5 && (
                 <div className="mt-3 text-sm text-gray-600">
-                  Empleados afectados: {yearInfo.employees.map(emp => 
+                  Empleados afectados: {yearInfo.employees.map(emp =>
                     `${emp.nombre} ${emp.apellido}`
                   ).join(', ')}
                 </div>
@@ -264,24 +264,22 @@ export default function SalaryCopyManager() {
 
       {/* Resultado de la copia */}
       {copyResult && (
-        <div className={`border rounded-lg p-4 ${
-          copyResult.success 
-            ? 'border-green-200 bg-green-50' 
+        <div className={`border rounded-lg p-4 ${copyResult.success
+            ? 'border-green-200 bg-green-50'
             : 'border-red-200 bg-red-50'
-        }`}>
+          }`}>
           <div className="flex items-center gap-2 mb-2">
             {copyResult.success ? (
               <CheckCircle className="w-5 h-5 text-green-600" />
             ) : (
               <AlertCircle className="w-5 h-5 text-red-600" />
             )}
-            <span className={`font-medium ${
-              copyResult.success ? 'text-green-800' : 'text-red-800'
-            }`}>
+            <span className={`font-medium ${copyResult.success ? 'text-green-800' : 'text-red-800'
+              }`}>
               {copyResult.message}
             </span>
           </div>
-          
+
           {copyResult.success && (
             <div className="text-sm text-gray-700">
               <p>Copiados con éxito: {copyResult.copied_count} empleados</p>
@@ -290,7 +288,7 @@ export default function SalaryCopyManager() {
               )}
             </div>
           )}
-          
+
           {copyResult.errors.length > 0 && (
             <div className="mt-2">
               <p className="text-sm font-medium text-red-700">Errores:</p>
@@ -309,7 +307,7 @@ export default function SalaryCopyManager() {
 
       {/* Estado si todo está bien */}
       {relevantMissingYears.filter(y => y.missing_count > 0).length === 0 && !copyResult && (
-        <div className="flex items-center gap-2 text-green-600">
+        <div className="flex items-center gap-2 text-green-500">
           <CheckCircle className="w-5 h-5" />
           <span className="font-medium">Todos los salarios están actualizados</span>
         </div>

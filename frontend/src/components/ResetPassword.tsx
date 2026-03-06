@@ -12,7 +12,7 @@ import apiClient from '@/lib/api'
 export default function ResetPassword() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token') || ''
-  
+
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -34,7 +34,7 @@ export default function ResetPassword() {
         setTokenValid(true)
         setError('')
       } catch (err: any) {
-        setError(err.message ||'Token inválido o expirado')
+        setError(err.message || 'Token inválido o expirado')
         setTokenValid(false)
       } finally {
         setValidatingToken(false)
@@ -66,7 +66,7 @@ export default function ResetPassword() {
       setSuccess(true)
       setError('')
     } catch (err: any) {
-      setError(err.message ||'Error al restablecer contraseña')
+      setError(err.message || 'Error al restablecer contraseña')
     } finally {
       setLoading(false)
     }
@@ -74,12 +74,12 @@ export default function ResetPassword() {
 
   if (validatingToken) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Validando token...</p>
+              <p className="mt-2 text-muted-foreground">Validando token...</p>
             </div>
           </CardContent>
         </Card>
@@ -89,10 +89,10 @@ export default function ResetPassword() {
 
   if (!tokenValid) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-red-600">Enlace Inválido</CardTitle>
+            <CardTitle className="text-2xl font-bold text-destructive">Enlace Inválido</CardTitle>
             <CardDescription>
               Este enlace de restablecimiento de contraseña es inválido o ha expirado.
             </CardDescription>
@@ -119,7 +119,7 @@ export default function ResetPassword() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-green-600">✅ Contraseña Restablecida</CardTitle>
@@ -143,7 +143,7 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">🔐 Establecer Nueva Contraseña</CardTitle>

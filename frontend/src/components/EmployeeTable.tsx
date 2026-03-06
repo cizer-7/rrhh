@@ -50,7 +50,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
   const [activeTab, setActiveTab] = useState<'employees' | 'increase' | 'salary-copy' | 'overview' | 'settings' | 'bulk-ingresos-deducciones' | 'bearbeitungshistorie' | 'import' | 'carry-over'>('employees')
 
-  
+
 
   // Sorting state
   const [sortConfig, setSortConfig] = useState<{
@@ -58,7 +58,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
     direction: 'asc' | 'desc' | null;
   }>({ key: null, direction: null })
 
-  
+
 
   // State for salary increase
 
@@ -108,7 +108,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
   const [payoutMonthLoading, setPayoutMonthLoading] = useState(false)
 
-  
+
 
   // Atrasos recalculation state
 
@@ -468,13 +468,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       })
 
-      
+
 
       const result = await response.json()
 
       setRecalcResult(result)
 
-      
+
 
       if (result.success) {
 
@@ -568,7 +568,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       const token = localStorage.getItem('token')
 
-      
+
 
       // Hole alle Mitarbeiter mit ihren Gehaltsdaten in einem einzigen Aufruf
 
@@ -584,11 +584,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       })
 
-      
+
 
       const employeesData = await response.json()
 
-      
+
 
       // Verarbeite die Daten lokal ohne zusätzliche API-Aufrufe
 
@@ -596,7 +596,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
         const salary = employee.salaries?.find((s: any) => s.anio === parseInt(year))
 
-        
+
 
         return {
 
@@ -614,7 +614,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       })
 
-      
+
 
       setOverviewData(overviewData)
 
@@ -676,7 +676,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
           method: 'PUT',
 
-          headers: { 
+          headers: {
 
             'Content-Type': 'application/json',
 
@@ -696,7 +696,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
           method: 'POST',
 
-          headers: { 
+          headers: {
 
             'Content-Type': 'application/json',
 
@@ -726,7 +726,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
     if (!confirm('¿Realmente desea eliminar este empleado?')) return
 
-    
+
 
     try {
 
@@ -772,7 +772,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
     e.preventDefault()
 
-    
+
 
     if (!increaseYear || (increaseType === 'percentage' && !increasePercentage) || (increaseType === 'absolute' && !absoluteAmount)) {
 
@@ -782,13 +782,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
     }
 
-    
+
 
     setIncreaseLoading(true)
 
     setIncreaseResult(null)
 
-    
+
 
     try {
 
@@ -804,7 +804,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
 
 
-      const headers = { 
+      const headers = {
 
         'Content-Type': 'application/json',
 
@@ -812,7 +812,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       }
 
-      
+
 
       const requestData: any = {
 
@@ -822,7 +822,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       }
 
-      
+
 
       if (increaseType === 'percentage') {
 
@@ -834,11 +834,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       }
 
-      
+
 
       console.log('Sending global salary increase request:', requestData)
 
-      
+
 
       const response = await fetch('https://salary-management.azurewebsites.net/salaries/percentage-increase', {
 
@@ -850,11 +850,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
       })
 
-      
+
 
       const result = await response.json()
 
-      
+
 
       if (response.ok) {
 
@@ -957,7 +957,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
   // Sorting handler for overview
   const handleOverviewSort = (key: 'name' | 'salary') => {
     let direction: 'asc' | 'desc' | null = 'asc'
-    
+
     if (overviewSortConfig.key === key) {
       if (overviewSortConfig.direction === 'asc') {
         direction = 'desc'
@@ -967,7 +967,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
         direction = 'asc'
       }
     }
-    
+
     setOverviewSortConfig({ key, direction })
   }
 
@@ -994,13 +994,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
       if (bValue === null || bValue === undefined) return -1
 
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return overviewSortConfig.direction === 'asc' 
+        return overviewSortConfig.direction === 'asc'
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue)
       }
 
       if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return overviewSortConfig.direction === 'asc' 
+        return overviewSortConfig.direction === 'asc'
           ? aValue - bValue
           : bValue - aValue
       }
@@ -1012,7 +1012,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
   // Sorting handler for employees
   const handleSort = (key: keyof Employee) => {
     let direction: 'asc' | 'desc' | null = 'asc'
-    
+
     if (sortConfig.key === key) {
       if (sortConfig.direction === 'asc') {
         direction = 'desc'
@@ -1022,7 +1022,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
         direction = 'asc'
       }
     }
-    
+
     setSortConfig({ key, direction })
   }
 
@@ -1053,13 +1053,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
       if (bValue === null || bValue === undefined) return -1
 
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortConfig.direction === 'asc' 
+        return sortConfig.direction === 'asc'
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue)
       }
 
       if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortConfig.direction === 'asc' 
+        return sortConfig.direction === 'asc'
           ? aValue - bValue
           : bValue - aValue
       }
@@ -1093,9 +1093,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
     return (
 
       <div className="flex items-center justify-center h-64">
-
-        <div className="text-lg text-gray-600">Cargando empleados...</div>
-
+        <div className="text-lg text-muted-foreground">Cargando empleados...</div>
       </div>
 
     )
@@ -1108,11 +1106,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
     <>
 
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="bg-card rounded-lg shadow-lg p-6">
 
         <div className="flex items-center justify-between mb-6">
 
-          <h2 className="text-2xl font-bold text-gray-800">Gestión de Empleados</h2>
+          <h2 className="text-2xl font-bold text-foreground">Gestión de Empleados</h2>
 
         </div>
 
@@ -1120,7 +1118,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
         {/* Tabs */}
 
-        <div className="border-b border-gray-200 mb-6">
+        <div className="border-b border-border mb-6">
 
           <nav className="flex space-x-8">
 
@@ -1132,15 +1130,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 onClick={() => setActiveTab(tab as any)}
 
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab
 
-                  activeTab === tab
+                  ? 'border-primary text-primary'
 
-                    ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-
-                }`}
+                  }`}
 
               >
 
@@ -1164,7 +1160,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div className="flex items-center justify-between mb-6">
 
-              <h3 className="text-lg font-medium text-gray-900">Lista de Empleados</h3>
+              <h3 className="text-lg font-medium text-foreground">Lista de Empleados</h3>
 
               <Button className="flex items-center gap-2" onClick={handleAddEmployee}>
 
@@ -1180,7 +1176,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div className="flex items-center gap-2 mb-6">
 
-              <Search className="w-5 h-5 text-gray-400" />
+              <Search className="w-5 h-5 text-muted-foreground" />
 
               <input
 
@@ -1194,7 +1190,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 onChange={(e) => setSearchTerm(e.target.value)}
 
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-2 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
 
               />
 
@@ -1208,98 +1204,98 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <thead>
 
-                  <tr className="bg-gray-50 border-b border-gray-200">
+                  <tr className="bg-muted border-b border-border">
 
-                    <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/80"
                       onClick={() => handleSort('id_empleado')}
                     >
                       <div className="flex items-center gap-1">
                         ID
                         {sortConfig.key === 'id_empleado' && (
                           sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
-                          sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                            sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
                         )}
                       </div>
                     </th>
 
-                    <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/80"
                       onClick={() => handleSort('nombre')}
                     >
                       <div className="flex items-center gap-1">
                         Nombre
                         {sortConfig.key === 'nombre' && (
                           sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
-                          sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                            sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
                         )}
                       </div>
                     </th>
 
-                    <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/80"
                       onClick={() => handleSort('ceco')}
                     >
                       <div className="flex items-center gap-1">
                         CECO
                         {sortConfig.key === 'ceco' && (
                           sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
-                          sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                            sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
                         )}
                       </div>
                     </th>
 
-                    <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/80"
                       onClick={() => handleSort('activo')}
                     >
                       <div className="flex items-center gap-1">
                         Status
                         {sortConfig.key === 'activo' && (
                           sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
-                          sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                            sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
                         )}
                       </div>
                     </th>
 
-                    <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/80"
                       onClick={() => handleSort('categoria')}
                     >
                       <div className="flex items-center gap-1">
                         Categoría
                         {sortConfig.key === 'categoria' && (
                           sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
-                          sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                            sortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
                         )}
                       </div>
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Acciones</th>
 
                   </tr>
 
                 </thead>
 
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-card divide-y divide-border">
 
                   {sortedFilteredEmployees.map((employee) => (
 
-                    <tr key={employee.id_empleado} className="hover:bg-gray-50 transition-colors">
+                    <tr key={employee.id_empleado} className="hover:bg-muted/50 transition-colors">
 
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
 
                         {employee.id_empleado}
 
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
 
                         {employee.apellido}, {employee.nombre}
 
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
 
                         {employee.ceco || '-'}
 
@@ -1307,7 +1303,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       <td className="px-6 py-4 whitespace-nowrap">
 
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${employee.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${employee.activo ? 'bg-green-100/10 text-green-500 border border-green-500/20' : 'bg-red-100/10 text-red-500 border border-red-500/20'}`}>
 
                           {employee.activo ? 'Activo' : 'Inactivo'}
 
@@ -1315,7 +1311,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
 
                         {employee.categoria || '-'}
 
@@ -1325,11 +1321,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                         <div className="flex items-center gap-2">
 
-                          <Button 
+                          <Button
 
-                            variant="outline" 
+                            variant="outline"
 
-                            size="sm" 
+                            size="sm"
 
                             className="flex items-center gap-1"
 
@@ -1343,11 +1339,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                           </Button>
 
-                          <Button 
+                          <Button
 
-                            variant="outline" 
+                            variant="outline"
 
-                            size="sm" 
+                            size="sm"
 
                             className="flex items-center gap-1"
 
@@ -1361,11 +1357,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                           </Button>
 
-                          <Button 
+                          <Button
 
-                            variant="destructive" 
+                            variant="destructive"
 
-                            size="sm" 
+                            size="sm"
 
                             className="flex items-center gap-1"
 
@@ -1397,7 +1393,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             {sortedFilteredEmployees.length === 0 && (
 
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
 
                 {searchTerm ? 'No se encontraron empleados' : 'No hay empleados disponibles'}
 
@@ -1421,9 +1417,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div>
 
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Bonificaciones & Deducciones (Valores Anuales)</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">Bonificaciones & Deducciones (Valores Anuales)</h3>
 
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
 
                 Establece los valores para todos los empleados activos (opcionalmente filtrado por categoría) para todos los meses del año seleccionado.
 
@@ -1439,7 +1435,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div>
 
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Año</label>
 
                   <select
 
@@ -1447,7 +1443,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     onChange={(e) => setBulkYear(e.target.value)}
 
-                    className="px-3 py-2 border border-gray-300 rounded-md"
+                    className="px-3 py-2 border border-border bg-card text-foreground rounded-md"
 
                     disabled={bulkLoading}
 
@@ -1467,7 +1463,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div>
 
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Válido para</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Válido para</label>
 
                   <select
 
@@ -1497,9 +1493,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <div className="border border-gray-200 rounded-lg p-4">
+                <div className="border border-border rounded-lg p-4">
 
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Bonificaciones</h4>
+                  <h4 className="text-md font-medium text-foreground mb-4">Bonificaciones</h4>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -1507,7 +1503,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       <div key={key}>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                        <label className="block text-sm font-medium text-foreground mb-1 capitalize">
 
                           <input
 
@@ -1540,7 +1536,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                             setBulkIngresos({ ...bulkIngresos, [key]: isNaN(parsed) ? 0 : parsed })
                           }}
 
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="w-full px-3 py-2 border border-border bg-card text-foreground rounded-md"
 
                           disabled={bulkLoading}
 
@@ -1556,9 +1552,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
 
 
-                <div className="border border-gray-200 rounded-lg p-4">
+                <div className="border border-border rounded-lg p-4">
 
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Deducciones</h4>
+                  <h4 className="text-md font-medium text-foreground mb-4">Deducciones</h4>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -1566,7 +1562,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       <div key={key}>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                        <label className="block text-sm font-medium text-foreground mb-1 capitalize">
 
                           <input
 
@@ -1599,7 +1595,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
                             setBulkDeducciones({ ...bulkDeducciones, [key]: isNaN(parsed) ? 0 : parsed })
                           }}
 
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="w-full px-3 py-2 border border-border bg-card text-foreground rounded-md"
 
                           disabled={bulkLoading}
 
@@ -1631,15 +1627,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             {bulkResult && (
 
-              <div className={`border rounded-lg p-4 ${
+              <div className={`border rounded-lg p-4 ${bulkResult.success
 
-                bulkResult.success
+                ? 'border-green-200 bg-green-50'
 
-                  ? 'border-green-200 bg-green-50'
+                : 'border-red-200 bg-red-50'
 
-                  : 'border-red-200 bg-red-50'
-
-              }`}>
+                }`}>
 
                 <div className="flex items-center gap-2 mb-2">
 
@@ -1653,11 +1647,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   )}
 
-                  <span className={`font-medium ${
+                  <span className={`font-medium ${bulkResult.success ? 'text-green-500' : 'text-destructive'
 
-                    bulkResult.success ? 'text-green-800' : 'text-red-800'
-
-                  }`}>
+                    }`}>
 
                     {bulkResult.message}
 
@@ -1669,7 +1661,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 {typeof bulkResult.updated_count === 'number' && typeof bulkResult.total_count === 'number' && (
 
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-foreground">
 
                     Actualizado exitosamente: {bulkResult.updated_count} de {bulkResult.total_count} empleados
 
@@ -1683,9 +1675,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   <div className="mt-2">
 
-                    <p className="text-sm font-medium text-red-700">Fehler:</p>
+                    <p className="text-sm font-medium text-destructive">Fehler:</p>
 
-                    <ul className="text-sm text-red-600 list-disc list-inside">
+                    <ul className="text-sm text-destructive list-disc list-inside">
 
                       {bulkResult.errors.slice(0, 3).map((error: string, index: number) => (
 
@@ -1725,9 +1717,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div>
 
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Configuración</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">Configuración</h3>
 
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
 
                 Configuraciones globales que rara vez se modifican.
 
@@ -1737,13 +1729,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
 
 
-            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-muted">
 
               <div>
 
-                <div className="text-sm font-medium text-gray-900">Mes de Pago (global)</div>
+                <div className="text-sm font-medium text-foreground">Mes de Pago (global)</div>
 
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-muted-foreground">
 
                   Controla hasta qué mes se aplica el salario anual anterior y en qué mes se pagan los atrasos.
 
@@ -1759,7 +1751,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   onChange={(e) => setPayoutMonth(parseInt(e.target.value))}
 
-                  className="px-3 py-2 border border-gray-300 rounded-md"
+                  className="px-3 py-2 border border-border bg-card text-foreground rounded-md"
 
                   disabled={payoutMonthLoading}
 
@@ -1785,13 +1777,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
 
 
-            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-blue-50">
+            <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-primary/10">
 
               <div>
 
-                <div className="text-sm font-medium text-gray-900">Recálculo de Atrasos</div>
+                <div className="text-sm font-medium text-foreground">Recálculo de Atrasos</div>
 
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-muted-foreground">
 
                   Recalcula todos los atrasos para el año seleccionado basado en el mes de pago actual.
 
@@ -1807,7 +1799,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   onChange={(e) => setRecalcYear(e.target.value)}
 
-                  className="px-3 py-2 border border-gray-300 rounded-md"
+                  className="px-3 py-2 border border-border bg-card text-foreground rounded-md"
 
                   disabled={recalcLoading}
 
@@ -1821,9 +1813,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 </select>
 
-                <Button 
+                <Button
 
-                  onClick={handleRecalculateAtrasos} 
+                  onClick={handleRecalculateAtrasos}
 
                   disabled={recalcLoading}
 
@@ -1867,15 +1859,13 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             {recalcResult && (
 
-              <div className={`border rounded-lg p-4 ${
+              <div className={`border rounded-lg p-4 ${recalcResult.success
 
-                recalcResult.success 
+                ? 'border-green-200 bg-green-50'
 
-                  ? 'border-green-200 bg-green-50' 
+                : 'border-red-200 bg-red-50'
 
-                  : 'border-red-200 bg-red-50'
-
-              }`}>
+                }`}>
 
                 <div className="flex items-center gap-2 mb-2">
 
@@ -1889,11 +1879,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   )}
 
-                  <span className={`font-medium ${
+                  <span className={`font-medium ${recalcResult.success ? 'text-green-500' : 'text-destructive'
 
-                    recalcResult.success ? 'text-green-800' : 'text-red-800'
-
-                  }`}>
+                    }`}>
 
                     {recalcResult.message}
 
@@ -1901,11 +1889,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 </div>
 
-                
+
 
                 {recalcResult.success && (
 
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-foreground">
 
                     <p>Actualizado exitosamente: {recalcResult.updated_count} de {recalcResult.total_count} empleados</p>
 
@@ -1913,15 +1901,15 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 )}
 
-                
+
 
                 {recalcResult.errors && recalcResult.errors.length > 0 && (
 
                   <div className="mt-2">
 
-                    <p className="text-sm font-medium text-red-700">Errores:</p>
+                    <p className="text-sm font-medium text-destructive">Errores:</p>
 
-                    <ul className="text-sm text-red-600 list-disc list-inside">
+                    <ul className="text-sm text-destructive list-disc list-inside">
 
                       {recalcResult.errors.slice(0, 3).map((error: string, index: number) => (
 
@@ -1957,9 +1945,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div>
 
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Aumento de Salario para Empleados Seleccionados</h3>
+              <h3 className="text-lg font-medium text-foreground mb-4">Aumento de Salario para Empleados Seleccionados</h3>
 
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-sm text-muted-foreground mb-6">
 
                 Aplica un aumento de salario a los empleados activos seleccionados.
 
@@ -1977,7 +1965,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div>
 
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Año Objetivo</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Año Objetivo</label>
 
                   <input
 
@@ -1993,7 +1981,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     placeholder="ej. 2026"
 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-border bg-card text-foreground rounded-md"
 
                     required
 
@@ -2003,7 +1991,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div>
 
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Aumento</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Tipo de Aumento</label>
 
                   <select
 
@@ -2011,7 +1999,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     onChange={(e) => setIncreaseType(e.target.value as 'percentage' | 'absolute')}
 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-border bg-card text-foreground rounded-md"
 
                   >
 
@@ -2031,7 +2019,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div>
 
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
 
                     {increaseType === 'percentage' ? 'Porcentaje (%)' : 'Monto Absoluto (€)'}
 
@@ -2053,7 +2041,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     placeholder={increaseType === 'percentage' ? 'ej. 10.0' : 'ej. 5000'}
 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-border bg-card text-foreground rounded-md"
 
                     required
 
@@ -2063,7 +2051,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 <div>
 
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Buscar (Empleado)</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Buscar (Empleado)</label>
 
                   <input
 
@@ -2075,7 +2063,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                     placeholder="Buscar empleado..."
 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-border bg-card text-foreground rounded-md"
 
                   />
 
@@ -2097,7 +2085,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   </h4>
 
-                  <label className="flex items-center gap-2 text-sm text-gray-600">
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
 
                     <input
 
@@ -2107,7 +2095,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       onChange={(e) => handleSelectAllChange(e.target.checked)}
 
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-border text-primary focus:ring-primary"
 
                     />
 
@@ -2117,15 +2105,15 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 </div>
 
-                
 
-                <div className="border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
+
+                <div className="border border-border rounded-lg max-h-64 overflow-y-auto">
 
                   <div className="grid grid-cols-1 gap-2 p-4">
 
                     {filteredEmployeesForIncrease.map((employee) => (
 
-                      <label key={employee.id_empleado} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                      <label key={employee.id_empleado} className="flex items-center gap-3 p-2 hover:bg-muted rounded cursor-pointer">
 
                         <input
 
@@ -2135,29 +2123,27 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                           onChange={(e) => handleEmployeeCheckboxChange(employee.id_empleado, e.target.checked)}
 
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-border text-primary focus:ring-primary"
 
                         />
 
                         <div className="flex-1">
 
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm font-medium text-foreground">
 
                             {employee.apellido}, {employee.nombre}
 
                           </span>
 
-                          <span className="text-sm text-gray-500 ml-2">
+                          <span className="text-sm text-muted-foreground ml-2">
 
                             (ID: {employee.id_empleado})
 
                           </span>
 
-                          <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${employee.activo ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'
 
-                            employee.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-
-                          }`}>
+                            }`}>
 
                             {employee.activo ? 'Activo' : 'Inactivo'}
 
@@ -2177,9 +2163,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
 
 
-              <Button 
+              <Button
 
-                type="submit" 
+                type="submit"
 
                 disabled={increaseLoading || filteredEmployeesForIncrease.filter(emp => !excludedEmployees.has(emp.id_empleado)).length === 0}
 
@@ -2199,39 +2185,33 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             {increaseResult && (
 
-              <div className={`mt-6 p-4 rounded-md ${
-
-                increaseResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-
-              }`}>
-
-                <h4 className={`font-medium mb-2 ${
-
-                  increaseResult.success ? 'text-green-800' : 'text-red-800'
+              <div className={`mt-6 p-4 rounded-md ${increaseResult.success ? 'bg-green-500/10 border border-green-500/50' : 'bg-destructive/10 border border-destructive/50'
 
                 }`}>
+
+                <h4 className={`font-medium mb-2 ${increaseResult.success ? 'text-green-500' : 'text-destructive'
+
+                  }`}>
 
                   {increaseResult.success ? '✅ Éxito' : '❌ Error'}
 
                 </h4>
 
-                <p className={`text-sm mb-2 ${
+                <p className={`text-sm mb-2 ${increaseResult.success ? 'text-green-500' : 'text-destructive'
 
-                  increaseResult.success ? 'text-green-700' : 'text-red-700'
-
-                }`}>
+                  }`}>
 
                   {increaseResult.message}
 
                 </p>
 
-                
+
 
                 {increaseResult.success && increaseResult.employees && (
 
                   <div className="mt-3">
 
-                    <p className="text-sm font-medium text-green-800 mb-2">
+                    <p className="text-sm font-medium text-green-500 mb-2">
 
                       {increaseResult.updated_count} empleados actualizados:
 
@@ -2241,9 +2221,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                       {increaseResult.employees.map((emp: any, index: number) => (
 
-                        <div key={index} className="text-xs text-green-700 py-1">
+                        <div key={index} className="text-xs text-green-500 py-1">
 
-                          {emp.name}: {emp.old_salary}€ → {emp.new_salary}€ 
+                          {emp.name}: {emp.old_salary}€ → {emp.new_salary}€
 
                           ({emp.increase_info}, atrasos: {emp.atrasos.toFixed(2)}€)
 
@@ -2257,19 +2237,19 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 )}
 
-                
+
 
                 {increaseResult.errors && increaseResult.errors.length > 0 && (
 
                   <div className="mt-3">
 
-                    <p className="text-sm font-medium text-red-800 mb-2">Errores:</p>
+                    <p className="text-sm font-medium text-destructive mb-2">Errores:</p>
 
                     <div className="max-h-40 overflow-y-auto">
 
                       {increaseResult.errors.map((error: string, index: number) => (
 
-                        <div key={index} className="text-xs text-red-700 py-1">{error}</div>
+                        <div key={index} className="text-xs text-destructive py-1">{error}</div>
 
                       ))}
 
@@ -2307,9 +2287,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div>
 
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Resumen de Salario</h3>
+              <h3 className="text-lg font-medium text-foreground mb-4">Resumen de Salario</h3>
 
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-sm text-muted-foreground mb-6">
 
                 Muestra todos los empleados con sus salarios anuales para el año seleccionado.
 
@@ -2323,7 +2303,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               <div>
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Año</label>
 
                 <select
 
@@ -2331,7 +2311,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   onChange={(e) => setOverviewYear(e.target.value)}
 
-                  className="px-3 py-2 border border-gray-300 rounded-md"
+                  className="px-3 py-2 border border-border bg-card text-foreground rounded-md"
 
                 >
 
@@ -2353,7 +2333,7 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               <div className="flex items-center justify-center h-32">
 
-                <div className="text-lg text-gray-600">Cargando datos salariales...</div>
+                <div className="text-lg text-muted-foreground">Cargando datos salariales...</div>
 
               </div>
 
@@ -2361,45 +2341,45 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
               <div className="overflow-x-auto">
 
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-border">
 
-                  <thead className="bg-gray-50">
+                  <thead className="bg-muted">
 
                     <tr>
 
-                      <th 
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/80"
                         onClick={() => handleOverviewSort('name')}
                       >
                         <div className="flex items-center gap-1">
                           Empleado
                           {overviewSortConfig.key === 'name' && (
                             overviewSortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
-                            overviewSortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                              overviewSortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
                           )}
                         </div>
                       </th>
 
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
 
                         CECO
 
                       </th>
 
-                      <th 
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      <th
+                        className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/80"
                         onClick={() => handleOverviewSort('salary')}
                       >
                         <div className="flex items-center gap-1">
                           Salario Anual
                           {overviewSortConfig.key === 'salary' && (
                             overviewSortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> :
-                            overviewSortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
+                              overviewSortConfig.direction === 'desc' ? <ArrowDown className="w-3 h-3" /> : null
                           )}
                         </div>
                       </th>
 
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
 
                         Status
 
@@ -2409,25 +2389,25 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                   </thead>
 
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-card divide-y divide-border">
 
                     {sortedOverviewData.map((employee) => (
 
                       <tr key={employee.id}>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
 
                           {employee.name}
 
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
 
                           {employee.ceco}
 
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
 
                           {employee.salary.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
 
@@ -2435,15 +2415,10 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                         <td className="px-6 py-4 whitespace-nowrap">
 
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-
-                            employee.has_salary 
-
-                              ? 'bg-green-100 text-green-800' 
-
-                              : 'bg-red-100 text-red-800'
-
-                          }`}>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${employee.has_salary
+                            ? 'bg-green-500/10 text-green-500'
+                            : 'bg-destructive/10 text-destructive'
+                            }`}>
 
                             {employee.has_salary ? 'Salario disponible' : 'Sin salario'}
 
@@ -2459,11 +2434,11 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
                 </table>
 
-                
+
 
                 {sortedOverviewData.length === 0 && (
 
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-muted-foreground">
 
                     No se encontraron empleados
 
@@ -2487,9 +2462,9 @@ export default function EmployeeTable({ onEmployeeChange }: EmployeeTableProps) 
 
             <div>
 
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Historial de Procesamiento</h3>
+              <h3 className="text-lg font-medium text-foreground mb-4">Historial de Procesamiento</h3>
 
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-sm text-muted-foreground mb-6">
 
                 Muestra todos los procesos de edición ordenados cronológicamente.
 

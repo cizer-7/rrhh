@@ -106,11 +106,11 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
 
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+      <div className="bg-card rounded-lg shadow-xl p-6 w-full max-w-md border border-border">
 
         <div className="flex items-center justify-between mb-4">
 
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-foreground">
 
             {employee ? 'Editar Empleado' : 'Nuevo Empleado'}
 
@@ -130,7 +130,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
           <div>
 
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
 
               Nombre
 
@@ -148,7 +148,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
               required
 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
 
             />
 
@@ -158,7 +158,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
           <div>
 
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
 
               Declaración
 
@@ -172,7 +172,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
               onChange={handleChange}
 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
 
             >
 
@@ -192,7 +192,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
           <div>
 
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
 
               DNI (solo EXTERNO)
 
@@ -208,7 +208,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
               onChange={handleChange}
 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
 
             />
 
@@ -218,7 +218,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
           <div>
 
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
 
               Categoría
 
@@ -232,7 +232,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
               onChange={handleChange}
 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
 
             >
 
@@ -250,7 +250,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
           <div>
 
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
 
               Apellido
 
@@ -268,7 +268,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
               required
 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
 
             />
 
@@ -278,7 +278,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
           <div>
 
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
 
               CECO (opcional)
 
@@ -294,7 +294,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
               onChange={handleChange}
 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
 
             />
 
@@ -304,7 +304,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
           <div>
 
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
 
               Fecha de Contratación
 
@@ -320,7 +320,7 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
               onChange={handleChange}
 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
 
             />
 
@@ -342,11 +342,11 @@ export default function EmployeeForm({ employee, isOpen, onClose, onSave }: Empl
 
                 onChange={handleChange}
 
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-primary border-border bg-background rounded focus:ring-primary"
 
               />
 
-              <span className="text-sm font-medium text-gray-700">Activo</span>
+              <span className="text-sm font-medium text-muted-foreground">Activo</span>
 
             </label>
 

@@ -178,8 +178,8 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Carry Over</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-medium text-foreground mb-2">Carry Over</h3>
+        <p className="text-sm text-muted-foreground">
           Guarda montos por empleado y mes que se sumarán automáticamente al mes siguiente. Los Carry Overs entrantes del mes anterior se transfieren automáticamente al siguiente mes al guardar.
         </p>
       </div>
@@ -204,7 +204,7 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
           <select
             value={employeeId}
             onChange={(e) => setEmployeeId(e.target.value ? parseInt(e.target.value, 10) : '')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-md"
             disabled={saving}
           >
             <option value="">Por favor seleccione</option>
@@ -240,7 +240,7 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
           <select
             value={month}
             onChange={(e) => setMonth(parseInt(e.target.value, 10))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-md"
             disabled={saving}
           >
             {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
@@ -252,11 +252,11 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+      <div className="border border-border rounded-lg p-4 space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-          <div className="md:col-span-4 text-sm font-medium text-gray-700">Concepto</div>
-          <div className="md:col-span-2 text-sm font-medium text-gray-700">Activo</div>
-          <div className="md:col-span-6 text-sm font-medium text-gray-700">Monto (€)</div>
+          <div className="md:col-span-4 text-sm font-medium text-muted-foreground">Concepto</div>
+          <div className="md:col-span-2 text-sm font-medium text-muted-foreground">Activo</div>
+          <div className="md:col-span-6 text-sm font-medium text-muted-foreground">Monto (€)</div>
         </div>
 
         {CONCEPTS.map((c) => {
@@ -322,19 +322,19 @@ export default function CarryOverManager({ employees }: { employees: Employee[] 
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Concepto</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Monto</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aplicar</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Acción</th>
+                <tr className="bg-muted/50 border-b border-border">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Concepto</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Monto</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase">Aplicar</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground uppercase">Acción</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {items.map((it) => (
                   <tr key={it.id_carry_over}>
-                    <td className="px-4 py-2 text-sm text-gray-900">{it.concept}</td>
-                    <td className="px-4 py-2 text-sm text-gray-900">{Number(it.amount || 0).toFixed(2)} €</td>
-                    <td className="px-4 py-2 text-sm text-gray-900">
+                    <td className="px-4 py-2 text-sm text-foreground">{it.concept}</td>
+                    <td className="px-4 py-2 text-sm text-foreground">{Number(it.amount || 0).toFixed(2)} €</td>
+                    <td className="px-4 py-2 text-sm text-foreground">
                       {it.apply_mes}.{it.apply_anio}
                     </td>
                     <td className="px-4 py-2 text-right">

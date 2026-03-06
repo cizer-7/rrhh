@@ -12,7 +12,11 @@ interface DashboardProps {
   onLogout: () => void
 }
 
+import { useTheme } from '@/components/ThemeProvider'
+import { Moon, Sun } from 'lucide-react'
+
 function DashboardComponent({ user, onLogout }: DashboardProps) {
+  const { theme, toggleTheme } = useTheme()
   const [employeeStats, setEmployeeStats] = useState({
     total: 0,
     active: 0,
@@ -23,7 +27,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
   const [exportType, setExportType] = useState<'yearly' | 'monthly'>('yearly')
   const [exportFormat, setExportFormat] = useState<'nomina_total' | 'asiento_nomina' | 'irpf'>('nomina_total')
   const [exportExtra, setExportExtra] = useState(false)
-  
+
   const router = useRouter()
 
   useEffect(() => {
@@ -40,7 +44,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
         }
       })
       const employees = await response.json()
-      
+
       const total = employees.length
       const active = employees.filter((emp: any) => emp.activo).length
       const inactive = total - active
@@ -64,13 +68,13 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
   const handleExport = async () => {
     try {
       const token = localStorage.getItem('token')
-      
+
       // Asiento Nomina requiere exportación mensual
       if (exportFormat === 'asiento_nomina' && (!currentMonth || exportType !== 'monthly')) {
         alert('La exportación de Asiento Nomina requiere selección mensual')
         return
       }
-      
+
       let url: string
       if (exportFormat === 'asiento_nomina') {
         // Asiento Nomina API Endpunkt
@@ -85,29 +89,29 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
         const isExtraEligible = exportType === 'monthly' && (currentMonth === 6 || currentMonth === 12)
         const extraQuery = exportExtra && isExtraEligible ? '?extra=1' : ''
         // Nomina Total API Endpunkt
-        url = exportType === 'monthly' && currentMonth 
+        url = exportType === 'monthly' && currentMonth
           ? `https://salary-management.azurewebsites.net/export/excel/${currentYear}/${currentMonth}${extraQuery}`
           : `https://salary-management.azurewebsites.net/export/excel/${currentYear}`
       }
-      
+
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
-      
+
       if (!response.ok) {
         throw new Error(`Export failed: ${response.statusText}`)
       }
-      
+
       const blob = await response.blob()
-      
+
       // Create blob and download
       const url_blob = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url_blob
-      
+
       let filename: string
       if (exportFormat === 'asiento_nomina') {
         filename = `ASIENTO_NOMINA_${currentYear}_${currentMonth}.xlsx`
@@ -132,7 +136,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
           filename = `nomina_${currentYear}.xlsx`
         }
       }
-      
+
       a.download = filename
       document.body.appendChild(a)
       a.click()
@@ -145,7 +149,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -153,14 +157,24 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
               <ArrowLeft className="w-4 h-4" />
               Atrás
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Panel de Empleados</h1>
-              <p className="text-gray-600">Conectado como: {user?.nombre_usuario} ({user?.rol})</p>
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">Panel de Empleados</h1>
+                <p className="text-muted-foreground">Conectado como: {user?.nombre_usuario} ({user?.rol})</p>
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleTheme}
+                className="w-10 h-10 rounded-full"
+              >
+                {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              </Button>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <select 
-              value={exportFormat} 
+            <select
+              value={exportFormat}
               onChange={(e) => {
                 setExportFormat(e.target.value as 'nomina_total' | 'asiento_nomina' | 'irpf')
                 setExportExtra(false)
@@ -175,16 +189,16 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
                   setCurrentMonth(new Date().getMonth() + 1)
                 }
               }}
-              className="px-3 py-2 border border-gray-300 rounded-md"
+              className="px-3 py-2 border border-border rounded-md bg-card text-foreground"
             >
               <option value="nomina_total">Nomina Total</option>
               <option value="asiento_nomina">Asiento Nomina</option>
               <option value="irpf">IRPF</option>
             </select>
-            
+
             {(exportFormat === 'nomina_total' || exportFormat === 'irpf') && (
-              <select 
-                value={exportType} 
+              <select
+                value={exportType}
                 onChange={(e) => {
                   setExportType(e.target.value as 'yearly' | 'monthly')
                   if (e.target.value === 'yearly') {
@@ -194,26 +208,26 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
                     setCurrentMonth(null)
                   }
                 }}
-                className="px-3 py-2 border border-gray-300 rounded-md"
+                className="px-3 py-2 border border-border rounded-md bg-card text-foreground"
               >
                 <option value="yearly">Anual</option>
                 <option value="monthly">Mensual</option>
               </select>
             )}
-            
-            <select 
-              value={currentYear} 
+
+            <select
+              value={currentYear}
               onChange={(e) => setCurrentYear(parseInt(e.target.value))}
-              className="px-3 py-2 border border-gray-300 rounded-md"
+              className="px-3 py-2 border border-border rounded-md bg-card text-foreground"
             >
               {Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - 4 + i).map(y => (
                 <option key={y} value={y}>{y}</option>
               ))}
             </select>
-            
+
             {(exportFormat === 'asiento_nomina' || exportType === 'monthly') && (
-              <select 
-                value={currentMonth || ''} 
+              <select
+                value={currentMonth || ''}
                 onChange={(e) => {
                   const nextMonth = e.target.value ? parseInt(e.target.value) : null
                   setCurrentMonth(nextMonth)
@@ -221,7 +235,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
                     setExportExtra(false)
                   }
                 }}
-                className="px-3 py-2 border border-gray-300 rounded-md"
+                className="px-3 py-2 border border-border rounded-md bg-card text-foreground"
               >
                 <option value="">Seleccionar mes...</option>
                 {[
@@ -246,7 +260,7 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
             )}
 
             {(exportFormat === 'nomina_total' || exportFormat === 'irpf') && exportType === 'monthly' && (currentMonth === 6 || currentMonth === 12) && (
-              <label className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md bg-white">
+              <label className="flex items-center gap-2 px-3 py-2 border border-border rounded-md bg-card text-foreground">
                 <input
                   type="checkbox"
                   checked={exportExtra}
@@ -255,10 +269,10 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
                 Extra
               </label>
             )}
-            
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2" 
+
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
               onClick={() => handleExport()}
               disabled={(exportFormat === 'asiento_nomina' || exportType === 'monthly') && !currentMonth}
             >
@@ -273,35 +287,35 @@ function DashboardComponent({ user, onLogout }: DashboardProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-card rounded-lg shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-blue-600">
+              <div className="flex items-center gap-2 text-primary">
                 <Users className="w-8 h-8" />
                 <h3 className="text-lg font-semibold">Empleados</h3>
               </div>
-              <div className="text-2xl font-bold text-gray-900">{employeeStats.total}</div>
+              <div className="text-2xl font-bold text-foreground">{employeeStats.total}</div>
             </div>
-            <p className="text-gray-600">Número total de empleados</p>
+            <p className="text-muted-foreground">Número total de empleados</p>
           </div>
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-card rounded-lg shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-green-600">
+              <div className="flex items-center gap-2 text-green-500">
                 <FileText className="w-8 h-8" />
                 <h3 className="text-lg font-semibold">Empleados Activos</h3>
               </div>
-              <div className="text-2xl font-bold text-gray-900">{employeeStats.active}</div>
+              <div className="text-2xl font-bold text-foreground">{employeeStats.active}</div>
             </div>
-            <p className="text-gray-600">Empleados activos en el sistema</p>
+            <p className="text-muted-foreground">Empleados activos en el sistema</p>
           </div>
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-card rounded-lg shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-orange-600">
+              <div className="flex items-center gap-2 text-orange-500">
                 <FileText className="w-8 h-8" />
                 <h3 className="text-lg font-semibold">Empleados Inactivos</h3>
               </div>
-              <div className="text-2xl font-bold text-gray-900">{employeeStats.inactive}</div>
+              <div className="text-2xl font-bold text-foreground">{employeeStats.inactive}</div>
             </div>
-            <p className="text-gray-600">Empleados inactivos en el sistema</p>
+            <p className="text-muted-foreground">Empleados inactivos en el sistema</p>
           </div>
         </div>
 
@@ -359,8 +373,8 @@ export default function AuthWrapper() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-lg text-gray-600">Cargando...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-lg text-muted-foreground">Cargando...</div>
       </div>
     )
   }

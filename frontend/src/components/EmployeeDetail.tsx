@@ -323,20 +323,20 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
-      
+
       console.log(`Fetching data for employee ${employee.id_empleado}, year ${year}, month ${month}, mode ${dataMode}`)
-      
+
       // Fetch complete employee info
       const response = await fetch(
         `https://salary-management.azurewebsites.net/employees/${employee.id_empleado}?_t=${Date.now()}`,
         { headers }
       )
-      
+
       if (!response.ok) {
         console.error('API Response not OK:', response.status, response.statusText)
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
-      
+
       const data = await response.json()
       console.log('Complete API Response:', data)
       console.log('Salaries:', data.salaries)
@@ -345,13 +345,13 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
       console.log('Ingresos Mensuales:', data.ingresos_mensuales)
       console.log('Deducciones Mensuales:', data.deducciones_mensuales)
       console.log('FTE:', data.fte)
-      
+
       // Extract salary data
       const salaryData = data.salaries?.find((s: any) => s.anio === year)
-      
+
       // Extract ingresos and deducciones based on data mode
       let ingresosData, deduccionesData
-      
+
       if (dataMode === 'monthly' && month) {
         ingresosData = data.ingresos_mensuales?.find((i: any) => i.anio === year && i.mes === month)
         deduccionesData = data.deducciones_mensuales?.find((d: any) => d.anio === year && d.mes === month)
@@ -359,9 +359,9 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         ingresosData = data.ingresos?.find((i: any) => i.anio === year)
         deduccionesData = data.deducciones?.find((d: any) => d.anio === year)
       }
-      
+
       console.log('Data found:', { salaryData, ingresosData, deduccionesData })
-      
+
       const nextSalary = salaryData || {
         modalidad: 12,
         antiguedad: 0,
@@ -423,24 +423,24 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     if (!salary) return
     try {
       const token = localStorage.getItem('token')
-      const headers = { 
+      const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
-      
+
       // Check if salary exists for this year
       const checkResponse = await fetch(`https://salary-management.azurewebsites.net/employees/${employee.id_empleado}`, {
         headers
       })
       const employeeData = await checkResponse.json()
       const existingSalary = employeeData.salaries?.find((s: any) => s.anio === year)
-      
-      const url = existingSalary 
+
+      const url = existingSalary
         ? `https://salary-management.azurewebsites.net/employees/${employee.id_empleado}/salaries/${year}`
         : `https://salary-management.azurewebsites.net/employees/${employee.id_empleado}/salaries`
-      
+
       const method = existingSalary ? 'PUT' : 'POST'
-      
+
       await fetch(url, {
         method,
         headers,
@@ -456,18 +456,18 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     if (!ingresos) return
     try {
       const token = localStorage.getItem('token')
-      const headers = { 
+      const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
-      
+
       let url
       if (dataMode === 'monthly' && month) {
         url = `https://salary-management.azurewebsites.net/employees/${employee.id_empleado}/ingresos/${year}/${month}`
       } else {
         url = `https://salary-management.azurewebsites.net/employees/${employee.id_empleado}/ingresos/${year}`
       }
-      
+
       await fetch(url, {
         method: 'PUT',
         headers,
@@ -483,18 +483,18 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
     if (!deducciones) return
     try {
       const token = localStorage.getItem('token')
-      const headers = { 
+      const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
-      
+
       let url
       if (dataMode === 'monthly' && month) {
         url = `https://salary-management.azurewebsites.net/employees/${employee.id_empleado}/deducciones/${year}/${month}`
       } else {
         url = `https://salary-management.azurewebsites.net/employees/${employee.id_empleado}/deducciones/${year}`
       }
-      
+
       await fetch(url, {
         method: 'PUT',
         headers,
@@ -507,30 +507,30 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
   }
   const handleSaveEmployee = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     try {
       const token = localStorage.getItem('token')
       if (!token) {
         console.error('No se encontró token')
         return
       }
-      const headers = { 
+      const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
-      
+
       console.log('Sending employee data:', employeeFormData)
       console.log('To URL:', `https://salary-management.azurewebsites.net/employees/${employee.id_empleado}`)
-      
+
       const response = await fetch(`https://salary-management.azurewebsites.net/employees/${employee.id_empleado}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(employeeFormData)
       })
-      
+
       console.log('Response status:', response.status)
       console.log('Response ok:', response.ok)
-      
+
       if (response.ok) {
         const result = await response.json()
         console.log('Mitarbeiter erfolgreich aktualisiert:', result)
@@ -554,46 +554,46 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
   }
   const handleSalaryIncrease = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!increaseYear || (increaseType === 'percentage' && !increasePercentage) || (increaseType === 'absolute' && !increaseAbsolute)) {
       alert('Por favor ingrese año y valor de aumento')
       return
     }
-    
+
     setIncreaseLoading(true)
     setIncreaseResult(null)
-    
+
     try {
       const token = localStorage.getItem('token')
       if (!token) {
         console.error('No se encontró token')
         return
       }
-      const headers = { 
+      const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
-      
+
       const requestData: any = {
         target_year: parseInt(increaseYear)
       }
-      
+
       if (increaseType === 'percentage') {
         requestData.percentage_increase = parseFloat(increasePercentage)
       } else {
         requestData.absolute_increase = parseFloat(increaseAbsolute)
       }
-      
+
       console.log('Sending salary increase request for single employee:', requestData)
-      
+
       const response = await fetch(`https://salary-management.azurewebsites.net/employees/${employee.id_empleado}/salary-increase`, {
         method: 'POST',
         headers,
         body: JSON.stringify(requestData)
       })
-      
+
       const result = await response.json()
-      
+
       if (response.ok) {
         console.log('Aumento de salario exitoso:', result)
         setIncreaseResult(result)
@@ -649,7 +649,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         return (newMonthlyBase + antiguedad) * ftePercent
       }
     }
-    
+
     // Para meses a partir del mes de pago: nuevo salario
     let totalSalary = (newMonthlyBase + antiguedad) * ftePercent
     // Atrasos solo en el mes de pago: Suma de diferencias mensuales (Nuevo - Viejo) para Ene..(payoutMonth-1)
@@ -703,24 +703,24 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
   }, [dataMode, month, year, employeeFormData, employee])
   const calculateTotal = () => {
     const baseSalary = calculateMonthlySalary(month)
-    const ingresosTotal = (typeof ingresos?.ticket_restaurant === 'string' ? parseFloat(ingresos.ticket_restaurant) || 0 : (ingresos?.ticket_restaurant || 0)) + 
-                         (typeof ingresos?.primas === 'string' ? parseFloat(ingresos.primas) || 0 : (ingresos?.primas || 0)) + 
-                         (typeof ingresos?.dietas_cotizables === 'string' ? parseFloat(ingresos.dietas_cotizables) || 0 : (ingresos?.dietas_cotizables || 0)) + 
-                         (typeof ingresos?.horas_extras === 'string' ? parseFloat(ingresos.horas_extras) || 0 : (ingresos?.horas_extras || 0)) + 
-                         (typeof ingresos?.dias_exentos === 'string' ? parseFloat(ingresos.dias_exentos) || 0 : (ingresos?.dias_exentos || 0)) + 
-                         (typeof ingresos?.dietas_exentas === 'string' ? parseFloat(ingresos.dietas_exentas) || 0 : (ingresos?.dietas_exentas || 0)) + 
-                         (typeof ingresos?.seguro_pensiones === 'string' ? parseFloat(ingresos.seguro_pensiones) || 0 : (ingresos?.seguro_pensiones || 0)) + 
-                         (typeof ingresos?.lavado_coche === 'string' ? parseFloat(ingresos.lavado_coche) || 0 : (ingresos?.lavado_coche || 0)) +
-                         (typeof ingresos?.beca_escolar === 'string' ? parseFloat((ingresos as any).beca_escolar) || 0 : ((ingresos as any)?.beca_escolar || 0)) +
-                         (typeof ingresos?.formacion === 'string' ? parseFloat(ingresos.formacion) || 0 : (ingresos?.formacion || 0)) +
-                         (typeof ingresos?.tickets === 'string' ? parseFloat(ingresos.tickets) || 0 : (ingresos?.tickets || 0))
-    const deduccionesTotal = (typeof deducciones?.seguro_accidentes === 'string' ? parseFloat(deducciones.seguro_accidentes) || 0 : (deducciones?.seguro_accidentes || 0)) + 
-                           (typeof deducciones?.adelas === 'string' ? parseFloat(deducciones.adelas) || 0 : (deducciones?.adelas || 0)) + 
-                           (typeof deducciones?.sanitas === 'string' ? parseFloat(deducciones.sanitas) || 0 : (deducciones?.sanitas || 0)) + 
-                           (typeof deducciones?.gasolina === 'string' ? parseFloat(deducciones.gasolina) || 0 : (deducciones?.gasolina || 0)) + 
-                           (typeof deducciones?.ret_especie === 'string' ? parseFloat(deducciones.ret_especie) || 0 : (deducciones?.ret_especie || 0)) +
-                           (typeof deducciones?.seguro_medico === 'string' ? parseFloat(deducciones.seguro_medico) || 0 : (deducciones?.seguro_medico || 0)) +
-                           (typeof deducciones?.cotizacion_especie === 'string' ? parseFloat(deducciones.cotizacion_especie) || 0 : (deducciones?.cotizacion_especie || 0))
+    const ingresosTotal = (typeof ingresos?.ticket_restaurant === 'string' ? parseFloat(ingresos.ticket_restaurant) || 0 : (ingresos?.ticket_restaurant || 0)) +
+      (typeof ingresos?.primas === 'string' ? parseFloat(ingresos.primas) || 0 : (ingresos?.primas || 0)) +
+      (typeof ingresos?.dietas_cotizables === 'string' ? parseFloat(ingresos.dietas_cotizables) || 0 : (ingresos?.dietas_cotizables || 0)) +
+      (typeof ingresos?.horas_extras === 'string' ? parseFloat(ingresos.horas_extras) || 0 : (ingresos?.horas_extras || 0)) +
+      (typeof ingresos?.dias_exentos === 'string' ? parseFloat(ingresos.dias_exentos) || 0 : (ingresos?.dias_exentos || 0)) +
+      (typeof ingresos?.dietas_exentas === 'string' ? parseFloat(ingresos.dietas_exentas) || 0 : (ingresos?.dietas_exentas || 0)) +
+      (typeof ingresos?.seguro_pensiones === 'string' ? parseFloat(ingresos.seguro_pensiones) || 0 : (ingresos?.seguro_pensiones || 0)) +
+      (typeof ingresos?.lavado_coche === 'string' ? parseFloat(ingresos.lavado_coche) || 0 : (ingresos?.lavado_coche || 0)) +
+      (typeof ingresos?.beca_escolar === 'string' ? parseFloat((ingresos as any).beca_escolar) || 0 : ((ingresos as any)?.beca_escolar || 0)) +
+      (typeof ingresos?.formacion === 'string' ? parseFloat(ingresos.formacion) || 0 : (ingresos?.formacion || 0)) +
+      (typeof ingresos?.tickets === 'string' ? parseFloat(ingresos.tickets) || 0 : (ingresos?.tickets || 0))
+    const deduccionesTotal = (typeof deducciones?.seguro_accidentes === 'string' ? parseFloat(deducciones.seguro_accidentes) || 0 : (deducciones?.seguro_accidentes || 0)) +
+      (typeof deducciones?.adelas === 'string' ? parseFloat(deducciones.adelas) || 0 : (deducciones?.adelas || 0)) +
+      (typeof deducciones?.sanitas === 'string' ? parseFloat(deducciones.sanitas) || 0 : (deducciones?.sanitas || 0)) +
+      (typeof deducciones?.gasolina === 'string' ? parseFloat(deducciones.gasolina) || 0 : (deducciones?.gasolina || 0)) +
+      (typeof deducciones?.ret_especie === 'string' ? parseFloat(deducciones.ret_especie) || 0 : (deducciones?.ret_especie || 0)) +
+      (typeof deducciones?.seguro_medico === 'string' ? parseFloat(deducciones.seguro_medico) || 0 : (deducciones?.seguro_medico || 0)) +
+      (typeof deducciones?.cotizacion_especie === 'string' ? parseFloat(deducciones.cotizacion_especie) || 0 : (deducciones?.cotizacion_especie || 0))
     return {
       gross: baseSalary + ingresosTotal,
       deductions: deduccionesTotal,
@@ -733,40 +733,40 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-gray-600">Cargando datos...</div>
+        <div className="text-lg text-muted-foreground">Cargando datos...</div>
       </div>
     )
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <div className="min-h-screen bg-background p-8">
       {showUnsavedChangesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl">
-            <div className="border-b border-gray-200 px-6 py-4">
-              <div className="text-lg font-semibold text-gray-900">Cambios no guardados</div>
-              <div className="mt-1 text-sm text-gray-600">Tienes cambios que aún no han sido guardados.</div>
+          <div className="w-full max-w-2xl rounded-lg bg-card shadow-xl border border-border">
+            <div className="border-b border-border px-6 py-4">
+              <div className="text-lg font-semibold text-foreground">Cambios no guardados</div>
+              <div className="mt-1 text-sm text-muted-foreground">Tienes cambios que aún no han sido guardados.</div>
             </div>
             <div className="px-6 py-4">
-              <div className="max-h-72 overflow-y-auto rounded-md border border-gray-200">
+              <div className="max-h-72 overflow-y-auto rounded-md border border-border">
                 {getUnsavedChanges().length === 0 ? (
-                  <div className="px-4 py-3 text-sm text-gray-600">No se encontraron cambios.</div>
+                  <div className="px-4 py-3 text-sm text-muted-foreground">No se encontraron cambios.</div>
                 ) : (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-muted">
                       <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campo</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anterior</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nuevo</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Área</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Campo</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Anterior</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nuevo</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
+                    <tbody className="divide-y divide-border bg-card">
                       {getUnsavedChanges().map((d, idx) => (
                         <tr key={idx}>
-                          <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{d.section}</td>
-                          <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{d.field.replace(/_/g, ' ')}</td>
-                          <td className="px-4 py-2 text-sm text-gray-600">{formatValueForDiff(d.from)}</td>
-                          <td className="px-4 py-2 text-sm text-gray-900">{formatValueForDiff(d.to)}</td>
+                          <td className="px-4 py-2 text-sm text-foreground whitespace-nowrap">{d.section}</td>
+                          <td className="px-4 py-2 text-sm text-foreground whitespace-nowrap">{d.field.replace(/_/g, ' ')}</td>
+                          <td className="px-4 py-2 text-sm text-muted-foreground">{formatValueForDiff(d.from)}</td>
+                          <td className="px-4 py-2 text-sm text-foreground font-medium">{formatValueForDiff(d.to)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -774,7 +774,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 )}
               </div>
             </div>
-            <div className="flex items-center justify-end gap-2 border-t border-gray-200 px-6 py-4">
+            <div className="flex items-center justify-end gap-2 border-t border-border px-6 py-4">
               <Button
                 type="button"
                 variant="outline"
@@ -813,29 +813,29 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
               Atrás
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-foreground">
                 {employee.apellido}, {employee.nombre}
               </h1>
-              <p className="text-gray-600">ID: {employee.id_empleado} | CECO: {employee.ceco || '-'}</p>
+              <p className="text-muted-foreground">ID: {employee.id_empleado} | CECO: {employee.ceco || '-'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <select 
-              value={dataMode} 
+            <select
+              value={dataMode}
               onChange={(e) => {
                 setDataMode(e.target.value as 'yearly' | 'monthly')
                 if (e.target.value === 'yearly') {
                   setMonth(null)
                 }
               }}
-              className="px-3 py-2 border border-gray-300 rounded-md"
+              className="px-3 py-2 border border-border rounded-md bg-card text-foreground"
             >
               <option value="yearly">Anual</option>
               <option value="monthly">Mensual</option>
             </select>
-            
-            <select 
-              value={showCustomInput ? 'custom' : year} 
+
+            <select
+              value={showCustomInput ? 'custom' : year}
               onChange={(e) => {
                 const value = e.target.value
                 if (value === 'custom') {
@@ -845,19 +845,19 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                   setYear(parseInt(value))
                 }
               }}
-              className="px-3 py-2 border border-gray-300 rounded-md"
+              className="px-3 py-2 border border-border rounded-md bg-card text-foreground"
             >
               <option value="">Seleccionar año...</option>
               {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + 5 - i).map(y => {
                 const currentYear = new Date().getFullYear()
                 const isCurrentYear = y === currentYear
                 return (
-                  <option 
-                    key={y} 
+                  <option
+                    key={y}
                     value={y}
-                    style={{ 
+                    style={{
                       fontWeight: isCurrentYear ? 'bold' : 'normal',
-                      color: isCurrentYear ? '#2563eb' : 'inherit'
+                      color: isCurrentYear ? 'hsl(var(--primary))' : 'inherit'
                     }}
                   >
                     {y}{isCurrentYear ? ' (actual)' : ''}
@@ -866,7 +866,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
               })}
               <option value="custom">Otro año...</option>
             </select>
-            
+
             {showCustomInput && (
               <input
                 type="number"
@@ -890,17 +890,17 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                     e.currentTarget.blur()
                   }
                 }}
-                className="px-3 py-2 border border-gray-300 rounded-md w-32"
+                className="px-3 py-2 border border-border rounded-md w-32 bg-card text-foreground"
                 min="1900"
                 max="2100"
               />
             )}
-            
+
             {dataMode === 'monthly' && (
-              <select 
-                value={month || ''} 
+              <select
+                value={month || ''}
                 onChange={(e) => setMonth(e.target.value ? parseInt(e.target.value) : null)}
-                className="px-3 py-2 border border-gray-300 rounded-md"
+                className="px-3 py-2 border border-border rounded-md bg-card text-foreground"
               >
                 <option value="">Seleccionar mes...</option>
                 {[
@@ -927,55 +927,54 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
         </div>
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center gap-2 text-blue-600 mb-2">
+          <div className="bg-card rounded-lg shadow-lg p-6 border border-border">
+            <div className="flex items-center gap-2 text-primary mb-2">
               <Euro className="w-6 h-6" />
-              <h3 className="font-semibold">Salario Mensual</h3>
+              <h3 className="font-semibold text-foreground">Salario Mensual</h3>
             </div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-foreground">
               €{prorateSalaryForHireMonth(calculateMonthlySalary(month), month).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             {hireMonthProrationInfo.applied && (
-              <div className="mt-2 text-xs text-gray-600">
+              <div className="mt-2 text-xs text-muted-foreground">
                 Prorrateado por fecha de contratación ({hireMonthProrationInfo.employedDays}/30 días)
               </div>
             )}
           </div>
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center gap-2 text-purple-600 mb-2">
+          <div className="bg-card rounded-lg shadow-lg p-6 border border-border">
+            <div className="flex items-center gap-2 text-purple-400 mb-2">
               <TrendingUp className="w-6 h-6" />
-              <h3 className="font-semibold">Salario Anual</h3>
+              <h3 className="font-semibold text-foreground">Salario Anual</h3>
             </div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-foreground">
               €{calculateAnnualSalaryWithFTE().toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center gap-2 text-orange-600 mb-2">
+          <div className="bg-card rounded-lg shadow-lg p-6 border border-border">
+            <div className="flex items-center gap-2 text-orange-400 mb-2">
               <Calendar className="w-6 h-6" />
-              <h3 className="font-semibold">{dataMode === 'monthly' ? 'Mes/Año' : 'Año'}</h3>
+              <h3 className="font-semibold text-foreground">{dataMode === 'monthly' ? 'Mes/Año' : 'Año'}</h3>
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {dataMode === 'monthly' && month 
-                ? `${month}/${year}` 
+            <div className="text-2xl font-bold text-foreground">
+              {dataMode === 'monthly' && month
+                ? `${month}/${year}`
                 : year.toString()
               }
             </div>
           </div>
         </div>
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-lg">
-          <div className="border-b border-gray-200 overflow-x-auto">
+        <div className="bg-card rounded-lg shadow-lg border border-border">
+          <div className="border-b border-border overflow-x-auto">
             <nav className="flex space-x-8 px-6 whitespace-nowrap">
               {['salary', 'ingresos', 'deducciones', 'stundenreduzierung', 'bearbeitungslog', 'stammdaten', 'gehaltserhoehung'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab as any)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                    }`}
                 >
                   {tab === 'salary' ? 'Salario' : tab === 'ingresos' ? 'Bonificaciones' : tab === 'deducciones' ? 'Deducciones' : tab === 'stundenreduzierung' ? 'Reducción de Horas' : tab === 'bearbeitungslog' ? 'Historial de Procesamiento' : tab === 'gehaltserhoehung' ? 'Aumento de Salario' : 'Datos Maestros'}
                 </button>
@@ -987,46 +986,46 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
               <form onSubmit={handleSaveSalary} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Modalidad</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Modalidad</label>
                     <select
                       value={salary.modalidad}
-                      onChange={(e) => setSalary({...salary, modalidad: parseInt(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      onChange={(e) => setSalary({ ...salary, modalidad: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                     >
                       <option value="12">12</option>
                       <option value="14">14</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Antigüedad (Años)</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Antigüedad (Años)</label>
                     <input
                       id="antiguedad"
                       type="number"
                       value={salary.antiguedad}
-                      onChange={(e) => setSalary({...salary, antiguedad: parseInt(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      onChange={(e) => setSalary({ ...salary, antiguedad: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Salario Anual (Bruto)</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Salario Anual (Bruto)</label>
                     <input
                       id="salario-anual-bruto"
                       type="number"
                       step="0.01"
                       value={salary.salario_anual_bruto}
-                      onChange={(e) => setSalary({...salary, salario_anual_bruto: parseFloat(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      onChange={(e) => setSalary({ ...salary, salario_anual_bruto: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Atrasos (%)</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Atrasos (%)</label>
                     <input
                       id="atrasos"
                       type="number"
                       step="0.01"
                       value={salary.atrasos || 0}
-                      onChange={(e) => setSalary({...salary, atrasos: parseFloat(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      onChange={(e) => setSalary({ ...salary, atrasos: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 border border-border rounded-md bg-muted text-muted-foreground"
                       readOnly
                     />
                   </div>
@@ -1042,7 +1041,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(ingresos).filter(([key]) => !['id_empleado', 'anio', 'mes', 'fecha_creacion', 'fecha_modificacion', ...(dataMode === 'yearly' ? ['beca_escolar'] : [])].includes(key)).map(([key, value]) => (
                     <div key={key}>
-                      <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1 capitalize">
                         {key.replace(/_/g, ' ')}
                       </label>
                       <input
@@ -1050,8 +1049,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         type="number"
                         step="0.01"
                         value={value || 0}
-                        onChange={(e) => setIngresos({...ingresos, [key]: parseFloat(e.target.value)})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        onChange={(e) => setIngresos({ ...ingresos, [key]: parseFloat(e.target.value) })}
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                       />
                     </div>
                   ))}
@@ -1067,7 +1066,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(deducciones).filter(([key]) => !['id_empleado', 'anio', 'mes', 'fecha_creacion', 'fecha_modificacion'].includes(key)).map(([key, value]) => (
                     <div key={key}>
-                      <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1 capitalize">
                         {key.replace(/_/g, ' ')}
                       </label>
                       <input
@@ -1075,8 +1074,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         type="number"
                         step="0.01"
                         value={value || 0}
-                        onChange={(e) => setDeducciones({...deducciones, [key]: parseFloat(e.target.value)})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        onChange={(e) => setDeducciones({ ...deducciones, [key]: parseFloat(e.target.value) })}
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                       />
                     </div>
                   ))}
@@ -1090,31 +1089,31 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
             {activeTab === 'stundenreduzierung' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Reducción de Horas</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="text-lg font-medium text-foreground mb-2">Reducción de Horas</h3>
+                  <p className="text-sm text-muted-foreground">
                     Registre cambios como "Reducción por %" a partir de un mes. En la exportación, solo el salario base (SALARIO MES) se reducirá correspondientemente.
                   </p>
                 </div>
                 <form onSubmit={handleSaveFte} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Válido desde Año</label>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Válido desde Año</label>
                       <input
                         type="number"
                         min="2000"
                         max="2100"
                         value={fteYear}
                         onChange={(e) => setFteYear(parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Válido desde Mes</label>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Válido desde Mes</label>
                       <select
                         value={fteMonth}
                         onChange={(e) => setFteMonth(parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                         required
                       >
                         {Array.from({ length: 12 }).map((_, idx) => (
@@ -1123,7 +1122,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Reducción por (%)</label>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Reducción por (%)</label>
                       <input
                         type="number"
                         min="0"
@@ -1132,18 +1131,18 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         value={fteReduction}
                         onChange={(e) => setFteReduction(e.target.value)}
                         placeholder="ej. 20"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                         required
                       />
                     </div>
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     Válido actualmente (para {fteMonth}/{fteYear}):{' '}
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-foreground">
                       {getEffectiveFtePercent(fteItems, fteYear, fteMonth, { anio: fteYear, mes: fteMonth }).toFixed(2)}%
                     </span>
                     {' '}→ Nuevo:{' '}
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-foreground">
                       {Math.max(0, Math.min(100, getEffectiveFtePercent(fteItems, fteYear, fteMonth, { anio: fteYear, mes: fteMonth }) - (parseFloat(fteReduction) || 0))).toFixed(2)}%
                     </span>
                   </div>
@@ -1152,28 +1151,28 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                     {fteLoading ? 'Guardando...' : 'Guardar'}
                   </Button>
                 </form>
-                <div className="overflow-x-auto border border-gray-200 rounded-md">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <div className="overflow-x-auto border border-border rounded-md">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-muted">
                       <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Desde</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grado de Empleo (%)</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Último Cambio</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Desde</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Grado de Empleo (%)</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Último Cambio</th>
                         <th className="px-4 py-2"></th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-card divide-y divide-border">
                       {fteItems.length === 0 ? (
                         <tr>
-                          <td className="px-4 py-3 text-sm text-gray-600" colSpan={4}>No hay entradas disponibles.</td>
+                          <td className="px-4 py-3 text-sm text-muted-foreground" colSpan={4}>No hay entradas disponibles.</td>
                         </tr>
                       ) : (
                         [...fteItems]
                           .sort((a, b) => (b.anio - a.anio) || (b.mes - a.mes))
                           .map((it) => (
                             <tr key={`${it.anio}-${it.mes}`}>
-                              <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{it.mes}/{it.anio}</td>
-                              <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">
+                              <td className="px-4 py-2 text-sm text-foreground whitespace-nowrap">{it.mes}/{it.anio}</td>
+                              <td className="px-4 py-2 text-sm text-foreground whitespace-nowrap">
                                 {(() => {
                                   const pct = typeof (it as any).porcentaje === 'string'
                                     ? parseFloat((it as any).porcentaje)
@@ -1182,7 +1181,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                                   return `${safePct.toFixed(2)}%`
                                 })()}
                               </td>
-                              <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">
+                              <td className="px-4 py-2 text-sm text-foreground whitespace-nowrap">
                                 {it.fecha_modificacion ? new Date(String(it.fecha_modificacion)).toLocaleString('de-DE') : '-'}
                               </td>
                               <td className="px-4 py-2 text-right">
@@ -1206,7 +1205,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
             {activeTab === 'bearbeitungslog' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">Historial de Procesamiento</h3>
+                  <h3 className="text-lg font-medium text-foreground">Historial de Procesamiento</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -1217,34 +1216,34 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                   </Button>
                 </div>
                 {bearbeitungslogLoading ? (
-                  <div className="text-gray-600">Cargando historial de procesamiento...</div>
+                  <div className="text-muted-foreground">Cargando historial de procesamiento...</div>
                 ) : bearbeitungslogItems.length === 0 ? (
-                  <div className="text-gray-600">No hay entradas disponibles.</div>
+                  <div className="text-muted-foreground">No hay entradas disponibles.</div>
                 ) : (
-                  <div className="overflow-x-auto border border-gray-200 rounded-md">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                  <div className="overflow-x-auto border border-border rounded-md">
+                    <table className="min-w-full divide-y divide-border">
+                      <thead className="bg-muted">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Momento</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Objeto</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detalles</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Momento</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Usuario</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Acción</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Objeto</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Detalles</th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-card divide-y divide-border">
                         {bearbeitungslogItems.map((item: any) => (
                           <tr key={item.id_log}>
-                            <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">
+                            <td className="px-4 py-2 text-sm text-foreground whitespace-nowrap">
                               {item.fecha ? new Date(item.fecha).toLocaleString('de-DE') : '-'}
                             </td>
-                            <td className="px-4 py-2 text-sm text-gray-700">
+                            <td className="px-4 py-2 text-sm text-foreground">
                               <div className="font-medium">{item.nombre_completo || '-'}</div>
-                              <div className="text-xs text-gray-500">{item.usuario_login || '-'}</div>
+                              <div className="text-xs text-muted-foreground">{item.usuario_login || '-'}</div>
                             </td>
-                            <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{item.aktion || '-'}</td>
-                            <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{item.objekt || '-'}</td>
-                            <td className="px-4 py-2 text-sm text-gray-600">
+                            <td className="px-4 py-2 text-sm text-foreground whitespace-nowrap">{item.aktion || '-'}</td>
+                            <td className="px-4 py-2 text-sm text-foreground whitespace-nowrap">{item.objekt || '-'}</td>
+                            <td className="px-4 py-2 text-sm text-muted-foreground">
                               <LogDetails details={item.details} />
                             </td>
                           </tr>
@@ -1258,8 +1257,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
             {activeTab === 'stammdaten' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">Datos Maestros del Empleado</h3>
-                  <Button 
+                  <h3 className="text-lg font-medium text-foreground">Datos Maestros del Empleado</h3>
+                  <Button
                     onClick={() => setShowEmployeeForm(!showEmployeeForm)}
                     className="flex items-center gap-2"
                   >
@@ -1270,32 +1269,32 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 {!showEmployeeForm ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                      <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Nombre</label>
+                      <div className="px-3 py-2 bg-muted border border-border rounded-md text-foreground">
                         {employee.nombre || '-'}
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
-                      <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Apellido</label>
+                      <div className="px-3 py-2 bg-muted border border-border rounded-md text-foreground">
                         {employee.apellido || '-'}
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">CECO</label>
-                      <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">CECO</label>
+                      <div className="px-3 py-2 bg-muted border border-border rounded-md text-foreground">
                         {employee.ceco || '-'}
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                      <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Categoría</label>
+                      <div className="px-3 py-2 bg-muted border border-border rounded-md text-foreground">
                         {(employee as any).categoria || '-'}
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                      <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Estado</label>
+                      <div className="px-3 py-2 bg-muted border border-border rounded-md text-foreground">
                         {employee.activo ? 'Activo' : 'Inactivo'}
                       </div>
                     </div>
@@ -1303,24 +1302,22 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 ) : (
                   <form onSubmit={handleSaveEmployee} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Nombre</label>
+                      <input
+                        type="text"
+                        name="nombre"
+                        value={employeeFormData.nombre}
+                        onChange={(e) => setEmployeeFormData({ ...employeeFormData, nombre: e.target.value })}
+                        required
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                        <input
-                          type="text"
-                          name="nombre"
-                          value={employeeFormData.nombre}
-                          onChange={(e) => setEmployeeFormData({...employeeFormData, nombre: e.target.value})}
-                          required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Declaración</label>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">Declaración</label>
                         <select
                           name="declaracion"
                           value={(employeeFormData as any).declaracion ?? ''}
                           onChange={(e) => setEmployeeFormData({ ...(employeeFormData as any), declaracion: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                           <option value="">-</option>
                           <option value="111">111</option>
@@ -1329,12 +1326,12 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">Categoría</label>
                         <select
                           name="categoria"
                           value={(employeeFormData as any).categoria ?? ''}
                           onChange={(e) => setEmployeeFormData({ ...(employeeFormData as any), categoria: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                           <option value="">-</option>
                           <option value="Técnico">Técnico</option>
@@ -1342,44 +1339,44 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">Apellido</label>
                         <input
                           type="text"
                           name="apellido"
                           value={employeeFormData.apellido}
-                          onChange={(e) => setEmployeeFormData({...employeeFormData, apellido: e.target.value})}
+                          onChange={(e) => setEmployeeFormData({ ...employeeFormData, apellido: e.target.value })}
                           required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">DNI (solo EXTERNO)</label>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">DNI (solo EXTERNO)</label>
                         <input
                           type="text"
                           name="dni"
                           value={(employeeFormData as any).dni ?? ''}
                           onChange={(e) => setEmployeeFormData({ ...(employeeFormData as any), dni: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">CECO (opcional)</label>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">CECO (opcional)</label>
                         <input
                           type="text"
                           name="ceco"
                           value={employeeFormData.ceco}
-                          onChange={(e) => setEmployeeFormData({...employeeFormData, ceco: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(e) => setEmployeeFormData({ ...employeeFormData, ceco: e.target.value })}
+                          className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Contratación</label>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">Fecha de Contratación</label>
                         <input
                           type="date"
                           name="fecha_alta"
                           value={(employeeFormData as any).fecha_alta || ''}
                           onChange={(e) => setEmployeeFormData({ ...(employeeFormData as any), fecha_alta: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
                       <div>
@@ -1388,10 +1385,10 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                             type="checkbox"
                             name="activo"
                             checked={employeeFormData.activo}
-                            onChange={(e) => setEmployeeFormData({...employeeFormData, activo: e.target.checked})}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, activo: e.target.checked })}
+                            className="w-4 h-4 text-primary border-border bg-background rounded focus:ring-primary"
                           />
-                          <span className="text-sm font-medium text-gray-700">Activo</span>
+                          <span className="text-sm font-medium text-foreground">Activo</span>
                         </label>
                       </div>
                     </div>
@@ -1411,8 +1408,8 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
             {activeTab === 'gehaltserhoehung' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Aumento de Salario para {employee.nombre} {employee.apellido}</h3>
-                  <p className="text-sm text-gray-600 mb-6">
+                  <h3 className="text-lg font-medium text-foreground mb-4">Aumento de Salario para {employee.nombre} {employee.apellido}</h3>
+                  <p className="text-sm text-muted-foreground mb-6">
                     Aplica un aumento de salario (porcentual o absoluto) para este empleado.
                     El aumento se hará efectivo en abril del año objetivo con pago retroactivo de enero a marzo.
                   </p>
@@ -1420,7 +1417,7 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                 <form onSubmit={handleSalaryIncrease} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Año Objetivo</label>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Año Objetivo</label>
                       <input
                         type="number"
                         min="2020"
@@ -1428,23 +1425,23 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         value={increaseYear}
                         onChange={(e) => setIncreaseYear(e.target.value)}
                         placeholder="ej. 2026"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Aumento</label>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Tipo de Aumento</label>
                       <select
                         value={increaseType}
                         onChange={(e) => setIncreaseType(e.target.value as 'percentage' | 'absolute')}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                       >
                         <option value="percentage">Porcentual (%)</option>
                         <option value="absolute">Absoluto (€)</option>
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">
                         {increaseType === 'percentage' ? 'Porcentaje (%)' : 'Monto Absoluto (€)'}
                       </label>
                       <input
@@ -1455,13 +1452,13 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                         value={increaseType === 'percentage' ? increasePercentage : increaseAbsolute}
                         onChange={(e) => increaseType === 'percentage' ? setIncreasePercentage(e.target.value) : setIncreaseAbsolute(e.target.value)}
                         placeholder={increaseType === 'percentage' ? 'ej. 10.0' : 'ej. 5000'}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                         required
                       />
                     </div>
                   </div>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={increaseLoading}
                     className="flex items-center gap-2"
                   >
@@ -1470,44 +1467,41 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
                   </Button>
                 </form>
                 {increaseResult && (
-                  <div className={`mt-6 p-4 rounded-md ${
-                    increaseResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-                  }`}>
-                    <h4 className={`font-medium mb-2 ${
-                      increaseResult.success ? 'text-green-800' : 'text-red-800'
+                  <div className={`mt-6 p-4 rounded-md border ${increaseResult.success
+                    ? 'bg-green-500/10 border-green-500/50 text-green-500'
+                    : 'bg-destructive/10 border-destructive/50 text-destructive'
                     }`}>
+                    <h4 className="font-medium mb-2">
                       {increaseResult.success ? '✅ Éxito' : '❌ Error'}
                     </h4>
-                    <p className={`text-sm mb-2 ${
-                      increaseResult.success ? 'text-green-700' : 'text-red-700'
-                    }`}>
+                    <p className="text-sm mb-2">
                       {increaseResult.message}
                     </p>
-                    
+
                     {increaseResult.success && increaseResult.employees && (
                       <div className="mt-3">
-                        <p className="text-sm font-medium text-green-800 mb-2">
+                        <p className="text-sm font-medium mb-2">
                           Aumento de salario aplicado exitosamente:
                         </p>
                         <div className="max-h-40 overflow-y-auto">
                           {increaseResult.employees.map((emp: any, index: number) => (
-                            <div key={index} className="text-xs text-green-700 py-1">
-                              {emp.name}: {emp.old_salary}€ → {emp.new_salary}€ 
-                              ({emp.increase_percent ? `+${emp.increase_percent}%` : `+${emp.increase_absolute}€`}, 
-                              atrasos: {emp.atrasos.toFixed(2)}€, 
+                            <div key={index} className="text-xs py-1">
+                              {emp.name}: {emp.old_salary}€ → {emp.new_salary}€
+                              ({emp.increase_percent ? `+${emp.increase_percent}%` : `+${emp.increase_absolute}€`},
+                              atrasos: {emp.atrasos.toFixed(2)}€,
                               Basis: {emp.base_year})
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
-                    
+
                     {increaseResult.errors && increaseResult.errors.length > 0 && (
                       <div className="mt-3">
-                        <p className="text-sm font-medium text-red-800 mb-2">Errores:</p>
+                        <p className="text-sm font-medium mb-2">Errores:</p>
                         <div className="max-h-40 overflow-y-auto">
                           {increaseResult.errors.map((error: string, index: number) => (
-                            <div key={index} className="text-xs text-red-700 py-1">{error}</div>
+                            <div key={index} className="text-xs py-1">{error}</div>
                           ))}
                         </div>
                       </div>

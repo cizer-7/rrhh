@@ -55,12 +55,12 @@ export default function Login({ onLogin }: LoginProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">🏢 Nómina de Empleados</CardTitle>
           <CardDescription>
-             Por favor, inicie sesión para continuar.
+            Por favor, inicie sesión para continuar.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,7 +101,7 @@ export default function Login({ onLogin }: LoginProps) {
                 variant="link"
                 onClick={handleForgotPassword}
                 disabled={loading}
-                className="text-sm text-blue-600 hover:text-blue-800"
+                className="text-sm text-primary hover:underline underline-offset-4"
               >
                 ¿Olvidó su contraseña?
               </Button>
