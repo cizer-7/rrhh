@@ -1101,6 +1101,12 @@ def get_global_registro_procesamiento(current_user):
             mes=mes, 
             limit=limit
         )
+        
+        # Debug: Log was an das Frontend gesendet wird
+        logger.info(f"Sende {len(rows)} Logs an Frontend")
+        for i, row in enumerate(rows[:3]):  # Nur die ersten 3 für Debug
+            logger.info(f"Log {i+1}: accion={row.get('accion')}, objeto={row.get('objeto')}, detalles={row.get('detalles')}")
+        
         return jsonify({"items": rows})
 
     except Exception as e:
