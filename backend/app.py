@@ -331,7 +331,7 @@ def create_employee(current_user):
                 accion="create",
                 objeto="employee",
                 id_empleado=new_id,
-                details=change_details,
+                detalles=change_details,
             )
         except Exception as e:
             logger.error(f"Fehler beim Loggen der Mitarbeiter-Erstellung: {e}")

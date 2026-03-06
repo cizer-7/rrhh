@@ -1073,7 +1073,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 employee_data.get('ceco', ''),
                 self._normalize_employee_category(employee_data.get('categoria')),
                 employee_data.get('activo', True),
-                employee_data.get('fecha_alta'),
+                employee_data.get('fecha_alta') if employee_data.get('fecha_alta') else None,
                 declaracion,
                 employee_data.get('dni'),
             )
