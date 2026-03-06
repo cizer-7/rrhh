@@ -381,7 +381,7 @@ def update_employee(current_user, employee_id):
             detalles=change_details,
         )
         
-        return jsonify({"message": "Mitarbeiter erfolgreich aktualisiert"})
+        return jsonify({"message": "Empleado actualizado exitosamente"})
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren des Mitarbeiters {employee_id}: {e}")
         return jsonify({"error": "Error interno del servidor"}), 500
@@ -393,9 +393,9 @@ def delete_employee(current_user, employee_id):
     try:
         success = db_manager.delete_employee(employee_id)
         if not success:
-            return jsonify({"error": "Fehler beim Löschen des Mitarbeiters"}), 400
+            return jsonify({"error": "Error al eliminar empleado"}), 400
         
-        return jsonify({"message": "Mitarbeiter erfolgreich gelöscht"})
+        return jsonify({"message": "Empleado eliminado exitosamente"})
     except Exception as e:
         logger.error(f"Fehler beim Löschen des Mitarbeiters {employee_id}: {e}")
         return jsonify({"error": "Error interno del servidor"}), 500
@@ -439,7 +439,7 @@ def add_salary(current_user, employee_id):
         except Exception:
             pass
         
-        return jsonify({"message": "Gehalt erfolgreich hinzugefügt"})
+        return jsonify({"message": "Salario agregado exitosamente"})
     except Exception as e:
         logger.error(f"Fehler beim Hinzufügen des Gehalts für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Error interno del servidor"}), 500
@@ -495,7 +495,7 @@ def update_salary(current_user, employee_id, year):
         except Exception:
             pass
         
-        return jsonify({"message": "Gehalt erfolgreich aktualisiert"})
+        return jsonify({"message": "Salario actualizado exitosamente"})
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren des Gehalts für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Error interno del servidor"}), 500
@@ -507,9 +507,9 @@ def delete_salary(current_user, employee_id, year):
     try:
         success = db_manager.delete_salary(employee_id, year)
         if not success:
-            return jsonify({"error": "Fehler beim Löschen des Gehalts"}), 400
+            return jsonify({"error": "Error al eliminar salario"}), 400
         
-        return jsonify({"message": "Gehalt erfolgreich gelöscht"})
+        return jsonify({"message": "Salario eliminado exitosamente"})
     except Exception as e:
         logger.error(f"Fehler beim Löschen des Gehalts für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Error interno del servidor"}), 500
@@ -566,7 +566,7 @@ def upsert_employee_fte(current_user, employee_id):
         except Exception:
             pass
 
-        return jsonify({"message": "Stundenreduzierung gespeichert"})
+        return jsonify({"message": "Reducción de horas guardada"})
     except Exception as e:
         logger.error(f"Fehler beim Speichern FTE für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Error interno del servidor"}), 500
@@ -602,7 +602,7 @@ def delete_employee_fte(current_user, employee_id, year, month):
         except Exception:
             pass
 
-        return jsonify({"message": "Stundenreduzierung gelöscht"})
+        return jsonify({"message": "Reducción de horas eliminada"})
     except Exception as e:
         logger.error(f"Fehler beim Löschen FTE für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Error interno del servidor"}), 500
@@ -630,7 +630,7 @@ def update_ingresos(current_user, employee_id, year):
         except Exception:
             pass
         
-        return jsonify({"message": "Bruttoeinkünfte erfolgreich aktualisiert"})
+        return jsonify({"message": "Ingresos brutos actualizados exitosamente"})
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren der Bruttoeinkünfte für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Error interno del servidor"}), 500
@@ -658,7 +658,7 @@ def update_deducciones(current_user, employee_id, year):
         except Exception:
             pass
         
-        return jsonify({"message": "Abzüge erfolgreich aktualisiert"})
+        return jsonify({"message": "Deducciones actualizadas exitosamente"})
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren der Abzüge für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Error interno del servidor"}), 500
@@ -1022,7 +1022,7 @@ def update_ingresos_mensuales(current_user, employee_id, year, month):
         except Exception:
             pass
         
-        return jsonify({"message": "Monatliche Bruttoeinkünfte erfolgreich aktualisiert"})
+        return jsonify({"message": "Ingresos brutos mensuales actualizados exitosamente"})
     except Exception as e:
         logger.error(f"Fehler beim Aktualisieren der monatlichen Bruttoeinkünfte für Mitarbeiter {employee_id}: {e}")
         return jsonify({"error": "Error interno del servidor"}), 500

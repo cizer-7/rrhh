@@ -1250,7 +1250,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             # Hole Mitarbeiterdaten für den Log-Eintrag
             employee_info = self.get_employee(employee_id)
             if not employee_info:
-                return {"success": False, "message": f"Mitarbeiter {employee_id} nicht gefunden"}
+                return {"success": False, "message": f"Empleado {employee_id} no encontrado"}
             
             # Zuerst prüfen ob bereits ein Gehalt für target_year existiert
             existing_salary_query = """
@@ -1279,7 +1279,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 """
                 employees = self.execute_query(latest_salary_query, (target_year - 1, employee_id))
                 if not employees:
-                    return {"success": False, "message": f"Kein Gehalt für Mitarbeiter {employee_id} gefunden"}
+                    return {"success": False, "message": f"No se encontró salario para el empleado {employee_id}"}
                 employee = employees[0]
                 current_salary = float(employee['salario_actual'])
                 modalidad = int(employee['modalidad'])
@@ -1351,10 +1351,10 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                         'base_year': base_year
                     }],
                     "errors": [],
-                    "message": f"Gehaltserhöhung für {employee_info['nombre']} {employee_info['apellido']} erfolgreich durchgeführt (Basis: {base_year})"
+                    "message": f"Aumento de salario para {employee_info['nombre']} {employee_info['apellido']} realizado exitosamente (Base: {base_year})"
                 }
             else:
-                return {"success": False, "message": f"Fehler bei Aktualisierung von {employee_info['nombre']} {employee_info['apellido']}"}
+                return {"success": False, "message": f"Error al actualizar {employee_info['nombre']} {employee_info['apellido']}"}
         except Exception as e:
             self.logger.error(f"Fehler bei prozentualer Gehaltserhöhung für Mitarbeiter {employee_id}: {e}")
             return {"success": False, "message": f"Datenbankfehler: {str(e)}"}
@@ -1374,7 +1374,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             if excluded_employee_ids is None:
                 excluded_employee_ids = []
             if percentage_increase is None and absolute_increase is None:
-                return {"success": False, "message": "Entweder percentage_increase oder absolute_increase muss angegeben werden"}
+                return {"success": False, "message": "Se debe especificar percentage_increase o absolute_increase"}
             # Hole alle aktiven Mitarbeiter
             query = """
             SELECT e.id_empleado, e.nombre, e.apellido 
@@ -1390,7 +1390,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 params = ()
             employees = self.execute_query(query, params)
             if not employees:
-                return {"success": False, "message": "Keine Mitarbeiter gefunden"}
+                return {"success": False, "message": "No se encontraron empleados"}
             updated_employees = []
             errors = []
             for employee in employees:
@@ -2329,7 +2329,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         inserted_count = 0
         skipped_count = 0
         if worksheet is None:
-            return {"success": False, "message": "worksheet fehlt"}
+            return {"success": False, "message": "Falta worksheet"}
         try:
             # Preload employee lookup map to avoid many DB queries
             employees = self.execute_query("SELECT id_empleado, nombre, apellido FROM t001_empleados") or []
@@ -2471,7 +2471,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             }
         except Exception as e:
             self.logger.error(f"Fehler beim Import Horas+Dietas Worksheet: {e}")
-            return {"success": False, "message": f"Import fehlgeschlagen: {str(e)}"}
+            return {"success": False, "message": f"Importación fallida: {str(e)}"}
 
     def import_gasolina_worksheet(
         self,
@@ -2494,7 +2494,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         inserted_count = 0
         skipped_count = 0
         if worksheet is None:
-            return {"success": False, "message": "worksheet fehlt"}
+            return {"success": False, "message": "Falta worksheet"}
         try:
             employees = self.execute_query("SELECT id_empleado, nombre, apellido FROM t001_empleados") or []
             employee_map: Dict[str, int] = {}
@@ -2648,7 +2648,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             }
         except Exception as e:
             self.logger.error(f"Fehler beim Import Gasolina Worksheet: {e}")
-            return {"success": False, "message": f"Import fehlgeschlagen: {str(e)}"}
+            return {"success": False, "message": f"Importación fallida: {str(e)}"}
 
 
     def import_cotizacion_especie_worksheet(
@@ -2675,7 +2675,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         skipped_count = 0
 
         if worksheet is None:
-            return {"success": False, "message": "worksheet fehlt"}
+            return {"success": False, "message": "Falta worksheet"}
 
         try:
             employees = self.execute_query("SELECT id_empleado, nombre, apellido FROM t001_empleados") or []
@@ -2804,7 +2804,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
 
         except Exception as e:
             self.logger.error(f"Fehler beim Import Cotizacion Especie Worksheet: {e}")
-            return {"success": False, "message": f"Import fehlgeschlagen: {str(e)}"}
+            return {"success": False, "message": f"Importación fallida: {str(e)}"}
     def copy_salaries_to_new_year(self, target_year: int) -> Dict[str, Any]:
         """Kopiert Gehälter aller aktiven Mitarbeiter vom Vorjahr ins Zieljahr"""
         try:
@@ -2814,7 +2814,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             if target_year > current_year + 20:
                 return {
                     "success": False,
-                    "message": f"Zieljahr {target_year} ist zu weit in der Zukunft (max. {current_year + 20})",
+                    "message": f"Año objetivo {target_year} está demasiado lejos en el futuro (máx. {current_year + 20})",
                     "copied_count": 0,
                     "skipped_count": 0,
                     "errors": []
@@ -2853,7 +2853,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             if not employees_to_copy:
                 return {
                     "success": True,
-                    "message": f"Keine Mitarbeiter gefunden, deren Gehalt für {target_year} kopiert werden muss",
+                    "message": f"No se encontraron empleados cuyo salario deba copiarse para {target_year}",
                     "copied_count": 0,
                     "skipped_count": 0,
                     "errors": []
