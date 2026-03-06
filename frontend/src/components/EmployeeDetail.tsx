@@ -404,8 +404,10 @@ export default function EmployeeDetail({ employee, onBack }: EmployeeDetailProps
           nombre: data?.nombre ?? employee.nombre ?? '',
           apellido: data?.apellido ?? employee.apellido ?? '',
           ceco: data?.ceco ?? employee.ceco ?? '',
-          fecha_alta: formatDateForInput((data as any)?.fecha_alta ?? (employee as any)?.fecha_alta),
           categoria: (data as any)?.categoria ?? (employee as any).categoria ?? undefined,
+          declaracion: (data as any)?.declaracion ?? (employee as any).declaracion ?? '',
+          dni: (data as any)?.dni ?? (employee as any).dni ?? '',
+          fecha_alta: formatDateForInput((data as any)?.fecha_alta ?? (employee as any)?.fecha_alta),
           activo: data?.activo ?? employee.activo ?? true
         },
         fteReduction: ''
