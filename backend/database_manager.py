@@ -5,11 +5,21 @@ from typing import Dict, List, Any, Optional
 import logging
 import hashlib
 from database_exports import DatabaseManagerExportsMixin
-from datetime import datetime
+from datetime import datetime, date
 import json
 import os
 from decimal import Decimal
 from openpyxl.worksheet.worksheet import Worksheet
+
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        elif isinstance(obj, date):
+            return obj.isoformat()
+        elif isinstance(obj, Decimal):
+            return float(obj)
+        return super().default(obj)
 
 class DatabaseManager(DatabaseManagerExportsMixin):
     def __init__(self, host: str, database: str, user: str, password: str, port: int = 3307, ssl_disabled: Optional[bool] = None):
@@ -184,7 +194,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             detalles_json = None
             if detalles is not None:
                 try:
-                    detalles_json = json.dumps(detalles, ensure_ascii=False)
+                    detalles_json = json.dumps(detalles, ensure_ascii=False, cls=DateTimeEncoder)
                     self.logger.info(f"insert_registro_procesamiento: Details JSON erstellt für {usuario_login} - {accion}")
                 except Exception as e:
                     self.logger.error(f"insert_registro_procesamiento: Fehler beim JSON-Serialisieren: {e}")
