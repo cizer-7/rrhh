@@ -1069,6 +1069,7 @@ def update_deducciones_mensuales(current_user, employee_id, year, month):
 
 
 @app.route('/employees/<int:employee_id>/registro_procesamiento', methods=['GET'])
+@app.route('/employees/<int:employee_id>/bearbeitungslog', methods=['GET'])
 @token_required
 def get_registro_procesamiento(current_user, employee_id):
     """Registro de procesamiento für einen Mitarbeiter abrufen"""
@@ -1110,6 +1111,8 @@ def get_global_registro_procesamiento(current_user):
 # OPTIONS-Handler für CORS-Preflight
 @app.route('/registro_procesamiento', methods=['OPTIONS'])
 @app.route('/bearbeitungslog', methods=['OPTIONS'])
+@app.route('/employees/<int:employee_id>/registro_procesamiento', methods=['OPTIONS'])
+@app.route('/employees/<int:employee_id>/bearbeitungslog', methods=['OPTIONS'])
 def options_registro_procesamiento():
     """OPTIONS-Handler für CORS-Preflight-Requests"""
     return '', 200
