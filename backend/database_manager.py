@@ -178,18 +178,23 @@ class DatabaseManager(DatabaseManagerExportsMixin):
     ) -> bool:
         try:
             if not usuario_login or not accion:
+                self.logger.error(f"insert_registro_procesamiento: Fehlende Parameter - usuario_login={usuario_login}, accion={accion}")
                 return False
+            
             detalles_json = None
             if detalles is not None:
                 try:
                     detalles_json = json.dumps(detalles, ensure_ascii=False)
-                except Exception:
+                    self.logger.info(f"insert_registro_procesamiento: Details JSON erstellt für {usuario_login} - {accion}")
+                except Exception as e:
+                    self.logger.error(f"insert_registro_procesamiento: Fehler beim JSON-Serialisieren: {e}")
                     detalles_json = None
+            
             query = """
             INSERT INTO t007_registro_procesamiento (usuario_login, id_empleado, anio, mes, accion, objeto, detalles)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
-            return self.execute_update(
+            success = self.execute_update(
                 query,
                 (
                     usuario_login,
@@ -201,8 +206,17 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                     detalles_json,
                 ),
             )
+            
+            if success:
+                self.logger.info(f"insert_registro_procesamiento: Log erfolgreich geschrieben für {usuario_login} - {accion}")
+            else:
+                self.logger.error(f"insert_registro_procesamiento: execute_update fehlgeschlagen für {usuario_login} - {accion}")
+            
+            return success
         except Exception as e:
             self.logger.error(f"Fehler beim Schreiben in t007_registro_procesamiento: {e}")
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
             return False
 
     def get_registro_procesamiento(
@@ -266,6 +280,8 @@ class DatabaseManager(DatabaseManagerExportsMixin):
         limit: int = 200,
     ) -> List[Dict]:
         try:
+            self.logger.info(f"get_global_registro_procesamiento aufgerufen mit id_empleado={id_empleado}, anio={anio}, mes={mes}, limit={limit}")
+            
             limit_value = 200
             try:
                 if isinstance(limit, int):
@@ -303,7 +319,13 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 params.append(mes)
             query += " ORDER BY l.fecha DESC, l.id_registro DESC LIMIT %s"
             params.append(limit_value)
+            
+            self.logger.info(f"Query: {query}")
+            self.logger.info(f"Params: {params}")
+            
             rows = self.execute_query(query, tuple(params))
+            self.logger.info(f"Anzahl Zeilen zurückgegeben: {len(rows)}")
+            
             for r in rows:
                 if isinstance(r.get('detalles'), str):
                     try:
@@ -313,6 +335,8 @@ class DatabaseManager(DatabaseManagerExportsMixin):
             return rows
         except Exception as e:
             self.logger.error(f"Fehler beim Lesen von global t007_registro_procesamiento: {e}")
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
             return []
 
     def create_change_details(self, old_data: dict = None, new_data: dict = None, changed_fields: list = None) -> dict:
