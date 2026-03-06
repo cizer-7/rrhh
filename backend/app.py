@@ -378,7 +378,7 @@ def update_employee(current_user, employee_id):
             accion="update",
             objeto="employee",
             id_empleado=employee_id,
-            details=change_details,
+            detalles=change_details,
         )
         
         return jsonify({"message": "Mitarbeiter erfolgreich aktualisiert"})
@@ -434,7 +434,7 @@ def add_salary(current_user, employee_id):
                 objeto="salary",
                 id_empleado=employee_id,
                 anio=salary.get('anio'),
-                details=change_details,
+                detalles=change_details,
             )
         except Exception:
             pass
@@ -490,7 +490,7 @@ def update_salary(current_user, employee_id, year):
                 objeto="salary",
                 id_empleado=employee_id,
                 anio=year,
-                details=change_details,
+                detalles=change_details,
             )
         except Exception:
             pass
@@ -561,7 +561,7 @@ def upsert_employee_fte(current_user, employee_id):
                 id_empleado=employee_id,
                 anio=int(year),
                 mes=int(month),
-                details=change_details,
+                detalles=change_details,
             )
         except Exception:
             pass
@@ -597,7 +597,7 @@ def delete_employee_fte(current_user, employee_id, year, month):
                 id_empleado=employee_id,
                 anio=int(year),
                 mes=int(month),
-                details=change_details,
+                detalles=change_details,
             )
         except Exception:
             pass
@@ -625,7 +625,7 @@ def update_ingresos(current_user, employee_id, year):
                 objeto="ingresos",
                 id_empleado=employee_id,
                 anio=year,
-                details=ingresos,
+                detalles=ingresos,
             )
         except Exception:
             pass
@@ -653,7 +653,7 @@ def update_deducciones(current_user, employee_id, year):
                 objeto="deducciones",
                 id_empleado=employee_id,
                 anio=year,
-                details=deducciones,
+                detalles=deducciones,
             )
         except Exception:
             pass
@@ -828,7 +828,7 @@ def create_carry_over(current_user):
                 id_empleado=employee_id_i,
                 anio=year_i,
                 mes=month_i,
-                details={"items": items},
+                detalles={"items": items},
             )
         except Exception:
             pass
@@ -1017,7 +1017,7 @@ def update_ingresos_mensuales(current_user, employee_id, year, month):
                 id_empleado=employee_id,
                 anio=year,
                 mes=month,
-                details=ingresos,
+                detalles=ingresos,
             )
         except Exception:
             pass
@@ -1047,7 +1047,7 @@ def update_deducciones_mensuales(current_user, employee_id, year, month):
                 id_empleado=employee_id,
                 anio=year,
                 mes=month,
-                details=deducciones,
+                detalles=deducciones,
             )
         except Exception:
             pass
