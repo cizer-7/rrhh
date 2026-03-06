@@ -10,7 +10,7 @@ interface GlobalBearbeitungshistorieProps {
 }
 
 interface HistoryItem {
-  id_log: number
+  id_registro: number
   fecha: string
   usuario_login: string
   nombre_completo?: string
@@ -19,9 +19,9 @@ interface HistoryItem {
   empleado_apellido?: string
   anio: number | null
   mes: number | null
-  aktion: string
-  objekt: string
-  details: any
+  accion: string
+  objeto: string
+  detalles: any
 }
 
 export default function GlobalBearbeitungshistorie({ employees }: GlobalBearbeitungshistorieProps) {
@@ -82,8 +82,8 @@ export default function GlobalBearbeitungshistorie({ employees }: GlobalBearbeit
     return (
       item.usuario_login?.toLowerCase().includes(searchLower) ||
       item.nombre_completo?.toLowerCase().includes(searchLower) ||
-      item.aktion?.toLowerCase().includes(searchLower) ||
-      item.objekt?.toLowerCase().includes(searchLower) ||
+      item.accion?.toLowerCase().includes(searchLower) ||
+      item.objeto?.toLowerCase().includes(searchLower) ||
       `${item.empleado_nombre} ${item.empleado_apellido}`.toLowerCase().includes(searchLower) ||
       (item.id_empleado && item.id_empleado.toString().includes(searchLower)) ||
       (item.anio && item.anio.toString().includes(searchLower)) ||
@@ -296,7 +296,7 @@ export default function GlobalBearbeitungshistorie({ employees }: GlobalBearbeit
           </div>
           
           {filteredHistory.map((item) => (
-            <div key={item.id_log} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+            <div key={item.id_registro} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -314,17 +314,17 @@ export default function GlobalBearbeitungshistorie({ employees }: GlobalBearbeit
                     <div className="flex items-center gap-1">
                       <FileText className="w-4 h-4 text-blue-500" />
                       <span className="font-medium text-blue-700">
-                        {getObjectText(item.objekt)}
+                        {getObjectText(item.objeto)}
                       </span>
                     </div>
                     
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      item.aktion === 'create' ? 'bg-green-100 text-green-800' :
-                      item.aktion === 'update' ? 'bg-blue-100 text-blue-800' :
-                      item.aktion === 'delete' ? 'bg-red-100 text-red-800' :
+                      item.accion === 'create' ? 'bg-green-100 text-green-800' :
+                      item.accion === 'update' ? 'bg-blue-100 text-blue-800' :
+                      item.accion === 'delete' ? 'bg-red-100 text-red-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
-                      {getActionText(item.aktion)}
+                      {getActionText(item.accion)}
                     </span>
                     
                     {item.id_empleado && (
@@ -348,7 +348,7 @@ export default function GlobalBearbeitungshistorie({ employees }: GlobalBearbeit
                     )}
                   </div>
                   
-                  {item.details && renderDetails(item.details)}
+                  {item.detalles && renderDetails(item.detalles)}
                 </div>
               </div>
             </div>
