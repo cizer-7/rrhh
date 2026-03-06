@@ -1,159 +1,135 @@
-# 📚 Manual de Usuario - Digitalización de Nóminas
+# � Digitalización de Nóminas
 
-Bienvenido a la documentación completa del sistema de nóminas digitalizado. Este manual contiene toda la información para el uso efectivo y administración de la aplicación.
+Sistema web moderno para la gestión digitalizada de nóminas y empleados que reemplaza las aplicaciones de escritorio tradicionales.
 
-## 📖 Resumen de Documentación
+## 🚀 Características Principales
 
-### 🎯 [Resumen del Sistema](01_Übersicht.md)
-**Para:** Todos los usuarios, administradores, desarrolladores
-- Descripción del proyecto y objetivos
-- Arquitectura del sistema y tecnologías
-- Migración desde la aplicación de escritorio
-- **Nuevo:** Gestión de empleados extendida con ordenamiento y categorías
-- **Nuevo:** Funcionalidad de restablecimiento de contraseña con integración email
-- Estado del sistema y desarrollos futuros
+- **👥 Gestión de Empleados:** CRUD completo con ordenamiento y categorías
+- **💳 Procesamiento de Nóminas:** Cálculo automático con múltiples modalidades
+- **🔐 Autenticación Segura:** JWT con restablecimiento de contraseña por email
+- **📊 Reportes:** Exportación a Excel y análisis en tiempo real
+- **🌐 Interfaz Moderna:** React/Next.js con Tailwind CSS
+- **⚡ Backend Robusto:** Python Flask con MySQL
 
-### 🗄️ [Documentación de Base de Datos](02_Datenbank.md)
-**Para:** Administradores, desarrolladores, administradores de base de datos
-- Estructura completa de la base de datos
-- Instalación y configuración
-- Triggers y automatización
-- Funcionalidad de restablecimiento de contraseña
-- **Nuevo:** Categorías de empleados (Técnico, Oficina)
-- Usuarios de prueba y mantenimiento
+## 🏗️ Arquitectura
 
-### 🧪 [Manual de Testing](03_Testing.md)
-**Para:** Desarrolladores, QA testers, administradores
-- Inicio rápido para todos los tipos de tests
-- Estructura de tests detallada
-- Cobertura e informes
-- **Nuevo:** Cobertura de tests extendida (70+ Tests)
-- **Nuevo:** Tests para funciones de ordenamiento y categorías
-- **Nuevo:** Tests E2E para flujo de restablecimiento de contraseña
-- Manejo de errores y debugging
-- Guía para escribir tests
+### Frontend
+- **Tecnología:** React/Next.js 16 con TypeScript
+- **Estilos:** Tailwind CSS para diseño responsivo
+- **Componentes:** UI moderna y consistente
 
-### 📖 [Manual de Usuario](04_Benutzerhandbuch.md)
-**Para:** Usuarios finales, departamento de personal, administradores
-- Primeros pasos y login
-- **Nuevo:** Guía detallada para restablecimiento de contraseña
-- Gestión de empleados con ordenamiento y filtrado
-- **Nuevo:** Gestión de empleados basada en categorías
-- Procesamiento de nóminas y reportes
-- Configuración del sistema
-- Preguntas frecuentes y soporte
+### Backend  
+- **Tecnología:** Python Flask 3.0
+- **Base de Datos:** MySQL con triggers optimizados
+- **API:** RESTful con autenticación JWT
 
----
+### Testing
+- **Backend:** pytest con 70+ tests
+- **Frontend:** Jest con React Testing Library
+- **E2E:** Playwright para pruebas de navegador
 
-## 🚀 Inicio Rápido
+## 📋 Requisitos
 
-### Para Usuarios Finales
-1. **Leer:** [Manual de Usuario](04_Benutzerhandbuch.md) → "Primeros Pasos"
-2. **Iniciar Sesión:** Acceder al sistema con sus credenciales
-3. **Explorar:** Probar la interfaz de usuario y funciones básicas
+- Node.js 18+ 
+- Python 3.11+
+- MySQL 8.0+
+- Navegador moderno
 
-### Para Administradores
-1. **Configuración del Sistema:** [Documentación de Base de Datos](02_Datenbank.md) → "Instalación y Configuración"
-2. **Configuración:** Configurar usuarios y roles
-3. **Testing:** [Manual de Testing](03_Testing.md) → "Inicio Rápido"
+## 🚀 Instalación Rápida
 
-### Para Desarrolladores
-1. **Entender la Arquitectura:** [Resumen del Sistema](01_Übersicht.md) → "Arquitectura del Sistema"
-2. **Estructura de la Base de Datos:** [Documentación de Base de Datos](02_Datenbank.md) → "Estructura de la Base de Datos"
-3. **Testing:** [Manual de Testing](03_Testing.md) → "Tipos de Tests"
+### Backend
+```bash
+cd backend
+pip install -r requirements.txt
+python app.py
+```
 
----
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## 📋 Público Objetivo
+### Base de Datos
+```bash
+mysql -u root -p < backend/sql_statements/01_schema/01_schema.sql
+mysql -u root -p < backend/sql_statements/02_triggers/01_triggers.sql
+```
 
-### 👤 Usuarios Finales
-- **Departamento de Personal:** Gestión de empleados, procesamiento de nóminas
-- **Jefes de Departamento:** Acceso a datos de empleados de su departamento
-- **Gerencia:** Reportes y estadísticas
+## � Configuración
 
-### 🔧 Administradores
-- **Administración de TI:** Mantenimiento del sistema, gestión de usuarios
-- **Administradores de Base de Datos:** Mantenimiento de base de datos, backup
-- **Integradores de Sistemas:** Interfaces e integraciones
+1. **Base de Datos:** Configurar conexión en `backend/config/settings.json`
+2. **Environment:** Copiar `.env.example` a `.env` y configurar variables
+3. **Usuarios:** Crear usuarios de prueba con scripts en `backend/sql_statements/03_data/`
 
-### 💻 Desarrolladores
-- **Desarrolladores Frontend:** Componentes React/Next.js
-- **Desarrolladores Backend:** API Flask, lógica de base de datos
-- **QA Testers:** Automatización de tests, aseguramiento de calidad
+## � Documentación
 
----
+- **📖 Manual de Usuario:** Ver `docs/user_manual.pdf`
+- **🗄️ Documentación Técnica:** Ver `docs/technical_manual.pdf`
+- **🧪 Testing:** Ver `testing/README.md`
 
-## 🎯 Objetivos de la Documentación
+## 🌐 Despliegue
 
-### Completitud
-- **Todas las Funciones:** Cada función del sistema está documentada
-- **Todos los Roles:** Guías específicas para cada rol de usuario
-- **Todos los Procesos:** Desde la instalación hasta el uso diario
+### Azure (Recomendado)
+```bash
+# Ver azure-setup.md para configuración completa
+az group create --name rrhh --location westeurope
+az mysql flexible-server create --resource-group rrhh --name digitalisierung-mysql
+```
 
-### Comprensibilidad
-- **Lenguaje Claro:** Formulaciones simples y comprensibles
-- **Contenido Estructurado:** Organización lógica y referencias cruzadas
-- **Ejemplos Prácticos:** Casos de uso concretos y ejemplos
+### Docker
+```bash
+docker-compose up -d
+```
 
-### Actualidad
-- **Actualizaciones Regulares:** La documentación se actualiza con cambios del sistema
-- **Versionamiento:** Marcado claro de la versión de la documentación
-- **Feedback:** Oportunidades para mejorar la documentación
+## 🧪 Testing
 
----
+```bash
+# Backend Tests
+cd testing/backend
+pytest -v
 
-## 📞 Soporte y Feedback
+# Frontend Tests  
+cd testing/frontend
+npm test
 
-### Soporte Técnico
-Para problemas técnicos o preguntas:
-- **Administrador del Sistema:** [Email/Teléfono]
-- **Helpdesk de TI:** [Email/Teléfono]
-- **Feedback de Documentación:** [Email/Formulario de Feedback]
+# E2E Tests
+cd testing/e2e
+npx playwright test
+```
 
-### Feedback de Documentación
-Apreciamos su feedback sobre la documentación:
-- **Comprensibilidad:** ¿Las guías son claras y comprensibles?
-- **Completitud:** ¿Falta información importante?
-- **Mejoras:** ¿Qué contenidos serían útiles?
+## 📊 Estadísticas del Proyecto
 
----
+- **📁 Archivos:** 50+ archivos de código
+- **🧪 Tests:** 70+ tests con cobertura integral
+- **🌐 Idiomas:** Español, Alemán, Inglés
+- **📱 Responsive:** Mobile-first design
 
-## 🔄 Actualizaciones
+## 🤝 Contribuir
 
-### Historial de Versiones
-- **v1.0:** Primera documentación completa
-- **v1.1:** Estructura revisada y contenidos extendidos
-- **v1.2 (Actual):** **Nuevo:** Documentación de funciones de ordenamiento y categorías de empleados
-- **v1.2 (Actual):** **Nuevo:** Funcionalidad de restablecimiento de contraseña con integración email
-- **v1.2 (Actual):** **Nuevo:** Documentación de tests extendida (70+ Tests)
-- **v1.2 (Actual):** **Nuevo:** Manuales de usuario actualizados con nuevas funciones de UI
+1. Fork del repositorio
+2. Crear feature branch
+3. Commit con cambios
+4. Push al branch
+5. Pull Request
 
-### Extensiones Futuras
-- **Video Tutoriales:** Guías de video paso a paso
-- **Documentación API:** Referencia API detallada
-- **Best Practices:** Recomendaciones para uso óptimo del sistema
+## 📄 Licencia
+
+MIT License - Ver [LICENSE](LICENSE) para detalles
+
+## 📞 Soporte
+
+- **📧 Email:** soporte@digitalizacion.com
+- **📱 Teléfono:** +49 123 456789
+- **💬 Discord:** [Servidor de Discord]
 
 ---
 
-## 📚 Recursos Adicionales
-
-### Archivos del Proyecto
-- **README Principal:** `../README.md` - Resumen del proyecto e inicio rápido
-- **Documentación de Testing:** `../testing/README_TESTING.md` - Documentación de tests detallada
-- **Scripts de Base de Datos:** `../backend/sql_statements/README_DB.md` - Configuración de base de datos
-
-### Recursos Externos
-- **Documentación React:** https://react.dev/
-- **Documentación Flask:** https://flask.palletsprojects.com/
-- **Documentación MySQL:** https://dev.mysql.com/doc/
+**Última Actualización:** Marzo 2026  
+**Versión:** 2.0  
+**Estado:** Production Ready
 
 ---
 
-**Última Actualización:** Febrero 2026  
-**Versión:** 1.2  
-**Mantenedor:** Administración del Sistema  
-**Nuevo en esta Versión:** Funciones de ordenamiento, categorías de empleados, flujo de restablecimiento de contraseña
-
----
-
-*Comience con la [Resumen del Sistema](01_Übersicht.md) para una introducción completa al sistema.*
+*Para documentación detallada, ver los archivos PDF en `docs/`*
