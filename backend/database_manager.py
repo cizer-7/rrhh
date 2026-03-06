@@ -985,6 +985,10 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                         value = self._normalize_employee_category(value)
                     if field == 'declaracion' and value is not None:
                         value = str(value).strip().upper()
+                    if field == 'fecha_alta':
+                        # Leere Strings und Strings mit nur Leerzeichen in None umwandeln für optionales Datum
+                        if value is None or (isinstance(value, str) and value.strip() == ''):
+                            value = None
                     update_fields.append(f"{field} = %s")
                     update_values.append(value)
             if not update_fields:
@@ -1107,7 +1111,7 @@ class DatabaseManager(DatabaseManagerExportsMixin):
                 employee_data.get('ceco', ''),
                 self._normalize_employee_category(employee_data.get('categoria')),
                 employee_data.get('activo', True),
-                employee_data.get('fecha_alta') if employee_data.get('fecha_alta') else None,
+                employee_data.get('fecha_alta') if employee_data.get('fecha_alta') and str(employee_data.get('fecha_alta')).strip() != '' else None,
                 declaracion,
                 employee_data.get('dni'),
             )
